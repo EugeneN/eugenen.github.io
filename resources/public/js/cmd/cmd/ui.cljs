@@ -16,7 +16,7 @@
 
 (def motd "# Welcome to CMD
 
-It is an explosive mixture of ***ClojureScript, Rx, React/Om, core.async, github CORS api, ace, pagedown*** crafted together to give you *the best* gist editing tool, ever.
+It is an explosive mixture of ***ClojureScript, Rx, React/Om, core.async, github CORS api, ace, pagedown, web worker(s)*** crafted together to give you *the best* gist editing tool, ever.
 It's currently an alfa-quality prototype, so do not expect to much.
 
 
