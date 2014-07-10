@@ -117,7 +117,6 @@
 (defn handle-select
   [e]
   (let [selected-id (.. e -target -value)]
-    (set-state state :current-gist-id selected-id)
     (load-gist selected-id)))
 
 (defn handle-new-gist
@@ -156,7 +155,9 @@
 
             (dom/input #js {:type "text"
                             :title "Filename"
-                            :style #js {:display "none"}
+                            :style (if (= (:mode state) :new-gist)
+                                     #js {:display "inline-block"}
+                                     #js {:display "none" :value ""})
                             :id "new-gist-name"})
 
             (dom/label #js {:className "ios7"} "SELECT_G!ST: ")
