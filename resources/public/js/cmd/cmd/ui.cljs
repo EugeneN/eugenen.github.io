@@ -14,7 +14,7 @@
              save-gist authenticate authenticated-om? error-set? state AppBus get-motd
              find-gist load-initial-content set-location-hash-gist-id set-title set-input
              get-panels-from-location-hash get-gist-id-from-location-hash
-             reset-input-with-motd]])
+             reset-input-with-motd get-pinned-gists]])
   (:require-macros
     [cljs.core.async.macros :refer [go alt!]]
   ))
@@ -96,6 +96,18 @@
             new-content {:description file-name :files {(keyword file-name) {:content md-raw}}}]
         (save-gist gist-id new-content)))))
 
+(defn is-pinned?
+  [gist-id]
+  (contains? (:pinned-gists state) gist-id))
+
+(defn pin-gist
+  [gist-id]
+  (set-state state :pinned-gists (clojure.set/union (get-state state :pinned-gists) #{gist-id})))
+
+(defn unpin-gist
+  [gist-id]
+  (set-state state :pinned-gists (clojure.set/difference (get-state state :pinned-gists) #{gist-id})))
+
 (defn handle-select
   [e]
   (let [selected-id (.. e -target -value)]
@@ -126,6 +138,15 @@
     (authenticate username auth-token)
     ))
 
+
+(defn has-parent
+  [el parent]
+  (case el
+    nil false
+    (if (= el parent)
+      true
+      (has-parent (.-parentNode el) parent))))
+
 (defn setup-toolbar-listeners
   []
   (let [toolbar-toggler   ($ "toolbar-toggler")
@@ -141,6 +162,12 @@
     (.. js/Rx -Observable
       (fromEvent toolbar-toggler "click")
       (subscribe (fn [] (do (jq-toggle toolbar #(set-state state :toolbar-autohide (not (visible? toolbar))))))))
+
+
+    (.. js/Rx -Observable
+        (fromEvent js/document "click")
+        (filter #(not (has-parent (.. % -target) ($ "gist-list")) ))
+        (subscribe #(slide-up ($ "gist-list"))))
 
     (.. js/Rx -Observable
       (fromEvent preview-toggler "click")
@@ -240,6 +267,62 @@
 
 ;; ui view section -------------------------------------------------------------
 
+(defn handle-select-panel-click
+  [ev]
+  (let [gist-id (.. ev -target (getAttribute "data-value"))
+        select-panel ($ "gist-list")]
+    (do
+      (load-gist gist-id)
+      (slide-up select-panel))))
+
+(defn gist-list-str
+  [gist]
+  (-> (gist "files") keys join-gist-names))
+
+(defn gist-select [state owner]
+  (reify
+    om/IRender
+    (render [_]
+      (dom/div #js {:className "gist-select-container"}
+
+        (dom/div #js {:className: "select-panel"}
+          (dom/div #js {:className "select-panel-title"} "Latest created")
+          (dom/div #js {:className "select-panel-list-wrapper"}
+            (apply dom/ul #js {:className "select-panel-list"
+                              :title "Select a gist for a good start :-)"}
+                  (map (fn [gist]
+                         (dom/li
+                           #js {:data-value (gist "id")
+                                :onClick handle-select-panel-click}
+                           (gist-list-str gist)))
+                       (sort (fn [a b] (> (a "created_at") (b "created_at"))) (:gists state))))))
+
+        (dom/div #js {:className: "select-panel"}
+          (dom/div  #js {:className "select-panel-title"} "Latest edited")
+          (dom/div #js {:className "select-panel-list-wrapper"}
+            (apply dom/ul #js {:className "select-panel-list"
+                              :title "Select a gist for a good start :-)"}
+                  (map (fn [gist]
+                         (dom/li
+                           #js {:data-value (gist "id")
+                                :onClick handle-select-panel-click}
+                           (gist-list-str gist)))
+                       (sort (fn [a b] (> (a "updated_at") (b "updated_at"))) (:gists state))))))
+
+        (dom/div #js {:className: "select-panel"}
+          (dom/div  #js {:className "select-panel-title"} "Pinned")
+          (dom/div #js {:className "select-panel-list-wrapper"}
+            (apply dom/ul #js {:className "select-panel-list"
+                              :title "Select a gist for a good start :-)"}
+                  (map (fn [gist]
+                         (dom/li
+                           #js {:data-value (gist "id")
+                                :onClick handle-select-panel-click}
+                           (gist-list-str gist)))
+                       (get-pinned-gists state)))))
+      ))))
+
+
 (defn toolbar [state owner]
   (reify
     om/IRender
@@ -255,26 +338,28 @@
 
             (dom/button #js {:id "new-gist"
                             :onClick handle-new-gist
-                            :className "ios7"} ":NEW_G!ST: ")
+                            :className "ios7"} (if (= (:mode state) :new-gist)
+                                                                         ":C@NCEL: "
+                                                                         ":NEW_G!ST: "))
 
             (dom/input #js {:type "text"
                             :title "Filename"
                             :style (if (= (:mode state) :new-gist)
-                                     #js {:display "inline-block"}
-                                     #js {:display "none" :value ""})
+                                     #js {:display "inline-block"
+                                          :placeholder "Enter a new gist name"}
+                                     #js {:display "none" :value "" :placeholder "Enter a new gist name"})
                             :id "new-gist-name"})
 
-            (dom/label #js {:className "ios7"} "SELECT_G!ST: ")
+            (dom/input #js {:className "ios7"
+                            :type "text"
+                            :placeholder "Select a gist..."
+                            ;:onChange #(om/set-state! owner :query (.. % -target -value))
+                            :onClick #(let [panel ($ "gist-list")] (if (visible? panel)
+                                                                     (slide-up panel)
+                                                                     (slide-down panel)))} "SELECT_G!ST: ")
+
             (dom/div #js {:id "gist-list"}
-              (apply dom/select #js {:className "hello"
-                                     :title "Select a gist for a good start :-)"
-                                     :value (:current-gist-id state)
-                                     :onChange handle-select}
-                (map (fn [gist]
-                       (dom/option
-                         #js {:value (gist "id")}
-                         (-> (gist "files") keys join-gist-names)))
-                     (:gists state))))
+              (om/build  gist-select state))
 
             (let [current-gist (state :current-gist)
                   href (if (nil? current-gist) nil (current-gist "html_url"))]
@@ -298,6 +383,19 @@
                                         true
                                         false)
                              :onClick handle-push} "PUSH>>")
+
+            ;(dom/button #js {:id "pin"
+            ;                 :title "Pin current gist for this session"
+            ;                 :disabled (if (and (nil? (state :current-gist)) (not (= (state :mode) :new-gist)))
+            ;                             true
+            ;                             false)
+            ;                 :onClick #(let [current-gist (state :current-gist-id)]
+            ;                            (if (is-pinned? current-gist)
+            ;                              (unpin-gist current-gist)
+            ;                              (pin-gist current-gist))
+            ;                            )} (if (is-pinned? (state :current-gist-id)) "UNP!N" "P!N"))
+            ;
+            ;(dom/span nil "|")
 
             (dom/button #js {:id "log-out"
                              :title "Log out and remove autologin cookies"
@@ -376,6 +474,8 @@
                                (do
                                  (jq-toggle console)
                                  (js/setTimeout #(jq-toggle console) 2000))))
+
+          :reload-gists (load-gists)
 
           (say (str "Unknown message from AppBus: " msg " : " payload)))
 

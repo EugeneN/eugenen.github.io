@@ -22,6 +22,7 @@
 ;   :motd
 ;   :active-requests
 ;   :messages
+;   :pinned-gists #{}
 ; }
 
 ; AppBus
@@ -32,9 +33,11 @@
 ;  :motd-loaded
 ;  :gists-loaded
 ;  :new-console-msg
+;  :reload-gists
 ; ]
 
 (def state (atom {:active-requests 0
+                  :pinned-gists #{"58a15db96ca12b952f8e"}
                   :messages []}))
 (def AppBus (chan 1))
 
@@ -157,6 +160,7 @@
           clj-result (raw->clj result)]
       (case maybe
         :just (do (set-state state :current-gist clj-result)
+                  (load-gists)
                   (say (str "Ok, gist " gist-id " saved")))
         :nothing (handle-io-error clj-result)))))
 
@@ -266,5 +270,6 @@
 
 (defn reset-input-with-motd [] (ace-set-value (get-state state :motd)))
 
-
-
+(defn get-pinned-gists
+  [state]
+  (filter (fn [gist] (contains? (:pinned-gists state) (gist "id"))) (:gists state)))
