@@ -54,7 +54,7 @@ body {
     text-align: justify;
     font-family: Times, serif;
     font-size: 20px;
-    background-color: rgb(246, 247, 249);
+    /*background-color: rgb(246, 247, 249);*/
     color: rgb(44, 63, 81);
     word-wrap: break-word;
     word-break: break-word;
@@ -198,7 +198,7 @@ label {
     text-align: center;
     width: 20px;
     height: 30px;
-    background-color: transparent;
+    /*background-color: transparent;*/
     z-index: 1000;
     cursor: pointer;
     -webkit-transition: background 0.5s linear;
