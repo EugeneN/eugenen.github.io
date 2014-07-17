@@ -423,3 +423,15 @@ label {
 .toolbar-separator {
     color: #000 !important;
 }
+
+#comments {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    width: 300px;
+    padding: 1em;
+    display: none;
+    background-color: #fff;
+    overflow: auto;
+    height: 100vh;
+}
