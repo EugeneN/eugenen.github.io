@@ -198,7 +198,7 @@ label {
     text-align: center;
     width: 20px;
     height: 30px;
-    /*background-color: transparent;*/
+    background-color: transparent;
     z-index: 1000;
     cursor: pointer;
     -webkit-transition: background 0.5s linear;
@@ -255,7 +255,7 @@ label {
     margin: 0;
     padding: 0;
 
-    background-color: rgb(246, 247, 249);
+    /*background-color: rgb(246, 247, 249);*/
     color: rgb(44, 63, 81);
 
     vertical-align: top;
