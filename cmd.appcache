@@ -12,7 +12,7 @@ CACHE MANIFEST
 //cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.js
 //cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js
 //code.jquery.com/jquery-2.1.1.min.js
-//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+#//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 
 //cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css
 //fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic,700italic|Source+Code+Pro:100,200,300,400,600,700,900&subset=latin,cyrillic,cyrillic-ext,greek-ext,greek,latin-ext
