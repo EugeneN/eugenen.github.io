@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# v14 2014 09 26
+# v15 2014 09 26
 
 /
 /index.html
@@ -175,9 +175,10 @@ CACHE MANIFEST
 //a.disquscdn.com/next/assets/font/icons.97d61cac9a78751596d392b8e8de61eb.woff
 
 //cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/mode-markdown.js
+//fonts.gstatic.com/
 //fonts.gstatic.com/s/sourcecodepro/v6/mrl8jkM18OlOQN8JLgasDzKRFmJUU_JfdI4amS9F_UY.woff2
-
-
+//fonts.gstatic.com/s/sourcecodepro/v6/leqv3v-yTsJNC7nFznSMqXPU7CIF47hG64WdfUow7GU.woff2
+//fonts.gstatic.com/s/sourcecodepro/v6/leqv3v-yTsJNC7nFznSMqaBBe7f1mpvECReg0afxak4.woff2
 
 NETWORK:
 
@@ -185,5 +186,5 @@ NETWORK:
 //eugenengithubio.disqus.com/embed.js
 //a.disquscdn.com/embed.js
 /cmd.appcache
-
+//ssl.google-analytics.com/ga.js
 
