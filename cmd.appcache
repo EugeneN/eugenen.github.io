@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# v5 2014 09 26
+# v6 2014 09 26
 
 /
 /index.html
@@ -8,9 +8,7 @@ CACHE MANIFEST
 /resources/public/img/fv5.png
 
 /resources/public/js/rx.all.js
-/resources/public/js/cmd/cmd.js
-/resources/public/js/cmd/goog/deps.js
-/resources/public/js/cmd/goog/base.js
+/resources/public/js/cmd/*
 
 //code.jquery.com/jquery-2.1.1.min.js
 //cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js
@@ -26,3 +24,4 @@ CACHE MANIFEST
 NETWORK:
 
 /cmd.appcache
+//eugenengithubio.disqus.com/embed.js
