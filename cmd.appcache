@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# v4 2014 09 26
+# v5 2014 09 26
 
 /
 /index.html
@@ -22,3 +22,7 @@ CACHE MANIFEST
 
 //fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic,700italic|Source+Code+Pro:100,200,300,400,600,700,900&subset=latin,cyrillic,cyrillic-ext,greek-ext,greek,latin-ext
 //fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic,700italic|Source+Code+Pro:100,200,300,400,600,700,900&subset=latin,cyrillic,cyrillic-ext,greek-ext,greek,latin-ext
+
+NETWORK:
+
+/cmd.appcache
