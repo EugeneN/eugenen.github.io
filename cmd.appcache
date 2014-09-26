@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# v13 2014 09 26
+# v14 2014 09 26
 
 /
 /index.html
@@ -181,7 +181,7 @@ CACHE MANIFEST
 
 NETWORK:
 
-//api.github.com/*
+//api.github.com/
 //eugenengithubio.disqus.com/embed.js
 //a.disquscdn.com/embed.js
 /cmd.appcache
