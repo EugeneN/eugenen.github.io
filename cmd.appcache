@@ -1,18 +1,21 @@
 CACHE MANIFEST
-# v3 2014 09 26
+# v4 2014 09 26
 
 /
 /index.html
 /resources/public/css/index.css
-/resources/public/img/fv5.png
-/resources/public/js/rx.all.js
-/resources/public/js/cmd/goog/base.js
-/resources/public/js/cmd/cmd.js
 /resources/public/img/loading1.gif
+/resources/public/img/fv5.png
 
-//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.js
-//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js
+/resources/public/js/rx.all.js
+/resources/public/js/cmd/cmd.js
+/resources/public/js/cmd/goog/deps.js
+/resources/public/js/cmd/goog/base.js
+
 //code.jquery.com/jquery-2.1.1.min.js
+//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js
+//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.js
+
 #//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 
 //cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css
