@@ -174,8 +174,14 @@ CACHE MANIFEST
 //fonts.gstatic.com/s/ubuntumono/v6/ceqTZGKHipo8pJj4molyttGR1r2frwpfjEqI8Bb_XHU.woff2
 //a.disquscdn.com/next/assets/font/icons.97d61cac9a78751596d392b8e8de61eb.woff
 
+//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/mode-markdown.js
+//fonts.gstatic.com/s/sourcecodepro/v6/mrl8jkM18OlOQN8JLgasDzKRFmJUU_JfdI4amS9F_UY.woff2
+
+
 
 NETWORK:
 
+//api.github.com/*
+//eugenengithubio.disqus.com/embed.js
 
 
