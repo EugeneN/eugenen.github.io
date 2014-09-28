@@ -183,11 +183,12 @@ CACHE MANIFEST
 
 NETWORK:
 
-//api.github.com/
-//eugenengithubio.disqus.com/embed.js
-//a.disquscdn.com/embed.js
-/cmd.appcache
-//ssl.google-analytics.com/ga.js
 *
+#//api.github.com/
+#//eugenengithubio.disqus.com/embed.js
+#//a.disquscdn.com/embed.js
+#/cmd.appcache
+#//ssl.google-analytics.com/ga.js
+
 
 
