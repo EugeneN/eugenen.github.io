@@ -97,12 +97,8 @@
 
 
 (defn process
-  [md cb]
-  (go
-    (let [[maybe resp] (<! (wmd->html md))]
-      (case maybe
-        :just (cb resp)
-        :nothing (cb "<Error>")))))
+  [md]
+  (wmd->html md))
 
 (defn make-basic-auth-token
   [username password]

@@ -52,16 +52,13 @@
 ;; ui bl section ---------------------------------------------------------------
 
 (defn set-preview []
-  (let [ace (get-state state :ace)
-        ace-value (.. ace (getSession) (getValue))]
-    (process ace-value
-             (fn [value]
-              (do
-                (html! ($ "preview") value)
-                ;(js/setTimeout
-                ;  #(.Queue js/MathJax.Hub ["Typeset" (.-Hub js/MathJax) "preview"])
-                ;  300)
-                )))))
+  (go
+    (let [ace (get-state state :ace)
+          ace-value (.. ace (getSession) (getValue))
+          [maybe value] (<! (process ace-value))]
+      (case maybe
+            :just (html! ($ "preview") value)
+            :nothing (html! ($ "preview") value)))))
 
 (defn handle-pull
   [_]
@@ -95,6 +92,38 @@
             file-name (get-state state :current-file-id)
             new-content {:description file-name :files {(keyword file-name) {:content md-raw}}}]
         (save-gist gist-id new-content)))))
+
+(defn open-window-and-print
+  [contents]
+  (do
+    (let [new-win (-> js/window (.open "", "_blank", "width=1000,height=900"))]
+      (-> new-win .-document (.open))
+      (-> new-win .-document (.write (str "<html><head>
+                                           <link href='https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic,700italic|Source+Code+Pro:100,200,300,400,600,700,900&subset=latin,cyrillic,cyrillic-ext,greek-ext,greek,latin-ext' rel='stylesheet' type='text/css'>
+                                           <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css'>
+                                           <link rel='stylesheet' href='/resources/public/css/index.css'>
+                                           <style> @media print { .noprint { display: none; } } </style>
+                                           </head><body onload='window.print()'>
+                                           <div class='noprint'><button onclick='dec()'>-10%</button><button onclick='inc()'>+10%</button><button onclick='window.print()'>PR!NT</button></div>
+                                           <div id='preview-container' style='width: 100% !important;height: auto !important;font-size: -20% !important;'><div>"
+                                           contents
+                                           "</div></div>
+                                           <script>
+                                           var fz = 100, el=document.getElementById('preview-container');
+                                           function dec() { el.style.fontSize = (fz-=10)+'%' }
+                                           function inc() { el.style.fontSize = (fz+=10)+'%' }
+                                           </script></html>")))
+      (-> new-win .-document (.close)))))
+
+(defn handle-print
+  [_]
+  (go
+    (let [ace (get-state state :ace)
+          ace-value (.. ace (getSession) (getValue))
+          [maybe value] (<! (process ace-value))]
+         (case maybe
+               :just (open-window-and-print value)
+               :nothing (say "No content to print")))))
 
 (defn handle-new-gist
   [ev]
@@ -501,6 +530,13 @@
                                          false)
                              :onClick #(toggle-pin-gist state) } (if (contains? (state :pinned-gists) (state :current-gist-id)) "UNP!N" "P!N"))
 
+            (dom/button #js {:id "print"
+                             :title "Print current gist"
+                             :disabled (if (nil? (state :current-gist))
+                                         true
+                                         false)
+                             :onClick #(handle-print state) } "PR!NT")
+
             (dom/span #js {:className "toolbar-separator"} "|")
 
             (dom/button #js {:id "log-out"
@@ -538,6 +574,15 @@
                                            (set! (.-value username-field) "")
                                            (set! (.-value password-field) "")
                                            (handle-auth username password)))} "LOG>>IN")
+
+            (dom/span #js {:className "toolbar-separator"} "|")
+
+            (dom/button #js {:id "print"
+                             :title "Print current gist"
+                             :disabled (if (nil? (state :current-gist))
+                                         true
+                                         false)
+                             :onClick #(handle-print state) } "PR!NT")
 
             (if (error-set? state)
               (dom/span #js {:id "error-msg"}) (str (state :error)))
