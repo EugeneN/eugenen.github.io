@@ -112,6 +112,9 @@
                                            var fz = 100, el=document.getElementById('preview-container');
                                            function dec() { el.style.fontSize = (fz-=10)+'%' }
                                            function inc() { el.style.fontSize = (fz+=10)+'%' }
+                                           function done() { window.close(); }
+                                           if (window.matchMedia) { window.matchMedia('print').addListener(function(mql) { if (!mql.matches) { done(); } }); }
+                                           window.onafterprint = done;
                                            </script></html>")))
       (-> new-win .-document (.close)))))
 
