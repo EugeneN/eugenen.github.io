@@ -3159,29 +3159,42 @@ var Control_Monad_Eff = require("Control.Monad.Eff");
 var DOM = require("DOM");
 var React = require("React");
 var React_Types = require("React.Types");
+var togglePoint = function (cell) {
+    return function (_6) {
+        return function (y) {
+            return function (x) {
+                return new Types.State({
+                    cells: Utils.updateAt2(y)(x)(cell)(_6.value0.cells), 
+                    runningState: _6.value0.runningState
+                });
+            };
+        };
+    };
+};
+var removePoint = togglePoint(Types.Dead.value);
 var initialState = new Types.State({
     cells: Data.initialCells, 
     runningState: Types.Running.value
 });
 var initialSpeed = 50;
-var calculateNewGeneration = function (_14) {
-    var unpackNeighbours = function (_19) {
-        if (_19 instanceof Data_Maybe.Just) {
-            return _19.value0;
+var calculateNewGeneration = function (_5) {
+    var unpackNeighbours = function (_9) {
+        if (_9 instanceof Data_Maybe.Just) {
+            return _9.value0;
         };
         throw new Error("Failed pattern match");
     };
-    var justNeighbour = function (_18) {
-        if (_18 instanceof Data_Maybe.Nothing) {
+    var justNeighbour = function (_8) {
+        if (_8 instanceof Data_Maybe.Nothing) {
             return false;
         };
         return true;
     };
-    var isAlive = function (_17) {
-        if (_17 instanceof Types.Alive) {
+    var isAlive = function (_7) {
+        if (_7 instanceof Types.Alive) {
             return true;
         };
-        if (_17 instanceof Types.Dead) {
+        if (_7 instanceof Types.Dead) {
             return false;
         };
         throw new Error("Failed pattern match");
@@ -3190,9 +3203,9 @@ var calculateNewGeneration = function (_14) {
         return function (x) {
             return function (cells) {
                 var newCells = [ [ y - 1, x - 1 ], [ y, x - 1 ], [ y + 1, x - 1 ], [ y - 1, x ], [ y + 1, x ], [ y - 1, x + 1 ], [ y, x + 1 ], [ y + 1, x + 1 ] ];
-                var maybeNeighbours = Data_Array.map(function (_12) {
-                    if (_12.length === 2) {
-                        return Utils.getByIndex2(cells)(_12[0])(_12[1]);
+                var maybeNeighbours = Data_Array.map(function (_3) {
+                    if (_3.length === 2) {
+                        return Utils.getByIndex2(cells)(_3[0])(_3[1]);
                     };
                     throw new Error("Failed pattern match");
                 })(newCells);
@@ -3202,26 +3215,26 @@ var calculateNewGeneration = function (_14) {
         };
     };
     var calcNewCells = function (cells) {
-        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_11) {
-            return Utils.map_(Data_Tuple.zip(_11.value0)(Data_Array[".."](0)(Data_Array.length(_11.value0))))(function (_10) {
-                var neighbours = findNeighbours(_11.value1)(_10.value1)(cells);
+        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_2) {
+            return Utils.map_(Data_Tuple.zip(_2.value0)(Data_Array[".."](0)(Data_Array.length(_2.value0))))(function (_1) {
+                var neighbours = findNeighbours(_2.value1)(_1.value1)(cells);
                 var liveCount = Data_Array.length(Data_Array.filter(isAlive)(neighbours));
-                if (_10.value0 instanceof Types.Alive) {
-                    var _67 = liveCount < 2 || liveCount > 3;
-                    if (_67) {
+                if (_1.value0 instanceof Types.Alive) {
+                    var _33 = liveCount < 2 || liveCount > 3;
+                    if (_33) {
                         return Types.Dead.value;
                     };
-                    if (!_67) {
+                    if (!_33) {
                         return Types.Alive.value;
                     };
                     throw new Error("Failed pattern match");
                 };
-                if (_10.value0 instanceof Types.Dead) {
-                    var _68 = liveCount === 3;
-                    if (_68) {
+                if (_1.value0 instanceof Types.Dead) {
+                    var _34 = liveCount === 3;
+                    if (_34) {
                         return Types.Alive.value;
                     };
-                    if (!_68) {
+                    if (!_34) {
                         return Types.Dead.value;
                     };
                     throw new Error("Failed pattern match");
@@ -3231,72 +3244,65 @@ var calculateNewGeneration = function (_14) {
         });
     };
     return new Types.State({
-        cells: calcNewCells(_14.value0.cells), 
-        runningState: _14.value0.runningState
+        cells: calcNewCells(_5.value0.cells), 
+        runningState: _5.value0.runningState
     });
 };
-var addPoint = function (_15) {
-    return function (_16) {
-        if (_16 instanceof Types.Point) {
-            return new Types.State({
-                cells: Utils.updateAt2(_16.value0)(_16.value1)(Types.Alive.value)(_15.value0.cells), 
-                runningState: _15.value0.runningState
-            });
-        };
-        return _15;
-    };
-};
+var addPoint = togglePoint(Types.Alive.value);
 var main = (function () {
     var playPauseStream = Utils.newSubject(1);
-    var playHack = function (_20) {
-        return function (_21) {
+    var playHack = function (_10) {
+        return function (_11) {
             return new Types.State((function () {
-                var _85 = {};
-                for (var _86 in _20.value0) {
-                    if (_20.value0.hasOwnProperty(_86)) {
-                        _85[_86] = _20.value0[_86];
+                var _44 = {};
+                for (var _45 in _10.value0) {
+                    if (_10.value0.hasOwnProperty(_45)) {
+                        _44[_45] = _10.value0[_45];
                     };
                 };
-                _85.runningState = Types.Running.value;
-                return _85;
+                _44.runningState = Types.Running.value;
+                return _44;
             })());
         };
     };
-    var pauseHack = function (_22) {
-        return function (_23) {
+    var pauseHack = function (_12) {
+        return function (_13) {
             return new Types.State((function () {
-                var _90 = {};
-                for (var _91 in _22.value0) {
-                    if (_22.value0.hasOwnProperty(_91)) {
-                        _90[_91] = _22.value0[_91];
+                var _49 = {};
+                for (var _50 in _12.value0) {
+                    if (_12.value0.hasOwnProperty(_50)) {
+                        _49[_50] = _12.value0[_50];
                     };
                 };
-                _90.runningState = Types.Paused.value;
-                return _90;
+                _49.runningState = Types.Paused.value;
+                return _49;
             })());
         };
     };
-    var updateState = function (_24) {
+    var updateState = function (_14) {
         return function (state) {
-            if (_24 instanceof Types.Interval) {
+            if (_14 instanceof Types.Interval) {
                 return calculateNewGeneration(state);
             };
-            if (_24 instanceof Types.Play) {
+            if (_14 instanceof Types.Play) {
                 return playHack(state)(Utils.onNext(playPauseStream)(true));
             };
-            if (_24 instanceof Types.Pause) {
+            if (_14 instanceof Types.Pause) {
                 return pauseHack(state)(Utils.onNext(playPauseStream)(false));
             };
-            if (_24 instanceof Types.Dump) {
+            if (_14 instanceof Types.Dump) {
                 return Utils.proxyLog(state);
             };
-            if (_24 instanceof Types.Point) {
-                return addPoint(state)(_24);
+            if (_14 instanceof Types.Point) {
+                return addPoint(state)(_14.value0)(_14.value1);
+            };
+            if (_14 instanceof Types.NoPoint) {
+                return removePoint(state)(_14.value0)(_14.value1);
             };
             throw new Error("Failed pattern match");
         };
     };
-    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_13) {
+    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_4) {
         return Types.Interval.value;
     })(Utils.getIntervalStream(initialSpeed));
     var pausableIntervalStream = Utils.pausable(intervalStream)(playPauseStream);
@@ -3316,7 +3322,9 @@ var main = (function () {
 })();
 module.exports = {
     main: main, 
+    removePoint: removePoint, 
     addPoint: addPoint, 
+    togglePoint: togglePoint, 
     calculateNewGeneration: calculateNewGeneration, 
     initialState: initialState, 
     initialSpeed: initialSpeed
@@ -4940,6 +4948,18 @@ var Point = (function () {
     };
     return Point;
 })();
+var NoPoint = (function () {
+    function NoPoint(value0, value1) {
+        this.value0 = value0;
+        this.value1 = value1;
+    };
+    NoPoint.create = function (value0) {
+        return function (value1) {
+            return new NoPoint(value0, value1);
+        };
+    };
+    return NoPoint;
+})();
 var Interval = (function () {
     function Interval() {
 
@@ -4974,6 +4994,7 @@ module.exports = {
     Alive: Alive, 
     Dead: Dead, 
     Point: Point, 
+    NoPoint: NoPoint, 
     Interval: Interval, 
     Pause: Pause, 
     Play: Play, 
@@ -4998,18 +5019,18 @@ var React_Types = require("React.Types");
 var Rx_Observable = require("Rx.Observable");
 var mainView = (function () {
     var render = function (actionsStream) {
-        return function (_9) {
+        return function (_10) {
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(React_DOM.div({
                 className: "map"
             })([ (function () {
-                if (_9.value0.runningState instanceof Types.Running) {
+                if (_10.value0.runningState instanceof Types.Running) {
                     return React_DOM.button({
                         onClick: function (_3) {
                             return Utils.onNext(actionsStream)(Types.Pause.value);
                         }
                     })([ React_DOM.rawText("Pause") ]);
                 };
-                if (_9.value0.runningState instanceof Types.Paused) {
+                if (_10.value0.runningState instanceof Types.Paused) {
                     return React_DOM.button({
                         onClick: function (_4) {
                             return Utils.onNext(actionsStream)(Types.Play.value);
@@ -5025,18 +5046,21 @@ var mainView = (function () {
                 style: {
                     border: "1px solid gray"
                 }
-            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(_9.value0.cells)(Data_Array[".."](0)(Data_Array.length(_9.value0.cells))))(function (_8) {
-                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_8.value0)(Data_Array[".."](0)(Data_Array.length(_8.value0))))(function (_7) {
-                    if (_7.value0 instanceof Types.Alive) {
+            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(_10.value0.cells)(Data_Array[".."](0)(Data_Array.length(_10.value0.cells))))(function (_9) {
+                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_9.value0)(Data_Array[".."](0)(Data_Array.length(_9.value0))))(function (_8) {
+                    if (_8.value0 instanceof Types.Alive) {
                         return React_DOM.td({
-                            className: "live"
+                            className: "live", 
+                            onClick: function (_6) {
+                                return Utils.onNext(actionsStream)(new Types.NoPoint(_9.value1, _8.value1));
+                            }
                         })([  ]);
                     };
-                    if (_7.value0 instanceof Types.Dead) {
+                    if (_8.value0 instanceof Types.Dead) {
                         return React_DOM.td({
                             className: "dead", 
-                            onClick: function (_6) {
-                                return Utils.onNext(actionsStream)(new Types.Point(_8.value1, _7.value1));
+                            onClick: function (_7) {
+                                return Utils.onNext(actionsStream)(new Types.Point(_9.value1, _8.value1));
                             }
                         })([  ]);
                     };
@@ -5049,15 +5073,15 @@ var mainView = (function () {
         return render($$this.props.actionsStream)($$this.props.state);
     };
     return React.createClass((function () {
-        var _54 = {};
-        for (var _55 in React.spec) {
-            if (React.spec.hasOwnProperty(_55)) {
-                _54[_55] = React.spec[_55];
+        var _56 = {};
+        for (var _57 in React.spec) {
+            if (React.spec.hasOwnProperty(_57)) {
+                _56[_57] = React.spec[_57];
             };
         };
-        _54.displayName = "MainView";
-        _54.render = renderFun;
-        return _54;
+        _56.displayName = "MainView";
+        _56.render = renderFun;
+        return _56;
     })());
 })();
 var renderMainView = function (targetId) {
@@ -5107,20 +5131,20 @@ var updateAt2 = function (y) {
         return function (newVal) {
             return function (arr) {
                 return map_(Data_Tuple.zip(arr)(Data_Array[".."](0)(Data_Array.length(arr))))(function (_2) {
-                    var _26 = _2.value1 === y;
-                    if (_26) {
+                    var _27 = _2.value1 === y;
+                    if (_27) {
                         return map_(Data_Tuple.zip(_2.value0)(Data_Array[".."](0)(Data_Array.length(_2.value0))))(function (_1) {
-                            var _28 = _1.value1 === x;
-                            if (_28) {
+                            var _29 = _1.value1 === x;
+                            if (_29) {
                                 return newVal;
                             };
-                            if (!_28) {
+                            if (!_29) {
                                 return _1.value0;
                             };
                             throw new Error("Failed pattern match");
                         });
                     };
-                    if (!_26) {
+                    if (!_27) {
                         return _2.value0;
                     };
                     throw new Error("Failed pattern match");
@@ -5132,18 +5156,18 @@ var updateAt2 = function (y) {
 var getByIndex2 = function (arr) {
     return function (x) {
         return function (y) {
-            var _33 = Data_Array["!!"](arr)(x);
-            if (_33 instanceof Data_Maybe.Just) {
-                var _34 = Data_Array["!!"](_33.value0)(y);
-                if (_34 instanceof Data_Maybe.Just) {
-                    return new Data_Maybe.Just(_34.value0);
+            var _34 = Data_Array["!!"](arr)(x);
+            if (_34 instanceof Data_Maybe.Just) {
+                var _35 = Data_Array["!!"](_34.value0)(y);
+                if (_35 instanceof Data_Maybe.Just) {
+                    return new Data_Maybe.Just(_35.value0);
                 };
-                if (_34 instanceof Data_Maybe.Nothing) {
+                if (_35 instanceof Data_Maybe.Nothing) {
                     return Data_Maybe.Nothing.value;
                 };
                 throw new Error("Failed pattern match");
             };
-            if (_33 instanceof Data_Maybe.Nothing) {
+            if (_34 instanceof Data_Maybe.Nothing) {
                 return Data_Maybe.Nothing.value;
             };
             throw new Error("Failed pattern match");
