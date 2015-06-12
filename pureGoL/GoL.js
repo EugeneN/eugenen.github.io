@@ -3164,24 +3164,24 @@ var initialState = new Types.State({
     runningState: Types.Running.value
 });
 var initialSpeed = 50;
-var calculateNewGeneration = function (_5) {
-    var unpackNeighbours = function (_10) {
-        if (_10 instanceof Data_Maybe.Just) {
-            return _10.value0;
+var calculateNewGeneration = function (_14) {
+    var unpackNeighbours = function (_19) {
+        if (_19 instanceof Data_Maybe.Just) {
+            return _19.value0;
         };
         throw new Error("Failed pattern match");
     };
-    var justNeighbour = function (_9) {
-        if (_9 instanceof Data_Maybe.Nothing) {
+    var justNeighbour = function (_18) {
+        if (_18 instanceof Data_Maybe.Nothing) {
             return false;
         };
         return true;
     };
-    var isAlive = function (_8) {
-        if (_8 instanceof Types.Alive) {
+    var isAlive = function (_17) {
+        if (_17 instanceof Types.Alive) {
             return true;
         };
-        if (_8 instanceof Types.Dead) {
+        if (_17 instanceof Types.Dead) {
             return false;
         };
         throw new Error("Failed pattern match");
@@ -3190,9 +3190,9 @@ var calculateNewGeneration = function (_5) {
         return function (x) {
             return function (cells) {
                 var newCells = [ [ y - 1, x - 1 ], [ y, x - 1 ], [ y + 1, x - 1 ], [ y - 1, x ], [ y + 1, x ], [ y - 1, x + 1 ], [ y, x + 1 ], [ y + 1, x + 1 ] ];
-                var maybeNeighbours = Data_Array.map(function (_3) {
-                    if (_3.length === 2) {
-                        return Utils.getByIndex2(cells)(_3[0])(_3[1]);
+                var maybeNeighbours = Data_Array.map(function (_12) {
+                    if (_12.length === 2) {
+                        return Utils.getByIndex2(cells)(_12[0])(_12[1]);
                     };
                     throw new Error("Failed pattern match");
                 })(newCells);
@@ -3202,26 +3202,26 @@ var calculateNewGeneration = function (_5) {
         };
     };
     var calcNewCells = function (cells) {
-        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_2) {
-            return Utils.map_(Data_Tuple.zip(_2.value0)(Data_Array[".."](0)(Data_Array.length(_2.value0))))(function (_1) {
-                var neighbours = findNeighbours(_2.value1)(_1.value1)(cells);
+        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_11) {
+            return Utils.map_(Data_Tuple.zip(_11.value0)(Data_Array[".."](0)(Data_Array.length(_11.value0))))(function (_10) {
+                var neighbours = findNeighbours(_11.value1)(_10.value1)(cells);
                 var liveCount = Data_Array.length(Data_Array.filter(isAlive)(neighbours));
-                if (_1.value0 instanceof Types.Alive) {
-                    var _27 = liveCount < 2 || liveCount > 3;
-                    if (_27) {
+                if (_10.value0 instanceof Types.Alive) {
+                    var _67 = liveCount < 2 || liveCount > 3;
+                    if (_67) {
                         return Types.Dead.value;
                     };
-                    if (!_27) {
+                    if (!_67) {
                         return Types.Alive.value;
                     };
                     throw new Error("Failed pattern match");
                 };
-                if (_1.value0 instanceof Types.Dead) {
-                    var _28 = liveCount === 3;
-                    if (_28) {
+                if (_10.value0 instanceof Types.Dead) {
+                    var _68 = liveCount === 3;
+                    if (_68) {
                         return Types.Alive.value;
                     };
-                    if (!_28) {
+                    if (!_68) {
                         return Types.Dead.value;
                     };
                     throw new Error("Failed pattern match");
@@ -3231,72 +3231,72 @@ var calculateNewGeneration = function (_5) {
         });
     };
     return new Types.State({
-        cells: calcNewCells(_5.value0.cells), 
-        runningState: _5.value0.runningState
+        cells: calcNewCells(_14.value0.cells), 
+        runningState: _14.value0.runningState
     });
 };
-var addPoint = function (_6) {
-    return function (_7) {
-        if (_7 instanceof Types.Point) {
+var addPoint = function (_15) {
+    return function (_16) {
+        if (_16 instanceof Types.Point) {
             return new Types.State({
-                cells: Utils.updateAt2(_7.value0)(_7.value1)(Types.Alive.value)(_6.value0.cells), 
-                runningState: _6.value0.runningState
+                cells: Utils.updateAt2(_16.value0)(_16.value1)(Types.Alive.value)(_15.value0.cells), 
+                runningState: _15.value0.runningState
             });
         };
-        return _6;
+        return _15;
     };
 };
 var main = (function () {
     var playPauseStream = Utils.newSubject(1);
-    var playHack = function (_11) {
-        return function (_12) {
+    var playHack = function (_20) {
+        return function (_21) {
             return new Types.State((function () {
-                var _45 = {};
-                for (var _46 in _11.value0) {
-                    if (_11.value0.hasOwnProperty(_46)) {
-                        _45[_46] = _11.value0[_46];
+                var _85 = {};
+                for (var _86 in _20.value0) {
+                    if (_20.value0.hasOwnProperty(_86)) {
+                        _85[_86] = _20.value0[_86];
                     };
                 };
-                _45.runningState = Types.Running.value;
-                return _45;
+                _85.runningState = Types.Running.value;
+                return _85;
             })());
         };
     };
-    var pauseHack = function (_13) {
-        return function (_14) {
+    var pauseHack = function (_22) {
+        return function (_23) {
             return new Types.State((function () {
-                var _50 = {};
-                for (var _51 in _13.value0) {
-                    if (_13.value0.hasOwnProperty(_51)) {
-                        _50[_51] = _13.value0[_51];
+                var _90 = {};
+                for (var _91 in _22.value0) {
+                    if (_22.value0.hasOwnProperty(_91)) {
+                        _90[_91] = _22.value0[_91];
                     };
                 };
-                _50.runningState = Types.Paused.value;
-                return _50;
+                _90.runningState = Types.Paused.value;
+                return _90;
             })());
         };
     };
-    var updateState = function (_15) {
+    var updateState = function (_24) {
         return function (state) {
-            if (_15 instanceof Types.Interval) {
+            if (_24 instanceof Types.Interval) {
                 return calculateNewGeneration(state);
             };
-            if (_15 instanceof Types.Play) {
+            if (_24 instanceof Types.Play) {
                 return playHack(state)(Utils.onNext(playPauseStream)(true));
             };
-            if (_15 instanceof Types.Pause) {
+            if (_24 instanceof Types.Pause) {
                 return pauseHack(state)(Utils.onNext(playPauseStream)(false));
             };
-            if (_15 instanceof Types.Dump) {
+            if (_24 instanceof Types.Dump) {
                 return Utils.proxyLog(state);
             };
-            if (_15 instanceof Types.Point) {
-                return addPoint(state)(_15);
+            if (_24 instanceof Types.Point) {
+                return addPoint(state)(_24);
             };
             throw new Error("Failed pattern match");
         };
     };
-    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_4) {
+    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_13) {
         return Types.Interval.value;
     })(Utils.getIntervalStream(initialSpeed));
     var pausableIntervalStream = Utils.pausable(intervalStream)(playPauseStream);
@@ -5094,7 +5094,7 @@ function proxyLog(a) { console.log(a); return a }
     ;
  function getIntervalStream(interval) { return Rx.Observable.interval(interval) }
     ;
- function onNext(obs){ return function (val) { console.log('****',val); return obs.onNext(val); } }
+ function onNext(obs){ return function (val) { return obs.onNext(val); } }
     ;
  function pausable(obs){ return function (pauser) { return obs.pausable(pauser); } }
     ;
