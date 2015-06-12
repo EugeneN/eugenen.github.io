@@ -3163,6 +3163,7 @@ var initialState = new Types.State({
     cells: Data.initialCells, 
     runningState: Types.Running.value
 });
+var initialSpeed = 50;
 var calculateNewGeneration = function (_5) {
     var unpackNeighbours = function (_10) {
         if (_10 instanceof Data_Maybe.Just) {
@@ -3297,7 +3298,7 @@ var main = (function () {
     };
     var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_4) {
         return Types.Interval.value;
-    })(Utils.getIntervalStream(500));
+    })(Utils.getIntervalStream(initialSpeed));
     var pausableIntervalStream = Utils.pausable(intervalStream)(playPauseStream);
     var actionsStream = Utils.newSubject(1);
     var mainStream = Rx_Observable.merge(pausableIntervalStream)(actionsStream);
@@ -3317,7 +3318,8 @@ module.exports = {
     main: main, 
     addPoint: addPoint, 
     calculateNewGeneration: calculateNewGeneration, 
-    initialState: initialState
+    initialState: initialState, 
+    initialSpeed: initialSpeed
 };
 
 },{"Control.Monad.Eff":9,"DOM":22,"Data":29,"Data.Array":23,"Data.Maybe":26,"Data.Tuple":28,"Debug.Trace":30,"Prelude":33,"React":36,"React.Types":35,"Rx.Observable":38,"Types":39,"UI":40,"Utils":41}],32:[function(require,module,exports){
