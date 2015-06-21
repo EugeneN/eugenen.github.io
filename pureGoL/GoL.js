@@ -18254,7 +18254,7 @@ var mainView = (function () {
                 className: "button-like"
             })([ React_DOM.rawText("\u27f5") ]), React_DOM.span({
                 className: "button-like"
-            })([ React_DOM.rawText("\u27f6") ]), React_DOM.rawText(" - navigate genrations. Or use buttons above.") ]) ]), React_DOM.table({
+            })([ React_DOM.rawText("\u27f6") ]), React_DOM.rawText(" - navigate generations. Or use buttons above.") ]) ]), React_DOM.table({
                 style: {
                     border: "1px solid gray", 
                     "margin-top": "10px"
