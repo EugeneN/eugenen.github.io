@@ -13133,23 +13133,23 @@ var Control_Monad_Eff = require("Control.Monad.Eff");
 var Control_Apply = require("Control.Apply");
 var Rx_Observable = require("Rx.Observable");
 var Types = require("Types");
-var updateTimer = function (_25) {
+var updateTimer = function (_17) {
     return new Types.State((function () {
-        var _76 = {};
-        for (var _77 in _25.value0) {
-            if (_25.value0.hasOwnProperty(_77)) {
-                _76[_77] = _25.value0[_77];
+        var _55 = {};
+        for (var _56 in _17.value0) {
+            if (_17.value0.hasOwnProperty(_56)) {
+                _55[_56] = _17.value0[_56];
             };
         };
-        _76.secondsElapsed = Utils.toFixed(Utils.timeDelta(_25.value0.startTime)(Utils.now()) / 1000)(2);
-        _76.genCounter = 0;
-        _76.genRatio = _25.value0.genCounter;
-        return _76;
+        _55.secondsElapsed = Utils.toFixed(Utils.timeDelta(_17.value0.startTime)(Utils.now()) / 1000)(2);
+        _55.genCounter = 0;
+        _55.genRatio = _17.value0.genCounter;
+        return _55;
     })());
 };
 var toggleTicks = function (rs) {
     return function (playPauseStream) {
-        return function (_23) {
+        return function (_15) {
             return Control_Monad_Eff.runPure(function __do() {
                 Utils.onNext(playPauseStream)((function () {
                     if (rs instanceof Types.Running) {
@@ -13161,76 +13161,76 @@ var toggleTicks = function (rs) {
                     throw new Error("Failed pattern match");
                 })());
                 return new Types.State((function () {
-                    var _83 = {};
-                    for (var _84 in _23.value0) {
-                        if (_23.value0.hasOwnProperty(_84)) {
-                            _83[_84] = _23.value0[_84];
+                    var _62 = {};
+                    for (var _63 in _15.value0) {
+                        if (_15.value0.hasOwnProperty(_63)) {
+                            _62[_63] = _15.value0[_63];
                         };
                     };
-                    _83.runningState = rs;
-                    return _83;
+                    _62.runningState = rs;
+                    return _62;
                 })());
             });
         };
     };
 };
-var saveNewGeneration = function (_20) {
+var saveNewGeneration = function (_12) {
     return function (ng) {
         return new Types.State((function () {
-            var _88 = {};
-            for (var _89 in _20.value0) {
-                if (_20.value0.hasOwnProperty(_89)) {
-                    _88[_89] = _20.value0[_89];
+            var _67 = {};
+            for (var _68 in _12.value0) {
+                if (_12.value0.hasOwnProperty(_68)) {
+                    _67[_68] = _12.value0[_68];
                 };
             };
-            _88.cells = Data_Array.snoc(_20.value0.cells)(ng);
-            _88.genCounter = _20.value0.genCounter + 1;
-            return _88;
+            _67.cells = Data_Array.snoc(_12.value0.cells)(ng);
+            _67.genCounter = _12.value0.genCounter + 1;
+            return _67;
         })());
     };
 };
 var rewind = function (n) {
-    return function (_21) {
+    return function (_13) {
         var newCurrent = (function () {
-            if (_21.value0.current instanceof Data_Maybe.Just) {
-                return _21.value0.current.value0 - n;
+            if (_13.value0.current instanceof Data_Maybe.Just) {
+                return _13.value0.current.value0 - n;
             };
-            if (_21.value0.current instanceof Data_Maybe.Nothing) {
-                return Data_Array.length(_21.value0.cells) - n;
+            if (_13.value0.current instanceof Data_Maybe.Nothing) {
+                return Data_Array.length(_13.value0.cells) - n;
             };
             throw new Error("Failed pattern match");
         })();
         var boundedNewCurrent = (function () {
-            var _95 = newCurrent < 0;
-            if (_95) {
+            var _74 = newCurrent < 0;
+            if (_74) {
                 return 0;
             };
-            if (!_95) {
+            if (!_74) {
                 return newCurrent;
             };
             throw new Error("Failed pattern match");
         })();
         return new Types.State((function () {
-            var _96 = {};
-            for (var _97 in _21.value0) {
-                if (_21.value0.hasOwnProperty(_97)) {
-                    _96[_97] = _21.value0[_97];
+            var _75 = {};
+            for (var _76 in _13.value0) {
+                if (_13.value0.hasOwnProperty(_76)) {
+                    _75[_76] = _13.value0[_76];
                 };
             };
-            _96.current = new Data_Maybe.Just(boundedNewCurrent);
-            return _96;
+            _75.current = new Data_Maybe.Just(boundedNewCurrent);
+            return _75;
         })());
     };
 };
 var play = toggleTicks(Types.Running.value);
 var pause = toggleTicks(Types.Paused.value);
 var toggle = function (playPauseStream) {
-    return function (_24) {
-        if (Prelude["=="](Types.eqRunStatus)(_24.value0.runningState)(Types.Running.value)) {
-            return pause(playPauseStream)(_24);
+    return function (_16) {
+        if (Prelude["=="](Types.eqRunStatus)(_16.value0.runningState)(Types.Running.value)) {
+            return pause(playPauseStream)(_16);
         };
-        if (Prelude["=="](Types.eqRunStatus)(_24.value0.runningState)(Types.Paused.value)) {
-            return play(playPauseStream)(_24);
+        if (Prelude["=="](Types.eqRunStatus)(_16.value0.runningState)(Types.Paused.value)) {
+            return play(playPauseStream)(_16);
         };
         throw new Error("Failed pattern match");
     };
@@ -13245,8 +13245,8 @@ var initialState = new Types.State({
     genRatio: 0
 });
 var initialSpeed = 50;
-var getTotalGenerations = function (_18) {
-    return Data_Array.length(_18.value0.cells);
+var getTotalGenerations = function (_10) {
+    return Data_Array.length(_10.value0.cells);
 };
 
 /**
@@ -13257,21 +13257,21 @@ var genNewGeneration = function (currentGeneration) {
     var lifeStep = function (liveCount) {
         return function (cell) {
             if (cell instanceof Types.Alive) {
-                var _105 = liveCount < 2 || liveCount > 3;
-                if (_105) {
+                var _84 = liveCount < 2 || liveCount > 3;
+                if (_84) {
                     return Types.Dead.value;
                 };
-                if (!_105) {
+                if (!_84) {
                     return Types.Alive.value;
                 };
                 throw new Error("Failed pattern match");
             };
             if (cell instanceof Types.Dead) {
-                var _106 = liveCount === 3;
-                if (_106) {
+                var _85 = liveCount === 3;
+                if (_85) {
                     return Types.Alive.value;
                 };
-                if (!_106) {
+                if (!_85) {
                     return Types.Dead.value;
                 };
                 throw new Error("Failed pattern match");
@@ -13283,9 +13283,9 @@ var genNewGeneration = function (currentGeneration) {
         return function (x) {
             return function (cells) {
                 var newCells = [ [ y - 1, x - 1 ], [ y - 1, x ], [ y - 1, x + 1 ], [ y, x - 1 ], [ y, x + 1 ], [ y + 1, x - 1 ], [ y + 1, x ], [ y + 1, x + 1 ] ];
-                var maybeNeighbours = Data_Array.map(function (_17) {
-                    if (_17.length === 2) {
-                        return Utils.getByIndex2(cells)(_17[0])(_17[1]);
+                var maybeNeighbours = Data_Array.map(function (_9) {
+                    if (_9.length === 2) {
+                        return Utils.getByIndex2(cells)(_9[0])(_9[1]);
                     };
                     throw new Error("Failed pattern match");
                 })(newCells);
@@ -13294,53 +13294,53 @@ var genNewGeneration = function (currentGeneration) {
         };
     };
     var calcNewCells = function (cells) {
-        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_16) {
-            return Utils.map_(Data_Tuple.zip(_16.value0)(Data_Array[".."](0)(Data_Array.length(_16.value0))))(function (_15) {
-                var neighbours = findNeighbours(_16.value1)(_15.value1)(cells);
+        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_8) {
+            return Utils.map_(Data_Tuple.zip(_8.value0)(Data_Array[".."](0)(Data_Array.length(_8.value0))))(function (_7) {
+                var neighbours = findNeighbours(_8.value1)(_7.value1)(cells);
                 var liveCount = Data_Array.length(Data_Array.filter(Prelude["=="](Types.eqCell)(Types.Alive.value))(neighbours));
-                return lifeStep(liveCount)(_15.value0);
+                return lifeStep(liveCount)(_7.value0);
             });
         });
     };
     return calcNewCells(currentGeneration);
 };
 var emptyGeneration = [ [  ] ];
-var getCurrentGeneration = function (_19) {
-    if (_19.value0.current instanceof Data_Maybe.Nothing) {
-        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array.last(_19.value0.cells));
+var getCurrentGeneration = function (_11) {
+    if (_11.value0.current instanceof Data_Maybe.Nothing) {
+        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array.last(_11.value0.cells));
     };
-    if (_19.value0.current instanceof Data_Maybe.Just) {
-        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array["!!"](_19.value0.cells)(_19.value0.current.value0));
+    if (_11.value0.current instanceof Data_Maybe.Just) {
+        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array["!!"](_11.value0.cells)(_11.value0.current.value0));
     };
     throw new Error("Failed pattern match");
 };
 var fforward = function (n) {
-    return function (_22) {
-        if (_22.value0.current instanceof Data_Maybe.Just) {
-            var maxIndex = Data_Array.length(_22.value0.cells) - 1;
+    return function (_14) {
+        if (_14.value0.current instanceof Data_Maybe.Just) {
+            var maxIndex = Data_Array.length(_14.value0.cells) - 1;
             var newCurrent = (function () {
-                var _123 = _22.value0.current.value0 + n > maxIndex;
-                if (_123) {
+                var _102 = _14.value0.current.value0 + n > maxIndex;
+                if (_102) {
                     return Data_Maybe.Nothing.value;
                 };
-                if (!_123) {
-                    return new Data_Maybe.Just(_22.value0.current.value0 + n);
+                if (!_102) {
+                    return new Data_Maybe.Just(_14.value0.current.value0 + n);
                 };
                 throw new Error("Failed pattern match");
             })();
             return new Types.State((function () {
-                var _124 = {};
-                for (var _125 in _22.value0) {
-                    if (_22.value0.hasOwnProperty(_125)) {
-                        _124[_125] = _22.value0[_125];
+                var _103 = {};
+                for (var _104 in _14.value0) {
+                    if (_14.value0.hasOwnProperty(_104)) {
+                        _103[_104] = _14.value0[_104];
                     };
                 };
-                _124.current = newCurrent;
-                return _124;
+                _103.current = newCurrent;
+                return _103;
             })());
         };
-        if (_22.value0.current instanceof Data_Maybe.Nothing) {
-            return saveNewGeneration(_22)(Prelude[">>>"](Prelude.semigroupoidArr)(getCurrentGeneration)(genNewGeneration)(_22));
+        if (_14.value0.current instanceof Data_Maybe.Nothing) {
+            return saveNewGeneration(_14)(Prelude[">>>"](Prelude.semigroupoidArr)(getCurrentGeneration)(genNewGeneration)(_14));
         };
         throw new Error("Failed pattern match");
     };
@@ -13365,11 +13365,11 @@ var addPoint = updatePoint(Types.Alive.value);
 var togglePoint = function (state) {
     return function (y) {
         return function (x) {
-            var _128 = Utils.getByIndex2(getCurrentGeneration(state))(y)(x);
-            if (_128 instanceof Data_Maybe.Just && _128.value0 instanceof Types.Alive) {
+            var _107 = Utils.getByIndex2(getCurrentGeneration(state))(y)(x);
+            if (_107 instanceof Data_Maybe.Just && _107.value0 instanceof Types.Alive) {
                 return removePoint(state)(y)(x);
             };
-            if (_128 instanceof Data_Maybe.Just && _128.value0 instanceof Types.Dead) {
+            if (_107 instanceof Data_Maybe.Just && _107.value0 instanceof Types.Dead) {
                 return addPoint(state)(y)(x);
             };
             return state;
@@ -13381,42 +13381,42 @@ var togglePoint = function (state) {
  *  | This is the application's state machine. It maps `Action`s to new `State`s
  */
 var updateStateFactory = function (playPauseStream) {
-    var updateState = function (_26) {
+    var updateState = function (_18) {
         return function (state) {
-            if (_26 instanceof Types.Tick) {
+            if (_18 instanceof Types.Tick) {
                 return calculateNewGeneration(state);
             };
-            if (_26 instanceof Types.Play) {
+            if (_18 instanceof Types.Play) {
                 return play(playPauseStream)(state);
             };
-            if (_26 instanceof Types.Pause) {
+            if (_18 instanceof Types.Pause) {
                 return pause(playPauseStream)(state);
             };
-            if (_26 instanceof Types.Toggle) {
+            if (_18 instanceof Types.Toggle) {
                 return toggle(playPauseStream)(state);
             };
-            if (_26 instanceof Types.Save) {
+            if (_18 instanceof Types.Save) {
                 return Utils.proxyLog(state);
             };
-            if (_26 instanceof Types.Point) {
-                return addPoint(state)(_26.value0)(_26.value1);
+            if (_18 instanceof Types.Point) {
+                return addPoint(state)(_18.value0)(_18.value1);
             };
-            if (_26 instanceof Types.NoPoint) {
-                return removePoint(state)(_26.value0)(_26.value1);
+            if (_18 instanceof Types.NoPoint) {
+                return removePoint(state)(_18.value0)(_18.value1);
             };
-            if (_26 instanceof Types.TogglePoint) {
-                return togglePoint(state)(_26.value0)(_26.value1);
+            if (_18 instanceof Types.TogglePoint) {
+                return togglePoint(state)(_18.value0)(_18.value1);
             };
-            if (_26 instanceof Types.NewCells) {
-                return saveNewGeneration(state)(_26.value0);
+            if (_18 instanceof Types.NewCells) {
+                return saveNewGeneration(state)(_18.value0);
             };
-            if (_26 instanceof Types.Rewind) {
-                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(rewind(_26.value0))(state);
+            if (_18 instanceof Types.Rewind) {
+                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(rewind(_18.value0))(state);
             };
-            if (_26 instanceof Types.FForward) {
-                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(fforward(_26.value0))(state);
+            if (_18 instanceof Types.FForward) {
+                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(fforward(_18.value0))(state);
             };
-            if (_26 instanceof Types.Timer) {
+            if (_18 instanceof Types.Timer) {
                 return updateTimer(state);
             };
             throw new Error("Failed pattern match");
@@ -18794,38 +18794,35 @@ var Data_Maybe = require("Data.Maybe");
 var Debug_Trace = require("Debug.Trace");
 var Types = require("Types");
 var main = (function () {
-    var timerStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_8) {
+    var timerStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_2) {
         return Types.Timer.value;
     })(Utils.getIntervalStream(1000));
     var rawKeysStream = Utils.fromEvent("keyup");
     var playPauseStream = Utils.newSubject();
     var keysStream = Prelude["<$>"](Rx_Observable.functorObservable)(KeyCodes.keyEventToKeyCode)(rawKeysStream);
-    var keyToAction = function (_10) {
-        if (_10 instanceof KeyCodes.Space) {
+    var keyToAction = function (_4) {
+        if (_4 instanceof KeyCodes.Space) {
             return new Data_Maybe.Just(Types.Toggle.value);
         };
-        if (_10 instanceof KeyCodes.LeftArrow) {
+        if (_4 instanceof KeyCodes.LeftArrow) {
             return Data_Maybe.Just.create(new Types.Rewind(1));
         };
-        if (_10 instanceof KeyCodes.RightArrow) {
+        if (_4 instanceof KeyCodes.RightArrow) {
             return Data_Maybe.Just.create(new Types.FForward(1));
         };
         return Data_Maybe.Nothing.value;
     };
-    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_9) {
+    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_3) {
         return Types.Tick.value;
     })(Utils.getIntervalStream(Core.initialSpeed));
     var pausableIntervalStream = Utils.pausable(intervalStream)(playPauseStream);
     var actionsStream = Utils.newSubject();
     var keyCommand = function (key) {
-        var _22 = keyToAction(key);
-        if (_22 instanceof Data_Maybe.Just) {
-            return function __do() {
-                Utils.onNext(actionsStream)(_22.value0);
-                return Prelude.unit;
-            };
+        var _8 = keyToAction(key);
+        if (_8 instanceof Data_Maybe.Just) {
+            return Prelude["<<<"](Prelude.semigroupoidArr)(Prelude["void"](Control_Monad_Eff.functorEff))(Prelude["<<<"](Prelude.semigroupoidArr)(Prelude.pure(Control_Monad_Eff.applicativeEff))(Utils.onNext(actionsStream)))(_8.value0);
         };
-        if (_22 instanceof Data_Maybe.Nothing) {
+        if (_8 instanceof Data_Maybe.Nothing) {
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
         };
         throw new Error("Failed pattern match");
@@ -18846,9 +18843,7 @@ var main = (function () {
             };
             return UI_Canvas.setupUI(Core.initialState)(actionsStream)("canvas");
         })()();
-        Rx_Observable.subscribe(scanStream)(function (s) {
-            return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(_0)(s)));
-        })();
+        Rx_Observable.subscribe(scanStream)(Prelude["<<<"](Prelude.semigroupoidArr)(Prelude["void"](Control_Monad_Eff.functorEff))(Prelude["<<<"](Prelude.semigroupoidArr)(Prelude.pure(Control_Monad_Eff.applicativeEff))(Utils.onNext(_0))))();
         Rx_Observable.subscribe(keysStream)(keyCommand)();
         return Utils.onNext(playPauseStream)(true);
     };
@@ -21400,10 +21395,10 @@ var white = "#ffffff";
 var topOffset = 90;
 var leftOffset = 0;
 var gridColor = "#F8F8F8";
-var getWidth = function (_31) {
-    if (_31.length >= 1) {
-        var _144 = _31.slice(1);
-        return Data_Array.length(_31[0]);
+var getWidth = function (_8) {
+    if (_8.length >= 1) {
+        var _23 = _8.slice(1);
+        return Data_Array.length(_8[0]);
     };
     throw new Error("Failed pattern match");
 };
@@ -21497,12 +21492,12 @@ var drawCells = function (ctx) {
     return function (cells) {
         return function __do() {
             Graphics_Canvas.save(ctx)();
-            Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_28) {
-                return Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(_28.value0)(Data_Array[".."](0)(Data_Array.length(_28.value0))))(function (_27) {
-                    if (_27.value0 instanceof Types.Alive) {
-                        return drawCell(cellColor)(ctx)(_27.value1)(_28.value1);
+            Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_5) {
+                return Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(_5.value0)(Data_Array[".."](0)(Data_Array.length(_5.value0))))(function (_4) {
+                    if (_4.value0 instanceof Types.Alive) {
+                        return drawCell(cellColor)(ctx)(_4.value1)(_5.value1);
                     };
-                    if (_27.value0 instanceof Types.Dead) {
+                    if (_4.value0 instanceof Types.Dead) {
                         return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
                     };
                     throw new Error("Failed pattern match");
@@ -21515,7 +21510,7 @@ var drawCells = function (ctx) {
 };
 var labelColor = black;
 var drawLabels = function (ctx) {
-    return function (_30) {
+    return function (_7) {
         var getCurrentGenerationLabel = function (x) {
             if (x instanceof Data_Maybe.Nothing) {
                 return "Latest";
@@ -21529,11 +21524,11 @@ var drawLabels = function (ctx) {
             Graphics_Canvas.save(ctx)();
             Graphics_Canvas.setFillStyle(labelColor)(ctx)();
             Graphics_Canvas.setFont("16px Source Code Pro")(ctx)();
-            Graphics_Canvas.fillText(ctx)(Prelude.show(Types.showRunStatus)(_30.value0.runningState))(5)(20)();
-            Graphics_Canvas.fillText(ctx)("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_30.value0.secondsElapsed))(5)(40)();
-            Graphics_Canvas.fillText(ctx)("Gen/sec: " + Prelude.show(Prelude.showNumber)(_30.value0.genRatio))(350)(40)();
-            Graphics_Canvas.fillText(ctx)("Current generation: " + getCurrentGenerationLabel(_30.value0.current))(5)(60)();
-            Graphics_Canvas.fillText(ctx)("Total generations: " + Prelude.show(Prelude.showNumber)(Core.getTotalGenerations(_30)))(350)(60)();
+            Graphics_Canvas.fillText(ctx)(Prelude.show(Types.showRunStatus)(_7.value0.runningState))(5)(20)();
+            Graphics_Canvas.fillText(ctx)("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_7.value0.secondsElapsed))(5)(40)();
+            Graphics_Canvas.fillText(ctx)("Gen/sec: " + Prelude.show(Prelude.showNumber)(_7.value0.genRatio))(350)(40)();
+            Graphics_Canvas.fillText(ctx)("Current generation: " + getCurrentGenerationLabel(_7.value0.current))(5)(60)();
+            Graphics_Canvas.fillText(ctx)("Total generations: " + Prelude.show(Prelude.showNumber)(Core.getTotalGenerations(_7)))(350)(60)();
             Graphics_Canvas.setFont("12px Source Code Pro")(ctx)();
             Graphics_Canvas.fillText(ctx)("Space - toggle play/pause, \u27f5\u27f6 - navigate generations.")(5)(80)();
             Graphics_Canvas.restore(ctx)();
@@ -21565,9 +21560,9 @@ var drawBackground = function (ctx) {
     };
 };
 var renderCanvas = function (canvas) {
-    return function (_29) {
-        var totalGenerations = Core.getTotalGenerations(_29);
-        var currentGeneration = Core.getCurrentGeneration(_29);
+    return function (_6) {
+        var totalGenerations = Core.getTotalGenerations(_6);
+        var currentGeneration = Core.getCurrentGeneration(_6);
         var height = getHeight(currentGeneration);
         var heightPx = height * cellSize;
         var maxY = heightPx + topOffset;
@@ -21580,7 +21575,7 @@ var renderCanvas = function (canvas) {
             drawGrid(_1)(width)(height)(leftOffset)(topOffset)(maxX)(maxY)();
             drawBorders(_1)(leftOffset)(topOffset)(maxX)(maxY)();
             drawCells(_1)(currentGeneration)();
-            drawLabels(_1)(_29)();
+            drawLabels(_1)(_6)();
             return Prelude.unit;
         };
     };
@@ -21592,13 +21587,13 @@ var setupUI = function (state) {
             /**
              *  XXX FIXME
              */
-            var postUpstream = function (_32) {
-                return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(actionsStream)(new Types.TogglePoint(_32.value1, _32.value0))));
+            var postUpstream = function (_9) {
+                return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(actionsStream)(new Types.TogglePoint(_9.value1, _9.value0))));
             };
             var fieldOffsetTop = topOffset + Utils.getElementOffsetTop("canvas");
             var fieldOffsetLeft = leftOffset + Utils.getElementOffsetLeft("canvas");
-            var pxToCell = function (_34) {
-                return new Data_Tuple.Tuple(Utils.mathFloor((_34.value0 - fieldOffsetLeft) / cellSize), Utils.mathFloor((_34.value1 - fieldOffsetTop) / cellSize));
+            var pxToCell = function (_11) {
+                return new Data_Tuple.Tuple(Utils.mathFloor((_11.value0 - fieldOffsetLeft) / cellSize), Utils.mathFloor((_11.value1 - fieldOffsetTop) / cellSize));
             };
             var eventToCoords = function (e) {
                 return new Data_Tuple.Tuple(e.pageX, e.pageY);
@@ -21608,8 +21603,8 @@ var setupUI = function (state) {
             var fieldHeight = height * cellSize;
             var width = getWidth(currentGeneration);
             var fieldWidth = width * cellSize;
-            var coordsInField = function (_33) {
-                return _33.value0 > fieldOffsetLeft && (_33.value0 < fieldOffsetLeft + fieldWidth && (_33.value1 > fieldOffsetTop && _33.value1 < fieldOffsetTop + fieldHeight));
+            var coordsInField = function (_10) {
+                return _10.value0 > fieldOffsetLeft && (_10.value0 < fieldOffsetLeft + fieldWidth && (_10.value1 > fieldOffsetTop && _10.value1 < fieldOffsetTop + fieldHeight));
             };
             return function __do() {
                 var _0 = Graphics_Canvas.getCanvasElementById(canvasId)();
@@ -21670,13 +21665,13 @@ function exportGlobal(fname) {return function(f) {return function() {window[fnam
   ;
 var setupUI = function (state) {
     return function (actionsStream) {
-        return function (_6) {
+        return function (_16) {
             var printCells = function (state_2) {
-                var toChar = function (_7) {
-                    if (_7 instanceof Types.Alive) {
+                var toChar = function (_17) {
+                    if (_17 instanceof Types.Alive) {
                         return "x";
                     };
-                    if (_7 instanceof Types.Dead) {
+                    if (_17 instanceof Types.Dead) {
                         return ".";
                     };
                     throw new Error("Failed pattern match");
@@ -21707,13 +21702,13 @@ var setupUI = function (state) {
                         return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(actionsStream)(new Types.NoPoint(x, y))));
                     };
                 })();
-                exportGlobal("play")(function (_3) {
-                    return function (_2) {
+                exportGlobal("play")(function (_13) {
+                    return function (_12) {
                         return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(actionsStream)(Types.Play.value)));
                     };
                 })();
-                exportGlobal("pause")(function (_5) {
-                    return function (_4) {
+                exportGlobal("pause")(function (_15) {
+                    return function (_14) {
                         return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(actionsStream)(Types.Pause.value)));
                     };
                 })();
@@ -21749,59 +21744,59 @@ var React_Types = require("React.Types");
 var Rx_Observable = require("Rx.Observable");
 var mainView = (function () {
     var render = function (actionsStream) {
-        return function (_45) {
-            var totalGenerations = Core.getTotalGenerations(_45);
-            var currentGeneration = Core.getCurrentGeneration(_45);
+        return function (_42) {
+            var totalGenerations = Core.getTotalGenerations(_42);
+            var currentGeneration = Core.getCurrentGeneration(_42);
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(React_DOM.div({
                 className: "map"
             })([ React_DOM.div({
                 className: "toolbar"
             })([ (function () {
-                if (_45.value0.runningState instanceof Types.Running) {
+                if (_42.value0.runningState instanceof Types.Running) {
                     return React_DOM.button({
                         className: "icon-button", 
-                        onClick: function (_36) {
+                        onClick: function (_33) {
                             return Utils.onNext(actionsStream)(Types.Pause.value);
                         }
                     })([ React_DOM.rawText("\u25ae\u25ae") ]);
                 };
-                if (_45.value0.runningState instanceof Types.Paused) {
+                if (_42.value0.runningState instanceof Types.Paused) {
                     return React_DOM.button({
                         className: "icon-button", 
-                        onClick: function (_37) {
+                        onClick: function (_34) {
                             return Utils.onNext(actionsStream)(Types.Play.value);
                         }
                     })([ React_DOM.rawText("\u25b6") ]);
                 };
                 throw new Error("Failed pattern match");
             })(), React_DOM.button({
-                onClick: function (_38) {
+                onClick: function (_35) {
                     return Utils.onNext(actionsStream)(Types.Save.value);
                 }
             })([ React_DOM.rawText("Save") ]), React_DOM.span({
                 className: "label"
-            })([ React_DOM.rawText("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_45.value0.secondsElapsed)) ]), React_DOM.span({
+            })([ React_DOM.rawText("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_42.value0.secondsElapsed)) ]), React_DOM.span({
                 className: "label"
-            })([ React_DOM.rawText("Gen/sec: " + Prelude.show(Prelude.showNumber)(_45.value0.genRatio)) ]) ]), React_DOM.div({
+            })([ React_DOM.rawText("Gen/sec: " + Prelude.show(Prelude.showNumber)(_42.value0.genRatio)) ]) ]), React_DOM.div({
                 className: "toolbar"
             })([ React_DOM.button({
                 className: "icon-button", 
-                onClick: function (_39) {
+                onClick: function (_36) {
                     return Utils.onNext(actionsStream)(new Types.Rewind(1));
                 }
             })([ React_DOM.rawText("\u25c0\u25c0") ]), React_DOM.button({
                 className: "icon-button", 
-                onClick: function (_40) {
+                onClick: function (_37) {
                     return Utils.onNext(actionsStream)(new Types.FForward(1));
                 }
             })([ React_DOM.rawText("\u25b6\u25b6") ]), React_DOM.span({
                 className: "label"
             })([ React_DOM.rawText("Current generation: " + (function () {
-                if (_45.value0.current instanceof Data_Maybe.Nothing) {
+                if (_42.value0.current instanceof Data_Maybe.Nothing) {
                     return "Latest";
                 };
-                if (_45.value0.current instanceof Data_Maybe.Just) {
-                    return Prelude.show(Prelude.showNumber)(_45.value0.current.value0);
+                if (_42.value0.current instanceof Data_Maybe.Just) {
+                    return Prelude.show(Prelude.showNumber)(_42.value0.current.value0);
                 };
                 throw new Error("Failed pattern match");
             })()) ]), React_DOM.span({
@@ -21823,21 +21818,21 @@ var mainView = (function () {
                     border: "1px solid gray", 
                     "margin-top": "10px"
                 }
-            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(currentGeneration)(Data_Array[".."](0)(Data_Array.length(currentGeneration))))(function (_44) {
-                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_44.value0)(Data_Array[".."](0)(Data_Array.length(_44.value0))))(function (_43) {
-                    if (_43.value0 instanceof Types.Alive) {
+            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(currentGeneration)(Data_Array[".."](0)(Data_Array.length(currentGeneration))))(function (_41) {
+                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_41.value0)(Data_Array[".."](0)(Data_Array.length(_41.value0))))(function (_40) {
+                    if (_40.value0 instanceof Types.Alive) {
                         return React_DOM.td({
                             className: "live", 
-                            onClick: function (_41) {
-                                return Utils.onNext(actionsStream)(new Types.NoPoint(_44.value1, _43.value1));
+                            onClick: function (_38) {
+                                return Utils.onNext(actionsStream)(new Types.NoPoint(_41.value1, _40.value1));
                             }
                         })([  ]);
                     };
-                    if (_43.value0 instanceof Types.Dead) {
+                    if (_40.value0 instanceof Types.Dead) {
                         return React_DOM.td({
                             className: "dead", 
-                            onClick: function (_42) {
-                                return Utils.onNext(actionsStream)(new Types.Point(_44.value1, _43.value1));
+                            onClick: function (_39) {
+                                return Utils.onNext(actionsStream)(new Types.Point(_41.value1, _40.value1));
                             }
                         })([  ]);
                     };
@@ -21850,15 +21845,15 @@ var mainView = (function () {
         return render($$this.props.actionsStream)($$this.props.state);
     };
     return React.createClass((function () {
-        var _194 = {};
-        for (var _195 in React.spec) {
-            if (React.spec.hasOwnProperty(_195)) {
-                _194[_195] = React.spec[_195];
+        var _179 = {};
+        for (var _180 in React.spec) {
+            if (React.spec.hasOwnProperty(_180)) {
+                _179[_180] = React.spec[_180];
             };
         };
-        _194.displayName = "MainView";
-        _194.render = renderFun;
-        return _194;
+        _179.displayName = "MainView";
+        _179.render = renderFun;
+        return _179;
     })());
 })();
 var renderMainView = function (targetId) {
@@ -21936,9 +21931,9 @@ function mathRound(f) {return Math.round(f) }
     ;
 function mathFloor(f) {return Math.floor(f) }
     ;
-function getElementOffsetLeft(el){return document.getElementById(el).offsetLeft } 
+function getElementOffsetLeft(el){return document.getElementById(el).offsetLeft }
     ;
-function getElementOffsetTop(el){return document.getElementById(el).offsetTop } 
+function getElementOffsetTop(el){return document.getElementById(el).offsetTop }
     ;
 function getParameterByName(name) {
          return function() {
@@ -21954,22 +21949,22 @@ var updateAt2 = function (y) {
     return function (x) {
         return function (newVal) {
             return function (arr) {
-                return map_(Data_Tuple.zip(arr)(Data_Array[".."](0)(Data_Array.length(arr))))(function (_14) {
-                    var _68 = _14.value1 === y;
-                    if (_68) {
-                        return map_(Data_Tuple.zip(_14.value0)(Data_Array[".."](0)(Data_Array.length(_14.value0))))(function (_13) {
-                            var _70 = _13.value1 === x;
-                            if (_70) {
+                return map_(Data_Tuple.zip(arr)(Data_Array[".."](0)(Data_Array.length(arr))))(function (_6) {
+                    var _47 = _6.value1 === y;
+                    if (_47) {
+                        return map_(Data_Tuple.zip(_6.value0)(Data_Array[".."](0)(Data_Array.length(_6.value0))))(function (_5) {
+                            var _49 = _5.value1 === x;
+                            if (_49) {
                                 return newVal;
                             };
-                            if (!_70) {
-                                return _13.value0;
+                            if (!_49) {
+                                return _5.value0;
                             };
                             throw new Error("Failed pattern match");
                         });
                     };
-                    if (!_68) {
-                        return _14.value0;
+                    if (!_47) {
+                        return _6.value0;
                     };
                     throw new Error("Failed pattern match");
                 });
