@@ -13133,23 +13133,23 @@ var Control_Monad_Eff = require("Control.Monad.Eff");
 var Control_Apply = require("Control.Apply");
 var Rx_Observable = require("Rx.Observable");
 var Types = require("Types");
-var updateTimer = function (_13) {
+var updateTimer = function (_17) {
     return new Types.State((function () {
-        var _39 = {};
-        for (var _40 in _13.value0) {
-            if (_13.value0.hasOwnProperty(_40)) {
-                _39[_40] = _13.value0[_40];
+        var _49 = {};
+        for (var _50 in _17.value0) {
+            if (_17.value0.hasOwnProperty(_50)) {
+                _49[_50] = _17.value0[_50];
             };
         };
-        _39.secondsElapsed = Utils.toFixed(Utils.timeDelta(_13.value0.startTime)(Utils.now()) / 1000)(2);
-        _39.genCounter = 0;
-        _39.genRatio = _13.value0.genCounter;
-        return _39;
+        _49.secondsElapsed = Utils.toFixed(Utils.timeDelta(_17.value0.startTime)(Utils.now()) / 1000)(2);
+        _49.genCounter = 0;
+        _49.genRatio = _17.value0.genCounter;
+        return _49;
     })());
 };
 var toggleTicks = function (rs) {
     return function (playPauseStream) {
-        return function (_11) {
+        return function (_15) {
             return Control_Monad_Eff.runPure(function __do() {
                 Utils.onNext(playPauseStream)((function () {
                     if (rs instanceof Types.Running) {
@@ -13161,76 +13161,76 @@ var toggleTicks = function (rs) {
                     throw new Error("Failed pattern match");
                 })());
                 return new Types.State((function () {
-                    var _46 = {};
-                    for (var _47 in _11.value0) {
-                        if (_11.value0.hasOwnProperty(_47)) {
-                            _46[_47] = _11.value0[_47];
+                    var _56 = {};
+                    for (var _57 in _15.value0) {
+                        if (_15.value0.hasOwnProperty(_57)) {
+                            _56[_57] = _15.value0[_57];
                         };
                     };
-                    _46.runningState = rs;
-                    return _46;
+                    _56.runningState = rs;
+                    return _56;
                 })());
             });
         };
     };
 };
-var saveNewGeneration = function (_8) {
+var saveNewGeneration = function (_12) {
     return function (ng) {
         return new Types.State((function () {
-            var _51 = {};
-            for (var _52 in _8.value0) {
-                if (_8.value0.hasOwnProperty(_52)) {
-                    _51[_52] = _8.value0[_52];
+            var _61 = {};
+            for (var _62 in _12.value0) {
+                if (_12.value0.hasOwnProperty(_62)) {
+                    _61[_62] = _12.value0[_62];
                 };
             };
-            _51.cells = Data_Array.snoc(_8.value0.cells)(ng);
-            _51.genCounter = _8.value0.genCounter + 1;
-            return _51;
+            _61.cells = Data_Array.snoc(_12.value0.cells)(ng);
+            _61.genCounter = _12.value0.genCounter + 1;
+            return _61;
         })());
     };
 };
 var rewind = function (n) {
-    return function (_9) {
+    return function (_13) {
         var newCurrent = (function () {
-            if (_9.value0.current instanceof Data_Maybe.Just) {
-                return _9.value0.current.value0 - n;
+            if (_13.value0.current instanceof Data_Maybe.Just) {
+                return _13.value0.current.value0 - n;
             };
-            if (_9.value0.current instanceof Data_Maybe.Nothing) {
-                return Data_Array.length(_9.value0.cells) - n;
+            if (_13.value0.current instanceof Data_Maybe.Nothing) {
+                return Data_Array.length(_13.value0.cells) - n;
             };
             throw new Error("Failed pattern match");
         })();
         var boundedNewCurrent = (function () {
-            var _58 = newCurrent < 0;
-            if (_58) {
+            var _68 = newCurrent < 0;
+            if (_68) {
                 return 0;
             };
-            if (!_58) {
+            if (!_68) {
                 return newCurrent;
             };
             throw new Error("Failed pattern match");
         })();
         return new Types.State((function () {
-            var _59 = {};
-            for (var _60 in _9.value0) {
-                if (_9.value0.hasOwnProperty(_60)) {
-                    _59[_60] = _9.value0[_60];
+            var _69 = {};
+            for (var _70 in _13.value0) {
+                if (_13.value0.hasOwnProperty(_70)) {
+                    _69[_70] = _13.value0[_70];
                 };
             };
-            _59.current = new Data_Maybe.Just(boundedNewCurrent);
-            return _59;
+            _69.current = new Data_Maybe.Just(boundedNewCurrent);
+            return _69;
         })());
     };
 };
 var play = toggleTicks(Types.Running.value);
 var pause = toggleTicks(Types.Paused.value);
 var toggle = function (playPauseStream) {
-    return function (_12) {
-        if (Prelude["=="](Types.eqRunStatus)(_12.value0.runningState)(Types.Running.value)) {
-            return pause(playPauseStream)(_12);
+    return function (_16) {
+        if (Prelude["=="](Types.eqRunStatus)(_16.value0.runningState)(Types.Running.value)) {
+            return pause(playPauseStream)(_16);
         };
-        if (Prelude["=="](Types.eqRunStatus)(_12.value0.runningState)(Types.Paused.value)) {
-            return play(playPauseStream)(_12);
+        if (Prelude["=="](Types.eqRunStatus)(_16.value0.runningState)(Types.Paused.value)) {
+            return play(playPauseStream)(_16);
         };
         throw new Error("Failed pattern match");
     };
@@ -13245,28 +13245,28 @@ var initialState = new Types.State({
     genRatio: 0
 });
 var initialSpeed = 50;
-var getTotalGenerations = function (_6) {
-    return Data_Array.length(_6.value0.cells);
+var getTotalGenerations = function (_10) {
+    return Data_Array.length(_10.value0.cells);
 };
 var genNewGeneration = function (currentGeneration) {
     var lifeStep = function (liveCount) {
         return function (cell) {
             if (cell instanceof Types.Alive) {
-                var _68 = liveCount < 2 || liveCount > 3;
-                if (_68) {
+                var _78 = liveCount < 2 || liveCount > 3;
+                if (_78) {
                     return Types.Dead.value;
                 };
-                if (!_68) {
+                if (!_78) {
                     return Types.Alive.value;
                 };
                 throw new Error("Failed pattern match");
             };
             if (cell instanceof Types.Dead) {
-                var _69 = liveCount === 3;
-                if (_69) {
+                var _79 = liveCount === 3;
+                if (_79) {
                     return Types.Alive.value;
                 };
-                if (!_69) {
+                if (!_79) {
                     return Types.Dead.value;
                 };
                 throw new Error("Failed pattern match");
@@ -13278,9 +13278,9 @@ var genNewGeneration = function (currentGeneration) {
         return function (x) {
             return function (cells) {
                 var newCells = [ [ y - 1, x - 1 ], [ y - 1, x ], [ y - 1, x + 1 ], [ y, x - 1 ], [ y, x + 1 ], [ y + 1, x - 1 ], [ y + 1, x ], [ y + 1, x + 1 ] ];
-                var maybeNeighbours = Data_Array.map(function (_5) {
-                    if (_5.length === 2) {
-                        return Utils.getByIndex2(cells)(_5[0])(_5[1]);
+                var maybeNeighbours = Data_Array.map(function (_9) {
+                    if (_9.length === 2) {
+                        return Utils.getByIndex2(cells)(_9[0])(_9[1]);
                     };
                     throw new Error("Failed pattern match");
                 })(newCells);
@@ -13289,53 +13289,53 @@ var genNewGeneration = function (currentGeneration) {
         };
     };
     var calcNewCells = function (cells) {
-        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_4) {
-            return Utils.map_(Data_Tuple.zip(_4.value0)(Data_Array[".."](0)(Data_Array.length(_4.value0))))(function (_3) {
-                var neighbours = findNeighbours(_4.value1)(_3.value1)(cells);
+        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_8) {
+            return Utils.map_(Data_Tuple.zip(_8.value0)(Data_Array[".."](0)(Data_Array.length(_8.value0))))(function (_7) {
+                var neighbours = findNeighbours(_8.value1)(_7.value1)(cells);
                 var liveCount = Data_Array.length(Data_Array.filter(Prelude["=="](Types.eqCell)(Types.Alive.value))(neighbours));
-                return lifeStep(liveCount)(_3.value0);
+                return lifeStep(liveCount)(_7.value0);
             });
         });
     };
     return calcNewCells(currentGeneration);
 };
 var emptyGeneration = [ [  ] ];
-var getCurrentGeneration = function (_7) {
-    if (_7.value0.current instanceof Data_Maybe.Nothing) {
-        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array.last(_7.value0.cells));
+var getCurrentGeneration = function (_11) {
+    if (_11.value0.current instanceof Data_Maybe.Nothing) {
+        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array.last(_11.value0.cells));
     };
-    if (_7.value0.current instanceof Data_Maybe.Just) {
-        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array["!!"](_7.value0.cells)(_7.value0.current.value0));
+    if (_11.value0.current instanceof Data_Maybe.Just) {
+        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array["!!"](_11.value0.cells)(_11.value0.current.value0));
     };
     throw new Error("Failed pattern match");
 };
 var fforward = function (n) {
-    return function (_10) {
-        if (_10.value0.current instanceof Data_Maybe.Just) {
-            var maxIndex = Data_Array.length(_10.value0.cells) - 1;
+    return function (_14) {
+        if (_14.value0.current instanceof Data_Maybe.Just) {
+            var maxIndex = Data_Array.length(_14.value0.cells) - 1;
             var newCurrent = (function () {
-                var _86 = _10.value0.current.value0 + n > maxIndex;
-                if (_86) {
+                var _96 = _14.value0.current.value0 + n > maxIndex;
+                if (_96) {
                     return Data_Maybe.Nothing.value;
                 };
-                if (!_86) {
-                    return new Data_Maybe.Just(_10.value0.current.value0 + n);
+                if (!_96) {
+                    return new Data_Maybe.Just(_14.value0.current.value0 + n);
                 };
                 throw new Error("Failed pattern match");
             })();
             return new Types.State((function () {
-                var _87 = {};
-                for (var _88 in _10.value0) {
-                    if (_10.value0.hasOwnProperty(_88)) {
-                        _87[_88] = _10.value0[_88];
+                var _97 = {};
+                for (var _98 in _14.value0) {
+                    if (_14.value0.hasOwnProperty(_98)) {
+                        _97[_98] = _14.value0[_98];
                     };
                 };
-                _87.current = newCurrent;
-                return _87;
+                _97.current = newCurrent;
+                return _97;
             })());
         };
-        if (_10.value0.current instanceof Data_Maybe.Nothing) {
-            return saveNewGeneration(_10)(Prelude[">>>"](Prelude.semigroupoidArr)(getCurrentGeneration)(genNewGeneration)(_10));
+        if (_14.value0.current instanceof Data_Maybe.Nothing) {
+            return saveNewGeneration(_14)(Prelude[">>>"](Prelude.semigroupoidArr)(getCurrentGeneration)(genNewGeneration)(_14));
         };
         throw new Error("Failed pattern match");
     };
@@ -13360,11 +13360,11 @@ var addPoint = updatePoint(Types.Alive.value);
 var togglePoint = function (state) {
     return function (y) {
         return function (x) {
-            var _91 = Utils.getByIndex2(getCurrentGeneration(state))(y)(x);
-            if (_91 instanceof Data_Maybe.Just && _91.value0 instanceof Types.Alive) {
+            var _101 = Utils.getByIndex2(getCurrentGeneration(state))(y)(x);
+            if (_101 instanceof Data_Maybe.Just && _101.value0 instanceof Types.Alive) {
                 return removePoint(state)(y)(x);
             };
-            if (_91 instanceof Data_Maybe.Just && _91.value0 instanceof Types.Dead) {
+            if (_101 instanceof Data_Maybe.Just && _101.value0 instanceof Types.Dead) {
                 return addPoint(state)(y)(x);
             };
             return state;
@@ -13372,42 +13372,42 @@ var togglePoint = function (state) {
     };
 };
 var updateStateFactory = function (playPauseStream) {
-    var updateState = function (_14) {
+    var updateState = function (_18) {
         return function (state) {
-            if (_14 instanceof Types.Tick) {
+            if (_18 instanceof Types.Tick) {
                 return calculateNewGeneration(state);
             };
-            if (_14 instanceof Types.Play) {
+            if (_18 instanceof Types.Play) {
                 return play(playPauseStream)(state);
             };
-            if (_14 instanceof Types.Pause) {
+            if (_18 instanceof Types.Pause) {
                 return pause(playPauseStream)(state);
             };
-            if (_14 instanceof Types.Toggle) {
+            if (_18 instanceof Types.Toggle) {
                 return toggle(playPauseStream)(state);
             };
-            if (_14 instanceof Types.Save) {
+            if (_18 instanceof Types.Save) {
                 return Utils.proxyLog(state);
             };
-            if (_14 instanceof Types.Point) {
-                return addPoint(state)(_14.value0)(_14.value1);
+            if (_18 instanceof Types.Point) {
+                return addPoint(state)(_18.value0)(_18.value1);
             };
-            if (_14 instanceof Types.NoPoint) {
-                return removePoint(state)(_14.value0)(_14.value1);
+            if (_18 instanceof Types.NoPoint) {
+                return removePoint(state)(_18.value0)(_18.value1);
             };
-            if (_14 instanceof Types.TogglePoint) {
-                return togglePoint(state)(_14.value0)(_14.value1);
+            if (_18 instanceof Types.TogglePoint) {
+                return togglePoint(state)(_18.value0)(_18.value1);
             };
-            if (_14 instanceof Types.NewCells) {
-                return saveNewGeneration(state)(_14.value0);
+            if (_18 instanceof Types.NewCells) {
+                return saveNewGeneration(state)(_18.value0);
             };
-            if (_14 instanceof Types.Rewind) {
-                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(rewind(_14.value0))(state);
+            if (_18 instanceof Types.Rewind) {
+                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(rewind(_18.value0))(state);
             };
-            if (_14 instanceof Types.FForward) {
-                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(fforward(_14.value0))(state);
+            if (_18 instanceof Types.FForward) {
+                return Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(fforward(_18.value0))(state);
             };
-            if (_14 instanceof Types.Timer) {
+            if (_18 instanceof Types.Timer) {
                 return updateTimer(state);
             };
             throw new Error("Failed pattern match");
@@ -18777,45 +18777,45 @@ var Data_Function = require("Data.Function");
 var Control_Alt = require("Control.Alt");
 var Rx_Observable = require("Rx.Observable");
 var KeyCodes = require("KeyCodes");
+var UI_React = require("UI.React");
 var UI_Canvas = require("UI.Canvas");
 var Control_Monad_Eff = require("Control.Monad.Eff");
 var Data_Maybe = require("Data.Maybe");
 var Debug_Trace = require("Debug.Trace");
 var Types = require("Types");
-var UI_React = require("UI.React");
 var main = (function () {
-    var timerStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_11) {
+    var timerStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_37) {
         return Types.Timer.value;
     })(Utils.getIntervalStream(1000));
     var rawKeysStream = Utils.fromEvent("keyup");
     var playPauseStream = Utils.newSubject();
     var keysStream = Prelude["<$>"](Rx_Observable.functorObservable)(KeyCodes.keyEventToKeyCode)(rawKeysStream);
-    var keyToAction = function (_13) {
-        if (_13 instanceof KeyCodes.Space) {
+    var keyToAction = function (_39) {
+        if (_39 instanceof KeyCodes.Space) {
             return new Data_Maybe.Just(Types.Toggle.value);
         };
-        if (_13 instanceof KeyCodes.LeftArrow) {
+        if (_39 instanceof KeyCodes.LeftArrow) {
             return Data_Maybe.Just.create(new Types.Rewind(1));
         };
-        if (_13 instanceof KeyCodes.RightArrow) {
+        if (_39 instanceof KeyCodes.RightArrow) {
             return Data_Maybe.Just.create(new Types.FForward(1));
         };
         return Data_Maybe.Nothing.value;
     };
-    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_12) {
+    var intervalStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_38) {
         return Types.Tick.value;
     })(Utils.getIntervalStream(Core.initialSpeed));
     var pausableIntervalStream = Utils.pausable(intervalStream)(playPauseStream);
     var actionsStream = Utils.newSubject();
     var keyCommand = function (key) {
-        var _47 = keyToAction(key);
-        if (_47 instanceof Data_Maybe.Just) {
+        var _171 = keyToAction(key);
+        if (_171 instanceof Data_Maybe.Just) {
             return function __do() {
-                Utils.onNext(actionsStream)(_47.value0);
+                Utils.onNext(actionsStream)(_171.value0);
                 return Prelude.unit;
             };
         };
-        if (_47 instanceof Data_Maybe.Nothing) {
+        if (_171 instanceof Data_Maybe.Nothing) {
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
         };
         throw new Error("Failed pattern match");
@@ -18823,9 +18823,15 @@ var main = (function () {
     var mainStream = Control_Alt["<|>"](Rx_Observable.altObservable)(Control_Alt["<|>"](Rx_Observable.altObservable)(pausableIntervalStream)(actionsStream))(timerStream);
     var scanStream = Rx_Observable.scan(Core.updateStateFactory(playPauseStream))(Core.initialState)(mainStream);
     return function __do() {
-        var _2 = UI_Canvas.setupCanvasUI(actionsStream)("canvas")();
+        var _4 = Utils.getParameterByName("ui")();
+        var _3 = (function () {
+            if (_4 === "react") {
+                return UI_React.setupUI(Core.initialState)(actionsStream)("root_layout");
+            };
+            return UI_Canvas.setupUI(Core.initialState)(actionsStream)("canvas");
+        })()();
         Rx_Observable.subscribe(scanStream)(function (s) {
-            return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(_2)(s)));
+            return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(_3)(s)));
         })();
         Rx_Observable.subscribe(keysStream)(keyCommand)();
         return Utils.onNext(playPauseStream)(true);
@@ -21349,9 +21355,9 @@ module.exports = {
 "use strict";
 var Prelude = require("Prelude");
 var Utils = require("Utils");
+var Core = require("Core");
 var Graphics_Canvas = require("Graphics.Canvas");
 var Data_Function = require("Data.Function");
-var Core = require("Core");
 var Data_Traversable = require("Data.Traversable");
 var Data_Array = require("Data.Array");
 var Data_Tuple = require("Data.Tuple");
@@ -21373,10 +21379,10 @@ var white = "#ffffff";
 var topOffset = 90;
 var leftOffset = 0;
 var gridColor = "#F8F8F8";
-var getWidth = function (_7) {
-    if (_7.length >= 1) {
-        var _16 = _7.slice(1);
-        return Data_Array.length(_7[0]);
+var getWidth = function (_23) {
+    if (_23.length >= 1) {
+        var _117 = _23.slice(1);
+        return Data_Array.length(_23[0]);
     };
     throw new Error("Failed pattern match");
 };
@@ -21470,12 +21476,12 @@ var drawCells = function (ctx) {
     return function (cells) {
         return function __do() {
             Graphics_Canvas.save(ctx)();
-            Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_4) {
-                return Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(_4.value0)(Data_Array[".."](0)(Data_Array.length(_4.value0))))(function (_3) {
-                    if (_3.value0 instanceof Types.Alive) {
-                        return drawCell(cellColor)(ctx)(_3.value1)(_4.value1);
+            Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_20) {
+                return Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(_20.value0)(Data_Array[".."](0)(Data_Array.length(_20.value0))))(function (_19) {
+                    if (_19.value0 instanceof Types.Alive) {
+                        return drawCell(cellColor)(ctx)(_19.value1)(_20.value1);
                     };
-                    if (_3.value0 instanceof Types.Dead) {
+                    if (_19.value0 instanceof Types.Dead) {
                         return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
                     };
                     throw new Error("Failed pattern match");
@@ -21488,7 +21494,7 @@ var drawCells = function (ctx) {
 };
 var labelColor = black;
 var drawLabels = function (ctx) {
-    return function (_6) {
+    return function (_22) {
         var getCurrentGenerationLabel = function (x) {
             if (x instanceof Data_Maybe.Nothing) {
                 return "Latest";
@@ -21502,11 +21508,11 @@ var drawLabels = function (ctx) {
             Graphics_Canvas.save(ctx)();
             Graphics_Canvas.setFillStyle(labelColor)(ctx)();
             Graphics_Canvas.setFont("16px Source Code Pro")(ctx)();
-            Graphics_Canvas.fillText(ctx)(Prelude.show(Types.showRunStatus)(_6.value0.runningState))(5)(20)();
-            Graphics_Canvas.fillText(ctx)("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_6.value0.secondsElapsed))(5)(40)();
-            Graphics_Canvas.fillText(ctx)("Gen/sec: " + Prelude.show(Prelude.showNumber)(_6.value0.genRatio))(350)(40)();
-            Graphics_Canvas.fillText(ctx)("Current generation: " + getCurrentGenerationLabel(_6.value0.current))(5)(60)();
-            Graphics_Canvas.fillText(ctx)("Total generations: " + Prelude.show(Prelude.showNumber)(Core.getTotalGenerations(_6)))(350)(60)();
+            Graphics_Canvas.fillText(ctx)(Prelude.show(Types.showRunStatus)(_22.value0.runningState))(5)(20)();
+            Graphics_Canvas.fillText(ctx)("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_22.value0.secondsElapsed))(5)(40)();
+            Graphics_Canvas.fillText(ctx)("Gen/sec: " + Prelude.show(Prelude.showNumber)(_22.value0.genRatio))(350)(40)();
+            Graphics_Canvas.fillText(ctx)("Current generation: " + getCurrentGenerationLabel(_22.value0.current))(5)(60)();
+            Graphics_Canvas.fillText(ctx)("Total generations: " + Prelude.show(Prelude.showNumber)(Core.getTotalGenerations(_22)))(350)(60)();
             Graphics_Canvas.setFont("12px Source Code Pro")(ctx)();
             Graphics_Canvas.fillText(ctx)("Space - toggle play/pause, \u27f5\u27f6 - navigate generations.")(5)(80)();
             Graphics_Canvas.restore(ctx)();
@@ -21538,9 +21544,9 @@ var drawBackground = function (ctx) {
     };
 };
 var renderCanvas = function (canvas) {
-    return function (_5) {
-        var totalGenerations = Core.getTotalGenerations(_5);
-        var currentGeneration = Core.getCurrentGeneration(_5);
+    return function (_21) {
+        var totalGenerations = Core.getTotalGenerations(_21);
+        var currentGeneration = Core.getCurrentGeneration(_21);
         var height = getHeight(currentGeneration);
         var heightPx = height * cellSize;
         var maxY = heightPx + topOffset;
@@ -21553,40 +21559,47 @@ var renderCanvas = function (canvas) {
             drawGrid(_1)(width)(height)(leftOffset)(topOffset)(maxX)(maxY)();
             drawBorders(_1)(leftOffset)(topOffset)(maxX)(maxY)();
             drawCells(_1)(currentGeneration)();
-            drawLabels(_1)(_5)();
+            drawLabels(_1)(_21)();
             return Prelude.unit;
         };
     };
 };
-var setupCanvasUI = function (actionsStream) {
-    return function (canvasId) {
-        var postUpstream = function (_8) {
-            return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(actionsStream)(new Types.TogglePoint(_8.value1, _8.value0))));
-        };
-        var fieldOffsetTop = topOffset + Utils.getElementOffsetTop("canvas");
-        var fieldOffsetLeft = leftOffset + Utils.getElementOffsetLeft("canvas");
-        var pxToCell = function (_10) {
-            return new Data_Tuple.Tuple(Utils.mathFloor((_10.value0 - fieldOffsetLeft) / cellSize), Utils.mathFloor((_10.value1 - fieldOffsetTop) / cellSize));
-        };
-        var eventToCoords = function (e) {
-            return new Data_Tuple.Tuple(e.pageX, e.pageY);
-        };
-        var coordsInField = function (_9) {
-            return _9.value0 > fieldOffsetLeft && (_9.value0 < fieldOffsetLeft + 1000 && (_9.value1 > fieldOffsetTop && _9.value1 < fieldOffsetTop + 1000));
-        };
-        return function __do() {
-            var _0 = Graphics_Canvas.getCanvasElementById(canvasId)();
-            if (_0 instanceof Data_Maybe.Just) {
-                var vStream = Utils.newSubject();
-                var rawClicksStream = fromUiEvent(_0.value0)("click");
-                var pxStream = Prelude["<$>"](Rx_Observable.functorObservable)(eventToCoords)(rawClicksStream);
-                var fieldStream = Rx_Observable.filter(coordsInField)(pxStream);
-                var cellsClicksStream = Prelude["<$>"](Rx_Observable.functorObservable)(pxToCell)(fieldStream);
-                Rx_Observable.subscribe(cellsClicksStream)(postUpstream)();
-                Rx_Observable.subscribe(vStream)(renderCanvas(_0.value0))();
-                return vStream;
+var setupUI = function (state) {
+    return function (actionsStream) {
+        return function (canvasId) {
+            var postUpstream = function (_24) {
+                return Prelude["void"](Control_Monad_Eff.functorEff)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Utils.onNext(actionsStream)(new Types.TogglePoint(_24.value1, _24.value0))));
             };
-            throw new Error("Failed pattern match");
+            var fieldOffsetTop = topOffset + Utils.getElementOffsetTop("canvas");
+            var fieldOffsetLeft = leftOffset + Utils.getElementOffsetLeft("canvas");
+            var pxToCell = function (_26) {
+                return new Data_Tuple.Tuple(Utils.mathFloor((_26.value0 - fieldOffsetLeft) / cellSize), Utils.mathFloor((_26.value1 - fieldOffsetTop) / cellSize));
+            };
+            var eventToCoords = function (e) {
+                return new Data_Tuple.Tuple(e.pageX, e.pageY);
+            };
+            var currentGeneration = Core.getCurrentGeneration(state);
+            var height = getHeight(currentGeneration);
+            var fieldHeight = height * cellSize;
+            var width = getWidth(currentGeneration);
+            var fieldWidth = width * cellSize;
+            var coordsInField = function (_25) {
+                return _25.value0 > fieldOffsetLeft && (_25.value0 < fieldOffsetLeft + fieldWidth && (_25.value1 > fieldOffsetTop && _25.value1 < fieldOffsetTop + fieldHeight));
+            };
+            return function __do() {
+                var _0 = Graphics_Canvas.getCanvasElementById(canvasId)();
+                if (_0 instanceof Data_Maybe.Just) {
+                    var vStream = Utils.newSubject();
+                    var rawClicksStream = fromUiEvent(_0.value0)("click");
+                    var pxStream = Prelude["<$>"](Rx_Observable.functorObservable)(eventToCoords)(rawClicksStream);
+                    var fieldStream = Rx_Observable.filter(coordsInField)(pxStream);
+                    var cellsClicksStream = Prelude["<$>"](Rx_Observable.functorObservable)(pxToCell)(fieldStream);
+                    Rx_Observable.subscribe(cellsClicksStream)(postUpstream)();
+                    Rx_Observable.subscribe(vStream)(renderCanvas(_0.value0))();
+                    return vStream;
+                };
+                throw new Error("Failed pattern match");
+            };
         };
     };
 };
@@ -21600,7 +21613,7 @@ module.exports = {
     drawLabels: drawLabels, 
     drawBackground: drawBackground, 
     renderCanvas: renderCanvas, 
-    setupCanvasUI: setupCanvasUI, 
+    setupUI: setupUI, 
     fromUiEvent: fromUiEvent, 
     labelColor: labelColor, 
     cellColor: cellColor, 
@@ -21624,6 +21637,7 @@ var Utils = require("Utils");
 var Data_Tuple = require("Data.Tuple");
 var Data_Array = require("Data.Array");
 var React = require("React");
+var Data_Function = require("Data.Function");
 var Data = require("Data");
 var Types = require("Types");
 var Control_Monad_Eff = require("Control.Monad.Eff");
@@ -21634,59 +21648,59 @@ var React_Types = require("React.Types");
 var Rx_Observable = require("Rx.Observable");
 var mainView = (function () {
     var render = function (actionsStream) {
-        return function (_34) {
-            var totalGenerations = Core.getTotalGenerations(_34);
-            var currentGeneration = Core.getCurrentGeneration(_34);
+        return function (_36) {
+            var totalGenerations = Core.getTotalGenerations(_36);
+            var currentGeneration = Core.getCurrentGeneration(_36);
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(React_DOM.div({
                 className: "map"
             })([ React_DOM.div({
                 className: "toolbar"
             })([ (function () {
-                if (_34.value0.runningState instanceof Types.Running) {
+                if (_36.value0.runningState instanceof Types.Running) {
                     return React_DOM.button({
                         className: "icon-button", 
-                        onClick: function (_25) {
+                        onClick: function (_27) {
                             return Utils.onNext(actionsStream)(Types.Pause.value);
                         }
                     })([ React_DOM.rawText("\u25ae\u25ae") ]);
                 };
-                if (_34.value0.runningState instanceof Types.Paused) {
+                if (_36.value0.runningState instanceof Types.Paused) {
                     return React_DOM.button({
                         className: "icon-button", 
-                        onClick: function (_26) {
+                        onClick: function (_28) {
                             return Utils.onNext(actionsStream)(Types.Play.value);
                         }
                     })([ React_DOM.rawText("\u25b6") ]);
                 };
                 throw new Error("Failed pattern match");
             })(), React_DOM.button({
-                onClick: function (_27) {
+                onClick: function (_29) {
                     return Utils.onNext(actionsStream)(Types.Save.value);
                 }
             })([ React_DOM.rawText("Save") ]), React_DOM.span({
                 className: "label"
-            })([ React_DOM.rawText("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_34.value0.secondsElapsed)) ]), React_DOM.span({
+            })([ React_DOM.rawText("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_36.value0.secondsElapsed)) ]), React_DOM.span({
                 className: "label"
-            })([ React_DOM.rawText("Gen/sec: " + Prelude.show(Prelude.showNumber)(_34.value0.genRatio)) ]) ]), React_DOM.div({
+            })([ React_DOM.rawText("Gen/sec: " + Prelude.show(Prelude.showNumber)(_36.value0.genRatio)) ]) ]), React_DOM.div({
                 className: "toolbar"
             })([ React_DOM.button({
                 className: "icon-button", 
-                onClick: function (_28) {
+                onClick: function (_30) {
                     return Utils.onNext(actionsStream)(new Types.Rewind(1));
                 }
             })([ React_DOM.rawText("\u25c0\u25c0") ]), React_DOM.button({
                 className: "icon-button", 
-                onClick: function (_29) {
+                onClick: function (_31) {
                     return Utils.onNext(actionsStream)(new Types.FForward(1));
                 }
             })([ React_DOM.rawText("\u25b6\u25b6") ]), React_DOM.span({
                 className: "label"
             })([ React_DOM.rawText("Current generation: " + (function () {
-                if (_34.value0.current instanceof Data_Maybe.Nothing) {
+                if (_36.value0.current instanceof Data_Maybe.Nothing) {
                     return "Latest";
                 };
-                if (_34.value0.current instanceof Data_Maybe.Just) {
-                    return Prelude.show(Prelude.showNumber)(_34.value0.current.value0);
+                if (_36.value0.current instanceof Data_Maybe.Just) {
+                    return Prelude.show(Prelude.showNumber)(_36.value0.current.value0);
                 };
                 throw new Error("Failed pattern match");
             })()) ]), React_DOM.span({
@@ -21708,21 +21722,21 @@ var mainView = (function () {
                     border: "1px solid gray", 
                     "margin-top": "10px"
                 }
-            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(currentGeneration)(Data_Array[".."](0)(Data_Array.length(currentGeneration))))(function (_33) {
-                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_33.value0)(Data_Array[".."](0)(Data_Array.length(_33.value0))))(function (_32) {
-                    if (_32.value0 instanceof Types.Alive) {
+            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(currentGeneration)(Data_Array[".."](0)(Data_Array.length(currentGeneration))))(function (_35) {
+                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_35.value0)(Data_Array[".."](0)(Data_Array.length(_35.value0))))(function (_34) {
+                    if (_34.value0 instanceof Types.Alive) {
                         return React_DOM.td({
                             className: "live", 
-                            onClick: function (_30) {
-                                return Utils.onNext(actionsStream)(new Types.NoPoint(_33.value1, _32.value1));
+                            onClick: function (_32) {
+                                return Utils.onNext(actionsStream)(new Types.NoPoint(_35.value1, _34.value1));
                             }
                         })([  ]);
                     };
-                    if (_32.value0 instanceof Types.Dead) {
+                    if (_34.value0 instanceof Types.Dead) {
                         return React_DOM.td({
                             className: "dead", 
-                            onClick: function (_31) {
-                                return Utils.onNext(actionsStream)(new Types.Point(_33.value1, _32.value1));
+                            onClick: function (_33) {
+                                return Utils.onNext(actionsStream)(new Types.Point(_35.value1, _34.value1));
                             }
                         })([  ]);
                     };
@@ -21735,15 +21749,15 @@ var mainView = (function () {
         return render($$this.props.actionsStream)($$this.props.state);
     };
     return React.createClass((function () {
-        var _161 = {};
-        for (var _162 in React.spec) {
-            if (React.spec.hasOwnProperty(_162)) {
-                _161[_162] = React.spec[_162];
+        var _165 = {};
+        for (var _166 in React.spec) {
+            if (React.spec.hasOwnProperty(_166)) {
+                _165[_166] = React.spec[_166];
             };
         };
-        _161.displayName = "MainView";
-        _161.render = renderFun;
-        return _161;
+        _165.displayName = "MainView";
+        _165.render = renderFun;
+        return _165;
     })());
 })();
 var renderMainView = function (targetId) {
@@ -21756,12 +21770,34 @@ var renderMainView = function (targetId) {
         };
     };
 };
+var setupUI = function (initialState) {
+    return function (actionsStream) {
+        return function (targetId) {
+            return function __do() {
+                var _2 = renderMainView(targetId)(initialState)(actionsStream)();
+                return (function () {
+                    var vStream = Utils.newSubject();
+                    return function __do() {
+                        Rx_Observable.subscribe(vStream)(function (s) {
+                            return Utils.setProps(_2)({
+                                actionsStream: actionsStream, 
+                                state: s
+                            });
+                        })();
+                        return vStream;
+                    };
+                })()();
+            };
+        };
+    };
+};
 module.exports = {
+    setupUI: setupUI, 
     renderMainView: renderMainView, 
     mainView: mainView
 };
 
-},{"Control.Monad.Eff":10,"Core":23,"DOM":24,"Data":45,"Data.Array":25,"Data.Maybe":35,"Data.Tuple":44,"Debug.Trace":46,"Prelude":51,"React":54,"React.DOM":52,"React.Types":53,"Rx.Observable":56,"Types":57,"Utils":60}],60:[function(require,module,exports){
+},{"Control.Monad.Eff":10,"Core":23,"DOM":24,"Data":45,"Data.Array":25,"Data.Function":34,"Data.Maybe":35,"Data.Tuple":44,"Debug.Trace":46,"Prelude":51,"React":54,"React.DOM":52,"React.Types":53,"Rx.Observable":56,"Types":57,"Utils":60}],60:[function(require,module,exports){
 // Generated by psc-make version 0.6.9.5
 "use strict";
 var Prelude = require("Prelude");
@@ -21803,27 +21839,36 @@ function getElementOffsetLeft(el){return document.getElementById(el).offsetLeft 
     ;
 function getElementOffsetTop(el){return document.getElementById(el).offsetTop } 
     ;
+function getParameterByName(name) {
+         return function() {
+           name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+           var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+               results = regex.exec(location.search);
+           return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+         }
+       }
+    ;
 var map_ = Prelude.flip(Data_Array.map);
 var updateAt2 = function (y) {
     return function (x) {
         return function (newVal) {
             return function (arr) {
-                return map_(Data_Tuple.zip(arr)(Data_Array[".."](0)(Data_Array.length(arr))))(function (_4) {
-                    var _40 = _4.value1 === y;
-                    if (_40) {
-                        return map_(Data_Tuple.zip(_4.value0)(Data_Array[".."](0)(Data_Array.length(_4.value0))))(function (_3) {
-                            var _42 = _3.value1 === x;
-                            if (_42) {
+                return map_(Data_Tuple.zip(arr)(Data_Array[".."](0)(Data_Array.length(arr))))(function (_6) {
+                    var _41 = _6.value1 === y;
+                    if (_41) {
+                        return map_(Data_Tuple.zip(_6.value0)(Data_Array[".."](0)(Data_Array.length(_6.value0))))(function (_5) {
+                            var _43 = _5.value1 === x;
+                            if (_43) {
                                 return newVal;
                             };
-                            if (!_42) {
-                                return _3.value0;
+                            if (!_43) {
+                                return _5.value0;
                             };
                             throw new Error("Failed pattern match");
                         });
                     };
-                    if (!_40) {
-                        return _4.value0;
+                    if (!_41) {
+                        return _6.value0;
                     };
                     throw new Error("Failed pattern match");
                 });
@@ -21840,6 +21885,7 @@ var getByIndex2 = function (arr) {
 };
 var filter_ = Prelude.flip(Data_Array.filter);
 module.exports = {
+    getParameterByName: getParameterByName, 
     getElementOffsetTop: getElementOffsetTop, 
     getElementOffsetLeft: getElementOffsetLeft, 
     mathFloor: mathFloor, 
