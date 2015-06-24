@@ -21452,8 +21452,8 @@ var drawBorders = function (ctx) {
                         Graphics_Canvas.setStrokeStyle(borderColor)(ctx)();
                         Graphics_Canvas.beginPath(ctx)();
                         Graphics_Canvas.moveTo(ctx)(minX)(minY)();
-                        Graphics_Canvas.lineTo(ctx)(maxX)(minY)();
-                        Graphics_Canvas.lineTo(ctx)(maxX)(maxY)();
+                        Graphics_Canvas.lineTo(ctx)(maxX + cellSize)(minY)();
+                        Graphics_Canvas.lineTo(ctx)(maxX + cellSize)(maxY)();
                         Graphics_Canvas.lineTo(ctx)(minX)(maxY)();
                         Graphics_Canvas.lineTo(ctx)(minX)(minY)();
                         Graphics_Canvas.stroke(ctx)();
