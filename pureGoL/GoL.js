@@ -24355,7 +24355,7 @@ function toFixed(x) { return function(n) { return +x.toFixed(n) } }
     ;
  function getIntervalStream(interval) { return Rx.Observable.interval(interval) }
     ;
- function onNext(obs){ return function() { return function (val) { return obs.onNext(val); } } }
+ function onNext(obs){ return function(val) { return function () { return obs.onNext(val); } } }
     ;
  function pausable(obs){ return function (pauser) { return obs.pausable(pauser); } }
     ;
