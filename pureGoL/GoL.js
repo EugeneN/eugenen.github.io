@@ -13196,29 +13196,29 @@ var Debug_Trace = require("Debug.Trace");
 var Data_Function = require("Data.Function");
 var Rx_Observable = require("Rx.Observable");
 var Types = require("Types");
-var updateTimer = function (_24) {
+var updateTimer = function (_22) {
     return function __do() {
         var _1 = Data_Date.now();
         return (function () {
-            var x = Utils.timeDelta(_24.value0.startTime)(_1);
+            var x = Utils.timeDelta(_22.value0.startTime)(_1);
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(new Types.State((function () {
-                var _63 = {};
-                for (var _64 in _24.value0) {
-                    if (_24.value0.hasOwnProperty(_64)) {
-                        _63[_64] = _24.value0[_64];
+                var _53 = {};
+                for (var _54 in _22.value0) {
+                    if (_22.value0.hasOwnProperty(_54)) {
+                        _53[_54] = _22.value0[_54];
                     };
                 };
-                _63.secondsElapsed = Utils.toFixed(x / 1000)(2);
-                _63.genCounter = 0;
-                _63.genRatio = _24.value0.genCounter;
-                return _63;
+                _53.secondsElapsed = Utils.toFixed(x / 1000)(2);
+                _53.genCounter = 0;
+                _53.genRatio = _22.value0.genCounter;
+                return _53;
             })()));
         })()();
     };
 };
 var toggleTicks = function (rs) {
     return function (playPauseStream) {
-        return function (_22) {
+        return function (_20) {
             return Control_Monad_Eff.runPure(function __do() {
                 Utils.onNext(playPauseStream)((function () {
                     if (rs instanceof Types.Running) {
@@ -13230,83 +13230,83 @@ var toggleTicks = function (rs) {
                     throw new Error("Failed pattern match");
                 })())();
                 return new Types.State((function () {
-                    var _70 = {};
-                    for (var _71 in _22.value0) {
-                        if (_22.value0.hasOwnProperty(_71)) {
-                            _70[_71] = _22.value0[_71];
+                    var _60 = {};
+                    for (var _61 in _20.value0) {
+                        if (_20.value0.hasOwnProperty(_61)) {
+                            _60[_61] = _20.value0[_61];
                         };
                     };
-                    _70.runningState = rs;
-                    return _70;
+                    _60.runningState = rs;
+                    return _60;
                 })());
             });
         };
     };
 };
-var saveNewGeneration = function (_19) {
+var saveNewGeneration = function (_17) {
     return function (ng) {
         return new Types.State((function () {
-            var _75 = {};
-            for (var _76 in _19.value0) {
-                if (_19.value0.hasOwnProperty(_76)) {
-                    _75[_76] = _19.value0[_76];
+            var _65 = {};
+            for (var _66 in _17.value0) {
+                if (_17.value0.hasOwnProperty(_66)) {
+                    _65[_66] = _17.value0[_66];
                 };
             };
-            _75.cells = Data_Array.snoc(_19.value0.cells)(ng);
-            _75.genCounter = _19.value0.genCounter + 1;
-            return _75;
+            _65.cells = Data_Array.snoc(_17.value0.cells)(ng);
+            _65.genCounter = _17.value0.genCounter + 1;
+            return _65;
         })());
     };
 };
 var rewind = function (n) {
-    return function (_20) {
+    return function (_18) {
         var newCurrent = (function () {
-            if (_20.value0.current instanceof Data_Maybe.Just) {
-                return _20.value0.current.value0 - n;
+            if (_18.value0.current instanceof Data_Maybe.Just) {
+                return _18.value0.current.value0 - n;
             };
-            if (_20.value0.current instanceof Data_Maybe.Nothing) {
-                return Data_Array.length(_20.value0.cells) - n;
+            if (_18.value0.current instanceof Data_Maybe.Nothing) {
+                return Data_Array.length(_18.value0.cells) - n;
             };
             throw new Error("Failed pattern match");
         })();
         var boundedNewCurrent = (function () {
-            var _82 = newCurrent < 0;
-            if (_82) {
+            var _72 = newCurrent < 0;
+            if (_72) {
                 return 0;
             };
-            if (!_82) {
+            if (!_72) {
                 return newCurrent;
             };
             throw new Error("Failed pattern match");
         })();
         return new Types.State((function () {
-            var _83 = {};
-            for (var _84 in _20.value0) {
-                if (_20.value0.hasOwnProperty(_84)) {
-                    _83[_84] = _20.value0[_84];
+            var _73 = {};
+            for (var _74 in _18.value0) {
+                if (_18.value0.hasOwnProperty(_74)) {
+                    _73[_74] = _18.value0[_74];
                 };
             };
-            _83.current = new Data_Maybe.Just(boundedNewCurrent);
-            return _83;
+            _73.current = new Data_Maybe.Just(boundedNewCurrent);
+            return _73;
         })());
     };
 };
 var play = toggleTicks(Types.Running.value);
 var pause = toggleTicks(Types.Paused.value);
 var toggle = function (playPauseStream) {
-    return function (_23) {
-        if (Prelude["=="](Types.eqRunStatus)(_23.value0.runningState)(Types.Running.value)) {
-            return pause(playPauseStream)(_23);
+    return function (_21) {
+        if (Prelude["=="](Types.eqRunStatus)(_21.value0.runningState)(Types.Running.value)) {
+            return pause(playPauseStream)(_21);
         };
-        if (Prelude["=="](Types.eqRunStatus)(_23.value0.runningState)(Types.Paused.value)) {
-            return play(playPauseStream)(_23);
+        if (Prelude["=="](Types.eqRunStatus)(_21.value0.runningState)(Types.Paused.value)) {
+            return play(playPauseStream)(_21);
         };
         throw new Error("Failed pattern match");
     };
 };
 var initialSpeed = 50;
-var getTotalGenerations = function (_17) {
-    return Data_Array.length(_17.value0.cells);
+var getTotalGenerations = function (_15) {
+    return Data_Array.length(_15.value0.cells);
 };
 var getInitialState = function __do() {
     var _0 = Data_Date.now();
@@ -13324,21 +13324,21 @@ var genNewGeneration = function (currentGeneration) {
     var lifeStep = function (liveCount) {
         return function (cell) {
             if (cell instanceof Types.Alive) {
-                var _93 = liveCount < 2 || liveCount > 3;
-                if (_93) {
+                var _83 = liveCount < 2 || liveCount > 3;
+                if (_83) {
                     return Types.Dead.value;
                 };
-                if (!_93) {
+                if (!_83) {
                     return Types.Alive.value;
                 };
                 throw new Error("Failed pattern match");
             };
             if (cell instanceof Types.Dead) {
-                var _94 = liveCount === 3;
-                if (_94) {
+                var _84 = liveCount === 3;
+                if (_84) {
                     return Types.Alive.value;
                 };
-                if (!_94) {
+                if (!_84) {
                     return Types.Dead.value;
                 };
                 throw new Error("Failed pattern match");
@@ -13350,9 +13350,9 @@ var genNewGeneration = function (currentGeneration) {
         return function (x) {
             return function (cells) {
                 var newCells = [ [ y - 1, x - 1 ], [ y - 1, x ], [ y - 1, x + 1 ], [ y, x - 1 ], [ y, x + 1 ], [ y + 1, x - 1 ], [ y + 1, x ], [ y + 1, x + 1 ] ];
-                var maybeNeighbours = Data_Array.map(function (_16) {
-                    if (_16.length === 2) {
-                        return Utils.getByIndex2(cells)(_16[0])(_16[1]);
+                var maybeNeighbours = Data_Array.map(function (_14) {
+                    if (_14.length === 2) {
+                        return Utils.getByIndex2(cells)(_14[0])(_14[1]);
                     };
                     throw new Error("Failed pattern match");
                 })(newCells);
@@ -13361,53 +13361,53 @@ var genNewGeneration = function (currentGeneration) {
         };
     };
     var calcNewCells = function (cells) {
-        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_15) {
-            return Utils.map_(Data_Tuple.zip(_15.value0)(Data_Array[".."](0)(Data_Array.length(_15.value0))))(function (_14) {
-                var neighbours = findNeighbours(_15.value1)(_14.value1)(cells);
+        return Utils.map_(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_13) {
+            return Utils.map_(Data_Tuple.zip(_13.value0)(Data_Array[".."](0)(Data_Array.length(_13.value0))))(function (_12) {
+                var neighbours = findNeighbours(_13.value1)(_12.value1)(cells);
                 var liveCount = Data_Array.length(Data_Array.filter(Prelude["=="](Types.eqCell)(Types.Alive.value))(neighbours));
-                return lifeStep(liveCount)(_14.value0);
+                return lifeStep(liveCount)(_12.value0);
             });
         });
     };
     return calcNewCells(currentGeneration);
 };
 var emptyGeneration = [ [  ] ];
-var getCurrentGeneration = function (_18) {
-    if (_18.value0.current instanceof Data_Maybe.Nothing) {
-        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array.last(_18.value0.cells));
+var getCurrentGeneration = function (_16) {
+    if (_16.value0.current instanceof Data_Maybe.Nothing) {
+        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array.last(_16.value0.cells));
     };
-    if (_18.value0.current instanceof Data_Maybe.Just) {
-        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array["!!"](_18.value0.cells)(_18.value0.current.value0));
+    if (_16.value0.current instanceof Data_Maybe.Just) {
+        return Data_Maybe.maybe(emptyGeneration)(Prelude.id(Prelude.categoryArr))(Data_Array["!!"](_16.value0.cells)(_16.value0.current.value0));
     };
     throw new Error("Failed pattern match");
 };
 var fforward = function (n) {
-    return function (_21) {
-        if (_21.value0.current instanceof Data_Maybe.Just) {
-            var maxIndex = Data_Array.length(_21.value0.cells) - 1;
+    return function (_19) {
+        if (_19.value0.current instanceof Data_Maybe.Just) {
+            var maxIndex = Data_Array.length(_19.value0.cells) - 1;
             var newCurrent = (function () {
-                var _111 = _21.value0.current.value0 + n > maxIndex;
-                if (_111) {
+                var _101 = _19.value0.current.value0 + n > maxIndex;
+                if (_101) {
                     return Data_Maybe.Nothing.value;
                 };
-                if (!_111) {
-                    return new Data_Maybe.Just(_21.value0.current.value0 + n);
+                if (!_101) {
+                    return new Data_Maybe.Just(_19.value0.current.value0 + n);
                 };
                 throw new Error("Failed pattern match");
             })();
             return new Types.State((function () {
-                var _112 = {};
-                for (var _113 in _21.value0) {
-                    if (_21.value0.hasOwnProperty(_113)) {
-                        _112[_113] = _21.value0[_113];
+                var _102 = {};
+                for (var _103 in _19.value0) {
+                    if (_19.value0.hasOwnProperty(_103)) {
+                        _102[_103] = _19.value0[_103];
                     };
                 };
-                _112.current = newCurrent;
-                return _112;
+                _102.current = newCurrent;
+                return _102;
             })());
         };
-        if (_21.value0.current instanceof Data_Maybe.Nothing) {
-            return saveNewGeneration(_21)(Prelude[">>>"](Prelude.semigroupoidArr)(getCurrentGeneration)(genNewGeneration)(_21));
+        if (_19.value0.current instanceof Data_Maybe.Nothing) {
+            return saveNewGeneration(_19)(Prelude[">>>"](Prelude.semigroupoidArr)(getCurrentGeneration)(genNewGeneration)(_19));
         };
         throw new Error("Failed pattern match");
     };
@@ -13432,60 +13432,60 @@ var addPoint = updatePoint(Types.Alive.value);
 var togglePoint = function (state) {
     return function (y) {
         return function (x) {
-            var _116 = Utils.getByIndex2(getCurrentGeneration(state))(y)(x);
-            if (_116 instanceof Data_Maybe.Just && _116.value0 instanceof Types.Alive) {
+            var _106 = Utils.getByIndex2(getCurrentGeneration(state))(y)(x);
+            if (_106 instanceof Data_Maybe.Just && _106.value0 instanceof Types.Alive) {
                 return removePoint(state)(y)(x);
             };
-            if (_116 instanceof Data_Maybe.Just && _116.value0 instanceof Types.Dead) {
+            if (_106 instanceof Data_Maybe.Just && _106.value0 instanceof Types.Dead) {
                 return addPoint(state)(y)(x);
             };
             return state;
         };
     };
 };
-var updateStateFactory = function (playPauseStream) {
-    var updateState = function (_25) {
+var processStateFactory = function (playPauseStream) {
+    var processState = function (_23) {
         return function (state) {
-            if (_25 instanceof Types.Tick) {
+            if (_23 instanceof Types.Tick) {
                 return Prelude.pure(Control_Monad_Eff.applicativeEff)(calculateNewGeneration(state));
             };
-            if (_25 instanceof Types.Play) {
+            if (_23 instanceof Types.Play) {
                 return Prelude.pure(Control_Monad_Eff.applicativeEff)(play(playPauseStream)(state));
             };
-            if (_25 instanceof Types.Pause) {
+            if (_23 instanceof Types.Pause) {
                 return Prelude.pure(Control_Monad_Eff.applicativeEff)(pause(playPauseStream)(state));
             };
-            if (_25 instanceof Types.Toggle) {
+            if (_23 instanceof Types.Toggle) {
                 return Prelude.pure(Control_Monad_Eff.applicativeEff)(toggle(playPauseStream)(state));
             };
-            if (_25 instanceof Types.Save) {
+            if (_23 instanceof Types.Save) {
                 return Control_Apply["*>"](Control_Monad_Eff.applyEff)(Prelude["<<<"](Prelude.semigroupoidArr)(Debug_Trace.trace)(Prelude.show(Types.showState))(state))(Prelude.pure(Control_Monad_Eff.applicativeEff)(state));
             };
-            if (_25 instanceof Types.Point) {
-                return Prelude.pure(Control_Monad_Eff.applicativeEff)(addPoint(state)(_25.value0)(_25.value1));
+            if (_23 instanceof Types.Point) {
+                return Prelude.pure(Control_Monad_Eff.applicativeEff)(addPoint(state)(_23.value0)(_23.value1));
             };
-            if (_25 instanceof Types.NoPoint) {
-                return Prelude.pure(Control_Monad_Eff.applicativeEff)(removePoint(state)(_25.value0)(_25.value1));
+            if (_23 instanceof Types.NoPoint) {
+                return Prelude.pure(Control_Monad_Eff.applicativeEff)(removePoint(state)(_23.value0)(_23.value1));
             };
-            if (_25 instanceof Types.TogglePoint) {
-                return Prelude.pure(Control_Monad_Eff.applicativeEff)(togglePoint(state)(_25.value0)(_25.value1));
+            if (_23 instanceof Types.TogglePoint) {
+                return Prelude.pure(Control_Monad_Eff.applicativeEff)(togglePoint(state)(_23.value0)(_23.value1));
             };
-            if (_25 instanceof Types.NewCells) {
-                return Prelude.pure(Control_Monad_Eff.applicativeEff)(saveNewGeneration(state)(_25.value0));
+            if (_23 instanceof Types.NewCells) {
+                return Prelude.pure(Control_Monad_Eff.applicativeEff)(saveNewGeneration(state)(_23.value0));
             };
-            if (_25 instanceof Types.Rewind) {
-                return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(rewind(_25.value0))(state));
+            if (_23 instanceof Types.Rewind) {
+                return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(rewind(_23.value0))(state));
             };
-            if (_25 instanceof Types.FForward) {
-                return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(fforward(_25.value0))(state));
+            if (_23 instanceof Types.FForward) {
+                return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude[">>>"](Prelude.semigroupoidArr)(pause(playPauseStream))(fforward(_23.value0))(state));
             };
-            if (_25 instanceof Types.Timer) {
+            if (_23 instanceof Types.Timer) {
                 return updateTimer(state);
             };
             throw new Error("Failed pattern match");
         };
     };
-    return updateState;
+    return processState;
 };
 module.exports = {
     getInitialState: getInitialState, 
@@ -13493,7 +13493,7 @@ module.exports = {
     saveNewGeneration: saveNewGeneration, 
     getCurrentGeneration: getCurrentGeneration, 
     getTotalGenerations: getTotalGenerations, 
-    updateStateFactory: updateStateFactory, 
+    processStateFactory: processStateFactory, 
     pause: pause, 
     play: play, 
     removePoint: removePoint, 
@@ -21145,22 +21145,23 @@ var Debug_Trace = require("Debug.Trace");
 var Rx_Observable = require("Rx.Observable");
 var Types = require("Types");
 var main = (function () {
-    var timerStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_50) {
+    var timerStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_17) {
         return Types.Timer.value;
     })(Utils.getIntervalStream(1000));
-    var ticksStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_51) {
+    var ticksStream = Prelude["<$>"](Rx_Observable.functorObservable)(function (_18) {
         return Types.Tick.value;
     })(Utils.getIntervalStream(Core.initialSpeed));
     var ticksPlayPauseStream = Utils.newSubject();
+    var processState = Core.processStateFactory(ticksPlayPauseStream);
     var pausableTicksStream = Utils.pausable(ticksStream)(ticksPlayPauseStream);
-    var keyToAction = function (_52) {
-        if (_52 instanceof KeyCodes.Space) {
+    var keyToAction = function (_19) {
+        if (_19 instanceof KeyCodes.Space) {
             return new Data_Maybe.Just(Types.Toggle.value);
         };
-        if (_52 instanceof KeyCodes.LeftArrow) {
+        if (_19 instanceof KeyCodes.LeftArrow) {
             return Data_Maybe.Just.create(new Types.Rewind(1));
         };
-        if (_52 instanceof KeyCodes.RightArrow) {
+        if (_19 instanceof KeyCodes.RightArrow) {
             return Data_Maybe.Just.create(new Types.FForward(1));
         };
         return Data_Maybe.Nothing.value;
@@ -21168,11 +21169,11 @@ var main = (function () {
     var actionsStream = Utils.newSubject();
     var jointActionsStream = Control_Alt["<|>"](Rx_Observable.altObservable)(Control_Alt["<|>"](Rx_Observable.altObservable)(pausableTicksStream)(actionsStream))(timerStream);
     var keyCommand = function (key) {
-        var _200 = keyToAction(key);
-        if (_200 instanceof Data_Maybe.Just) {
-            return Utils.onNext(actionsStream)(_200.value0);
+        var _59 = keyToAction(key);
+        if (_59 instanceof Data_Maybe.Just) {
+            return Utils.onNext(actionsStream)(_59.value0);
         };
-        if (_200 instanceof Data_Maybe.Nothing) {
+        if (_59 instanceof Data_Maybe.Nothing) {
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
         };
         throw new Error("Failed pattern match");
@@ -21182,8 +21183,8 @@ var main = (function () {
             return function (initialState) {
                 return function (stateStream) {
                     return Prelude["void"](Control_Monad_Eff.functorEff)(function __do() {
-                        var _7 = ui(initialState)(actionsStream)(placeholderId)();
-                        return Rx_Observable.subscribe(stateStream)(Utils.onNext(_7))();
+                        var _4 = ui(initialState)(actionsStream)(placeholderId)();
+                        return Rx_Observable.subscribe(stateStream)(Utils.onNext(_4))();
                     });
                 };
             };
@@ -21193,26 +21194,26 @@ var main = (function () {
     var setupConsole = setupUI(UI_Console.setupUI)("");
     var setupReact = setupUI(UI_React.setupUI)("root_layout");
     return function __do() {
-        var _11 = Utils.getParameterByName("ui")();
-        var _10 = Core.getInitialState();
-        var _9 = Utils.scan(Core.updateStateFactory(ticksPlayPauseStream))(_10)(jointActionsStream)();
+        var _8 = Utils.getParameterByName("ui")();
+        var _7 = Core.getInitialState();
+        var _6 = Utils.scan(processState)(_7)(jointActionsStream)();
         (function () {
-            if (_11 === "react") {
-                return setupReact(_10)(_9);
+            if (_8 === "react") {
+                return setupReact(_7)(_6);
             };
-            if (_11 === "canvas") {
-                return setupCanvas(_10)(_9);
+            if (_8 === "canvas") {
+                return setupCanvas(_7)(_6);
             };
-            if (_11 === "console") {
-                return setupConsole(_10)(_9);
+            if (_8 === "console") {
+                return setupConsole(_7)(_6);
             };
-            if (_11 === "react_canvas") {
-                return Control_Apply["*>"](Control_Monad_Eff.applyEff)(setupReact(_10)(_9))(setupCanvas(_10)(_9));
+            if (_8 === "react_canvas") {
+                return Control_Apply["*>"](Control_Monad_Eff.applyEff)(setupReact(_7)(_6))(setupCanvas(_7)(_6));
             };
-            return setupCanvas(_10)(_9);
+            return setupCanvas(_7)(_6);
         })()();
-        var _8 = Utils.fromEvent("keyup")();
-        Rx_Observable.subscribe(Prelude["<$>"](Rx_Observable.functorObservable)(KeyCodes.keyEventToKeyCode)(_8))(keyCommand)();
+        var _5 = Utils.fromEvent("keyup")();
+        Rx_Observable.subscribe(Prelude["<$>"](Rx_Observable.functorObservable)(KeyCodes.keyEventToKeyCode)(_5))(keyCommand)();
         return Utils.onNext(ticksPlayPauseStream)(true)();
     };
 })();
@@ -23822,10 +23823,10 @@ var white = "#ffffff";
 var topOffset = 90;
 var leftOffset = 0;
 var gridColor = "#F8F8F8";
-var getWidth = function (_30) {
-    if (_30.length >= 1) {
-        var _132 = _30.slice(1);
-        return Data_Array.length(_30[0]);
+var getWidth = function (_13) {
+    if (_13.length >= 1) {
+        var _22 = _13.slice(1);
+        return Data_Array.length(_13[0]);
     };
     throw new Error("Failed pattern match");
 };
@@ -23833,18 +23834,19 @@ var getHeight = function (xs) {
     return Data_Array.length(xs);
 };
 var cellSize = 10;
-var drawCell = function (color) {
+var drawCircle = function (color) {
     return function (ctx) {
         return function (x) {
             return function (y) {
                 return function __do() {
                     Graphics_Canvas.save(ctx)();
                     Graphics_Canvas.setFillStyle(color)(ctx)();
-                    Graphics_Canvas.fillPath(ctx)(Graphics_Canvas.rect(ctx)({
-                        x: x * cellSize + 1 + leftOffset, 
-                        y: y * cellSize + 1 + topOffset, 
-                        w: cellSize - 1, 
-                        h: cellSize - 1
+                    Graphics_Canvas.fillPath(ctx)(Graphics_Canvas.arc(ctx)({
+                        x: x * cellSize + $$Math.round(cellSize / 2) + leftOffset, 
+                        y: y * cellSize + $$Math.round(cellSize / 2) + topOffset, 
+                        r: cellSize / 4 + 1, 
+                        start: 0, 
+                        end: 360
                     }))();
                     Graphics_Canvas.restore(ctx)();
                     return Prelude.unit;
@@ -23853,6 +23855,7 @@ var drawCell = function (color) {
         };
     };
 };
+var drawCell = drawCircle;
 var drawGrid = function (ctx) {
     return function (x) {
         return function (y) {
@@ -23883,6 +23886,26 @@ var drawGrid = function (ctx) {
                             };
                         };
                     };
+                };
+            };
+        };
+    };
+};
+var drawSquare = function (color) {
+    return function (ctx) {
+        return function (x) {
+            return function (y) {
+                return function __do() {
+                    Graphics_Canvas.save(ctx)();
+                    Graphics_Canvas.setFillStyle(color)(ctx)();
+                    Graphics_Canvas.fillPath(ctx)(Graphics_Canvas.rect(ctx)({
+                        x: x * cellSize + 1 + leftOffset, 
+                        y: y * cellSize + 1 + topOffset, 
+                        w: cellSize - 1, 
+                        h: cellSize - 1
+                    }))();
+                    Graphics_Canvas.restore(ctx)();
+                    return Prelude.unit;
                 };
             };
         };
@@ -23919,12 +23942,12 @@ var drawCells = function (ctx) {
     return function (cells) {
         return function __do() {
             Graphics_Canvas.save(ctx)();
-            Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_27) {
-                return Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(_27.value0)(Data_Array[".."](0)(Data_Array.length(_27.value0))))(function (_26) {
-                    if (_26.value0 instanceof Types.Alive) {
-                        return drawCell(cellColor)(ctx)(_26.value1)(_27.value1);
+            Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(cells)(Data_Array[".."](0)(Data_Array.length(cells))))(function (_10) {
+                return Data_Traversable["for"](Control_Monad_Eff.applicativeEff)(Data_Traversable.traversableArray)(Data_Tuple.zip(_10.value0)(Data_Array[".."](0)(Data_Array.length(_10.value0))))(function (_9) {
+                    if (_9.value0 instanceof Types.Alive) {
+                        return drawCell(cellColor)(ctx)(_9.value1)(_10.value1);
                     };
-                    if (_26.value0 instanceof Types.Dead) {
+                    if (_9.value0 instanceof Types.Dead) {
                         return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
                     };
                     throw new Error("Failed pattern match");
@@ -23937,7 +23960,7 @@ var drawCells = function (ctx) {
 };
 var labelColor = black;
 var drawLabels = function (ctx) {
-    return function (_29) {
+    return function (_12) {
         var getCurrentGenerationLabel = function (x) {
             if (x instanceof Data_Maybe.Nothing) {
                 return "Latest";
@@ -23951,11 +23974,11 @@ var drawLabels = function (ctx) {
             Graphics_Canvas.save(ctx)();
             Graphics_Canvas.setFillStyle(labelColor)(ctx)();
             Graphics_Canvas.setFont("16px Source Code Pro")(ctx)();
-            Graphics_Canvas.fillText(ctx)(Prelude.show(Types.showRunStatus)(_29.value0.runningState))(5)(20)();
-            Graphics_Canvas.fillText(ctx)("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_29.value0.secondsElapsed))(5)(40)();
-            Graphics_Canvas.fillText(ctx)("Gen/sec: " + Prelude.show(Prelude.showNumber)(_29.value0.genRatio))(350)(40)();
-            Graphics_Canvas.fillText(ctx)("Current generation: " + getCurrentGenerationLabel(_29.value0.current))(5)(60)();
-            Graphics_Canvas.fillText(ctx)("Total generations: " + Prelude.show(Prelude.showNumber)(Core.getTotalGenerations(_29)))(350)(60)();
+            Graphics_Canvas.fillText(ctx)(Prelude.show(Types.showRunStatus)(_12.value0.runningState))(5)(20)();
+            Graphics_Canvas.fillText(ctx)("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_12.value0.secondsElapsed))(5)(40)();
+            Graphics_Canvas.fillText(ctx)("Gen/sec: " + Prelude.show(Prelude.showNumber)(_12.value0.genRatio))(350)(40)();
+            Graphics_Canvas.fillText(ctx)("Current generation: " + getCurrentGenerationLabel(_12.value0.current))(5)(60)();
+            Graphics_Canvas.fillText(ctx)("Total generations: " + Prelude.show(Prelude.showNumber)(Core.getTotalGenerations(_12)))(350)(60)();
             Graphics_Canvas.setFont("12px Source Code Pro")(ctx)();
             Graphics_Canvas.fillText(ctx)("Space - toggle play/pause, \u27f5\u27f6 - navigate generations.")(5)(80)();
             Graphics_Canvas.restore(ctx)();
@@ -23987,9 +24010,9 @@ var drawBackground = function (ctx) {
     };
 };
 var renderCanvas = function (canvas) {
-    return function (_28) {
-        var totalGenerations = Core.getTotalGenerations(_28);
-        var currentGeneration = Core.getCurrentGeneration(_28);
+    return function (_11) {
+        var totalGenerations = Core.getTotalGenerations(_11);
+        var currentGeneration = Core.getCurrentGeneration(_11);
         var height = getHeight(currentGeneration);
         var heightPx = height * cellSize;
         var maxY = heightPx + topOffset;
@@ -23997,12 +24020,12 @@ var renderCanvas = function (canvas) {
         var widthPx = width * cellSize;
         var maxX = widthPx + leftOffset;
         return function __do() {
-            var _5 = Graphics_Canvas.getContext2D(canvas)();
-            drawBackground(_5)(0)(0)(maxX)(maxY)();
-            drawGrid(_5)(width)(height)(leftOffset)(topOffset)(maxX)(maxY)();
-            drawBorders(_5)(leftOffset)(topOffset)(maxX)(maxY)();
-            drawCells(_5)(currentGeneration)();
-            drawLabels(_5)(_28)();
+            var _3 = Graphics_Canvas.getContext2D(canvas)();
+            drawBackground(_3)(0)(0)(maxX)(maxY)();
+            drawGrid(_3)(width)(height)(leftOffset)(topOffset)(maxX)(maxY)();
+            drawBorders(_3)(leftOffset)(topOffset)(maxX)(maxY)();
+            drawCells(_3)(currentGeneration)();
+            drawLabels(_3)(_11)();
             return Prelude.unit;
         };
     };
@@ -24012,13 +24035,13 @@ var setupUI = function (state) {
         return function (canvasId) {
             var pxToCell = function (fieldOffsetLeft) {
                 return function (fieldOffsetTop) {
-                    return function (_33) {
-                        return new Data_Tuple.Tuple($$Math.floor((_33.value0 - fieldOffsetLeft) / cellSize), $$Math.floor((_33.value1 - fieldOffsetTop) / cellSize));
+                    return function (_16) {
+                        return new Data_Tuple.Tuple($$Math.floor((_16.value0 - fieldOffsetLeft) / cellSize), $$Math.floor((_16.value1 - fieldOffsetTop) / cellSize));
                     };
                 };
             };
-            var postUpstream = function (_31) {
-                return Utils.onNext(outputActionsStream)(new Types.TogglePoint(_31.value1, _31.value0));
+            var postUpstream = function (_14) {
+                return Utils.onNext(outputActionsStream)(new Types.TogglePoint(_14.value1, _14.value0));
             };
             var eventToCoords = function (e) {
                 return new Data_Tuple.Tuple(e.pageX, e.pageY);
@@ -24030,28 +24053,28 @@ var setupUI = function (state) {
             var fieldWidth = width * cellSize;
             var coordsInField = function (fieldOffsetLeft) {
                 return function (fieldOffsetTop) {
-                    return function (_32) {
-                        return _32.value0 > fieldOffsetLeft && (_32.value0 < fieldOffsetLeft + fieldWidth && (_32.value1 > fieldOffsetTop && _32.value1 < fieldOffsetTop + fieldHeight));
+                    return function (_15) {
+                        return _15.value0 > fieldOffsetLeft && (_15.value0 < fieldOffsetLeft + fieldWidth && (_15.value1 > fieldOffsetTop && _15.value1 < fieldOffsetTop + fieldHeight));
                     };
                 };
             };
             return function __do() {
                 Utils.displayBlock(canvasId)();
-                var _4 = Graphics_Canvas.getCanvasElementById(canvasId)();
-                if (_4 instanceof Data_Maybe.Just) {
-                    var _3 = Utils.getElementOffsetTop("canvas")();
-                    var _2 = Utils.getElementOffsetLeft("canvas")();
+                var _2 = Graphics_Canvas.getCanvasElementById(canvasId)();
+                if (_2 instanceof Data_Maybe.Just) {
+                    var _1 = Utils.getElementOffsetTop("canvas")();
+                    var _0 = Utils.getElementOffsetLeft("canvas")();
                     return (function () {
-                        var rawClicksStream = fromUiEvent(_4.value0)("click");
+                        var rawClicksStream = fromUiEvent(_2.value0)("click");
                         var pxStream = Prelude["<$>"](Rx_Observable.functorObservable)(eventToCoords)(rawClicksStream);
                         var inputStateStream = Utils.newSubject();
-                        var fieldOffsetTop = topOffset + _3;
-                        var fieldOffsetLeft = leftOffset + _2;
+                        var fieldOffsetTop = topOffset + _1;
+                        var fieldOffsetLeft = leftOffset + _0;
                         var fieldStream = Rx_Observable.filter(coordsInField(fieldOffsetLeft)(fieldOffsetTop))(pxStream);
                         var cellsClicksStream = Prelude["<$>"](Rx_Observable.functorObservable)(pxToCell(fieldOffsetLeft)(fieldOffsetTop))(fieldStream);
                         return function __do() {
                             Rx_Observable.subscribe(cellsClicksStream)(postUpstream)();
-                            Rx_Observable.subscribe(inputStateStream)(renderCanvas(_4.value0))();
+                            Rx_Observable.subscribe(inputStateStream)(renderCanvas(_2.value0))();
                             return inputStateStream;
                         };
                     })()();
@@ -24064,6 +24087,8 @@ var setupUI = function (state) {
 module.exports = {
     getHeight: getHeight, 
     getWidth: getWidth, 
+    drawCircle: drawCircle, 
+    drawSquare: drawSquare, 
     drawCell: drawCell, 
     drawCells: drawCells, 
     drawGrid: drawGrid, 
@@ -24103,13 +24128,13 @@ function exportGlobal(fname) {return function(f) {return function() {window[fnam
   ;
 var setupUI = function (state) {
     return function (actionsStream) {
-        return function (_38) {
+        return function (_36) {
             var printCells = function (state_2) {
-                var toChar = function (_39) {
-                    if (_39 instanceof Types.Alive) {
+                var toChar = function (_37) {
+                    if (_37 instanceof Types.Alive) {
                         return "x";
                     };
-                    if (_39 instanceof Types.Dead) {
+                    if (_37 instanceof Types.Dead) {
                         return ".";
                     };
                     throw new Error("Failed pattern match");
@@ -24140,13 +24165,13 @@ var setupUI = function (state) {
                         return Utils.onNext(actionsStream)(new Types.NoPoint(x, y));
                     };
                 })();
-                exportGlobal("play")(function (_35) {
-                    return function (_34) {
+                exportGlobal("play")(function (_33) {
+                    return function (_32) {
                         return Utils.onNext(actionsStream)(Types.Play.value);
                     };
                 })();
-                exportGlobal("pause")(function (_37) {
-                    return function (_36) {
+                exportGlobal("pause")(function (_35) {
+                    return function (_34) {
                         return Utils.onNext(actionsStream)(Types.Pause.value);
                     };
                 })();
@@ -24180,61 +24205,63 @@ var Debug_Trace = require("Debug.Trace");
 var DOM = require("DOM");
 var React_Types = require("React.Types");
 var Rx_Observable = require("Rx.Observable");
+ function setProps(view) { return function(props) { return function(){ return view.setProps(props); } } }
+    ;
 var mainView = (function () {
     var render = function (actionsStream) {
-        return function (_49) {
-            var totalGenerations = Core.getTotalGenerations(_49);
-            var currentGeneration = Core.getCurrentGeneration(_49);
+        return function (_47) {
+            var totalGenerations = Core.getTotalGenerations(_47);
+            var currentGeneration = Core.getCurrentGeneration(_47);
             return Prelude.pure(Control_Monad_Eff.applicativeEff)(React_DOM.div({
                 className: "map"
             })([ React_DOM.div({
                 className: "toolbar"
             })([ (function () {
-                if (_49.value0.runningState instanceof Types.Running) {
+                if (_47.value0.runningState instanceof Types.Running) {
                     return React_DOM.button({
                         className: "icon-button", 
-                        onClick: function (_40) {
+                        onClick: function (_38) {
                             return Utils.onNext(actionsStream)(Types.Pause.value);
                         }
                     })([ React_DOM.rawText("\u25ae\u25ae") ]);
                 };
-                if (_49.value0.runningState instanceof Types.Paused) {
+                if (_47.value0.runningState instanceof Types.Paused) {
                     return React_DOM.button({
                         className: "icon-button", 
-                        onClick: function (_41) {
+                        onClick: function (_39) {
                             return Utils.onNext(actionsStream)(Types.Play.value);
                         }
                     })([ React_DOM.rawText("\u25b6") ]);
                 };
                 throw new Error("Failed pattern match");
             })(), React_DOM.button({
-                onClick: function (_42) {
+                onClick: function (_40) {
                     return Utils.onNext(actionsStream)(Types.Save.value);
                 }
             })([ React_DOM.rawText("Save") ]), React_DOM.span({
                 className: "label"
-            })([ React_DOM.rawText("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_49.value0.secondsElapsed)) ]), React_DOM.span({
+            })([ React_DOM.rawText("Time elapsed, s: " + Prelude.show(Prelude.showNumber)(_47.value0.secondsElapsed)) ]), React_DOM.span({
                 className: "label"
-            })([ React_DOM.rawText("Gen/sec: " + Prelude.show(Prelude.showNumber)(_49.value0.genRatio)) ]) ]), React_DOM.div({
+            })([ React_DOM.rawText("Gen/sec: " + Prelude.show(Prelude.showNumber)(_47.value0.genRatio)) ]) ]), React_DOM.div({
                 className: "toolbar"
             })([ React_DOM.button({
                 className: "icon-button", 
-                onClick: function (_43) {
+                onClick: function (_41) {
                     return Utils.onNext(actionsStream)(new Types.Rewind(1));
                 }
             })([ React_DOM.rawText("\u25c0\u25c0") ]), React_DOM.button({
                 className: "icon-button", 
-                onClick: function (_44) {
+                onClick: function (_42) {
                     return Utils.onNext(actionsStream)(new Types.FForward(1));
                 }
             })([ React_DOM.rawText("\u25b6\u25b6") ]), React_DOM.span({
                 className: "label"
             })([ React_DOM.rawText("Current generation: " + (function () {
-                if (_49.value0.current instanceof Data_Maybe.Nothing) {
+                if (_47.value0.current instanceof Data_Maybe.Nothing) {
                     return "Latest";
                 };
-                if (_49.value0.current instanceof Data_Maybe.Just) {
-                    return Prelude.show(Prelude.showNumber)(_49.value0.current.value0);
+                if (_47.value0.current instanceof Data_Maybe.Just) {
+                    return Prelude.show(Prelude.showNumber)(_47.value0.current.value0);
                 };
                 throw new Error("Failed pattern match");
             })()) ]), React_DOM.span({
@@ -24256,21 +24283,21 @@ var mainView = (function () {
                     border: "1px solid gray", 
                     "margin-top": "10px"
                 }
-            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(currentGeneration)(Data_Array[".."](0)(Data_Array.length(currentGeneration))))(function (_48) {
-                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_48.value0)(Data_Array[".."](0)(Data_Array.length(_48.value0))))(function (_47) {
-                    if (_47.value0 instanceof Types.Alive) {
+            })([ React_DOM.tbody({})(Utils.map_(Data_Tuple.zip(currentGeneration)(Data_Array[".."](0)(Data_Array.length(currentGeneration))))(function (_46) {
+                return React_DOM.tr({})(Utils.map_(Data_Tuple.zip(_46.value0)(Data_Array[".."](0)(Data_Array.length(_46.value0))))(function (_45) {
+                    if (_45.value0 instanceof Types.Alive) {
                         return React_DOM.td({
                             className: "live", 
-                            onClick: function (_45) {
-                                return Utils.onNext(actionsStream)(new Types.NoPoint(_48.value1, _47.value1));
+                            onClick: function (_43) {
+                                return Utils.onNext(actionsStream)(new Types.NoPoint(_46.value1, _45.value1));
                             }
                         })([  ]);
                     };
-                    if (_47.value0 instanceof Types.Dead) {
+                    if (_45.value0 instanceof Types.Dead) {
                         return React_DOM.td({
                             className: "dead", 
-                            onClick: function (_46) {
-                                return Utils.onNext(actionsStream)(new Types.Point(_48.value1, _47.value1));
+                            onClick: function (_44) {
+                                return Utils.onNext(actionsStream)(new Types.Point(_46.value1, _45.value1));
                             }
                         })([  ]);
                     };
@@ -24283,15 +24310,15 @@ var mainView = (function () {
         return render($$this.props.actionsStream)($$this.props.state);
     };
     return React.createClass((function () {
-        var _194 = {};
-        for (var _195 in React.spec) {
-            if (React.spec.hasOwnProperty(_195)) {
-                _194[_195] = React.spec[_195];
+        var _184 = {};
+        for (var _185 in React.spec) {
+            if (React.spec.hasOwnProperty(_185)) {
+                _184[_185] = React.spec[_185];
             };
         };
-        _194.displayName = "MainView";
-        _194.render = renderFun;
-        return _194;
+        _184.displayName = "MainView";
+        _184.render = renderFun;
+        return _184;
     })());
 })();
 var renderMainView = function (targetId) {
@@ -24314,7 +24341,7 @@ var setupUI = function (initialState) {
                     var vStream = Utils.newSubject();
                     return function __do() {
                         Rx_Observable.subscribe(vStream)(function (s) {
-                            return Utils.setProps(_6)({
+                            return setProps(_6)({
                                 actionsStream: actionsStream, 
                                 state: s
                             });
@@ -24327,6 +24354,7 @@ var setupUI = function (initialState) {
     };
 };
 module.exports = {
+    setProps: setProps, 
     renderMainView: renderMainView, 
     mainView: mainView, 
     setupUI: setupUI
@@ -24353,15 +24381,26 @@ function toFixed(x) { return function(n) { return +x.toFixed(n) } }
     ;
  var newSubject = function () { return new Rx.Subject() }
     ;
+function fromEvent(ev) { return function() {return Rx.Observable.fromEvent(document.body, ev)} }
+  ;
  function getIntervalStream(interval) { return Rx.Observable.interval(interval) }
     ;
  function onNext(obs){ return function(val) { return function () { return obs.onNext(val); } } }
     ;
  function pausable(obs){ return function (pauser) { return obs.pausable(pauser); } }
     ;
- function setProps(view) { return function(props) { return function(){ return view.setProps(props); } } }
-    ;
-function fromEvent(ev) { return function() {return Rx.Observable.fromEvent(document.body, ev)} }
+
+  function scan(f) {
+    return function(seed) {
+      return function(ob) {
+        return function() {
+          return ob.scan(seed, function(acc, value) {
+            return f(value)(acc)();
+          });
+        };
+      };
+    };
+  }
   ;
 function getElementOffsetLeft(el){ return function() { return document.getElementById(el).offsetLeft } }
     ;
@@ -24378,19 +24417,6 @@ function getParameterByName(name) {
     ;
 function displayBlock(elid) {return function() {document.getElementById(elid).style.display = "block"} }
     ;
-
-  function scan(f) {
-    return function(seed) {
-      return function(ob) {
-        return function() {
-          return ob.scan(seed, function(acc, value) {
-            return f(value)(acc)();
-          });
-        };
-      };
-    };
-  }
-  ;
 var map_ = Prelude.flip(Data_Array.map);
 var updateAt2 = function (y) {
     return function (x) {
@@ -24428,16 +24454,15 @@ var getByIndex2 = function (arr) {
 };
 var filter_ = Prelude.flip(Data_Array.filter);
 module.exports = {
-    scan: scan, 
     displayBlock: displayBlock, 
     getParameterByName: getParameterByName, 
     getElementOffsetTop: getElementOffsetTop, 
     getElementOffsetLeft: getElementOffsetLeft, 
-    fromEvent: fromEvent, 
-    setProps: setProps, 
+    scan: scan, 
     pausable: pausable, 
     onNext: onNext, 
     getIntervalStream: getIntervalStream, 
+    fromEvent: fromEvent, 
     newSubject: newSubject, 
     toFixed: toFixed, 
     timeDelta: timeDelta, 
