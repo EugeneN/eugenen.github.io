@@ -1,0 +1,129 @@
+<html manifest="/cmd.appcache">
+<head>
+    <title id="title">C.MD</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic,700italic|Source+Code+Pro:100,200,300,400,600,700,900&subset=latin,cyrillic,cyrillic-ext,greek-ext,greek,latin-ext' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css">
+    <link rel="stylesheet" href="resources/public/css/index.css">
+
+    <!--<link rel="fluid-icon" href="resources/public/img/fv6.png" title="C.MD" />-->
+    <link rel="shortcut icon" href="resources/public/img/fv5.png"/>
+
+    <script id="motd" type="text/motd">
+
+# Welcome to C.MD
+
+This is an *explosive* mixture of ***ClojureScript, Rx, React/Om, core.async, github CORS api, ace, marked, web workers etc***  ~~crafted~~engineered together to give you the *best* ***gist*** editing tool, ever... well, at least a good try :-)
+It's currently an alfa-quality prototype, so do not expect to much.
+
+
+#### What you can do next:
+
+- log in with your Github credentials*
+- should you be logged in:
+ - click a `:NEW_G!ST:` to set a name and then `PUSH>>` to create a new gist with whatever content is *here*
+ - ...or select a gist from the list to work on it, then `PUSH>>` to save, `>>PULL` to update content from Github.
+- use `C.MD` as a beautiful *gist* viewer - just set an url hash to `#<gist-id>;p`, for example: <http://eugenen.github.io/#58a15db96ca12b952f8e;p>
+
+
+***
+
+###### \* Sensitive data will only be sent to Github API servers over *https*. `CMD` will also remember your credentials in `localStorage`, so you will enjoy an *autologin* until you will `LOG^OUT`.
+
+
+<br/>
+
+```
+(println "Heil Clojure!")
+```
+
+
+
+    </script>
+    <script id="new-gist-motd" type="text/motd">
+
+### New gist how-to
+
+*Set a name for the new gist in the field above and put some content here.*
+
+*On `PUSH>>` new gist will be created.*
+
+***Write with pleasure! :-)***
+
+    </script>
+</head>
+
+<body>
+    <div id="continer">
+        <div id="toolbar"></div>
+
+        <div id="comments">
+            <div id="disqus_thread"></div>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'eugenengithubio'; // required: replace example with your forum shortname
+
+                /* * * DON'T EDIT BELOW THIS LINE * * */
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+
+                window.reset_disqus = function (ident, url) {
+                    DISQUS.reset({
+                        reload: true,
+                        config: function () {
+                            this.page.identifier = ident;
+                            this.page.url = url;
+                        }
+                    });
+                };
+
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+            <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+        </div>
+
+        <div id="input">
+            <div id="editor"></div>
+        </div><div id="layout-toolbar">
+            <button id="toolbar-toggler" title="Toggle toolbar">^</button>
+            <button id="editor-toggler" title="Toggle editor">&lt;</button>
+            <button id="preview-toggler" title="Toggle preview">&gt;</button>
+            <button id="info-toggler" title="Show properties">i</button>
+            <button id="zen-toggler" title="Toggle zen mode">z</button>
+            <button id="comments-toggler" title="Toggle comments">c</button>
+            <button id="console-toggler" title="Toggle console">^</button>
+        </div><div id="preview-container">
+            <div id="preview"></div>
+        </div>
+
+        <div id="console"></div>
+    </div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <!--
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [["$","$"],["\\(","\\)"]]
+        }
+      });
+    </script>
+    <script src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    -->
+
+    <script src="resources/public/js/rx.all.js" type="text/javascript"></script>
+    <script src="resources/public/js/cmd/goog/base.js" type="text/javascript"></script>
+    <script src="resources/public/js/cmd/cmd.js" type="text/javascript"></script>
+    <script type="text/javascript">goog.require("cmd.ui");</script>
+
+
+
+</body>
+</html>
