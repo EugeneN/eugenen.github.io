@@ -497,7 +497,491 @@ module.exports = {
     defer: defer
 };
 
-},{"Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Control.Monad.Cont.Class/index.js":[function(require,module,exports){
+},{"Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Control.Monad.Aff/foreign.js":[function(require,module,exports){
+/* global exports */
+"use strict";
+
+// module Control.Monad.Aff
+
+exports._cancelWith = function (nonCanceler, aff, canceler1) {
+  return function(success, error) {
+    var canceler2 = aff(success, error);
+
+    return function(e) {
+      return function(success, error) {
+        var cancellations = 0;
+        var result        = false;
+        var errored       = false;
+
+        var s = function(bool) {
+          cancellations = cancellations + 1;
+          result        = result || bool;
+
+          if (cancellations === 2 && !errored) {
+            try {
+              success(result);
+            } catch (e) {
+              error(e);
+            }
+          }
+        };
+
+        var f = function(err) {
+          if (!errored) {
+            errored = true;
+
+            error(err);
+          }
+        };
+
+        canceler2(e)(s, f);
+        canceler1(e)(s, f);
+
+        return nonCanceler;
+      };
+    };
+  };
+}
+
+exports._setTimeout = function (nonCanceler, millis, aff) {
+  var set = setTimeout, clear = clearTimeout;
+  if (millis <= 0 && typeof setImmediate === "function") {
+    set = setImmediate;
+    clear = clearImmediate;
+  }
+  return function(success, error) {
+    var canceler;
+
+    var timeout = set(function() {
+      canceler = aff(success, error);
+    }, millis);
+
+    return function(e) {
+      return function(s, f) {
+        if (canceler !== undefined) {
+          return canceler(e)(s, f);
+        } else {
+          clear(timeout);
+
+          try {
+            s(true);
+          } catch (e) {
+            f(e);
+          }
+
+          return nonCanceler;
+        }
+      };
+    };
+  };
+}
+
+exports._unsafeInterleaveAff = function (aff) {
+  return aff;
+}
+
+exports._forkAff = function (nonCanceler, aff) {
+  var voidF = function(){};
+
+  return function(success, error) {
+    var canceler = aff(voidF, voidF);
+
+    try {
+      success(canceler);
+    } catch (e) {
+      error(e);
+    }
+
+    return nonCanceler;
+  };
+}
+
+exports._makeAff = function (cb) {
+  return function(success, error) {
+    return cb(function(e) {
+      return function() {
+        error(e);
+      };
+    })(function(v) {
+      return function() {
+        try {
+          success(v);
+        } catch (e) {
+          error(e);
+        }
+      };
+    })();
+  }
+}
+
+exports._pure = function (nonCanceler, v) {
+  return function(success, error) {
+    try {
+      success(v);
+    } catch (e) {
+      error(e);
+    }
+
+    return nonCanceler;
+  };
+}
+
+exports._throwError = function (nonCanceler, e) {
+  return function(success, error) {
+    error(e);
+
+    return nonCanceler;
+  };
+}
+
+exports._fmap = function (f, aff) {
+  return function(success, error) {
+    return aff(function(v) {
+      try {
+        success(f(v));
+      } catch (e) {
+        error(e);
+      }
+    }, error);
+  };
+}
+
+exports._bind = function (alwaysCanceler, aff, f) {
+  return function(success, error) {
+    var canceler1, canceler2;
+
+    var isCanceled    = false;
+    var requestCancel = false;
+
+    var onCanceler = function(){};
+
+    canceler1 = aff(function(v) {
+      if (requestCancel) {
+        isCanceled = true;
+
+        return alwaysCanceler;
+      } else {
+        canceler2 = f(v)(success, error);
+
+        onCanceler(canceler2);
+
+        return canceler2;
+      }
+    }, error);
+
+    return function(e) {
+      return function(s, f) {
+        requestCancel = true;
+
+        if (canceler2 !== undefined) {
+          return canceler2(e)(s, f);
+        } else {
+          return canceler1(e)(function(bool) {
+            if (bool || isCanceled) {
+              try {
+                s(true);
+              } catch (e) {
+                f(e);
+              }
+            } else {
+              onCanceler = function(canceler) {
+                canceler(e)(s, f);
+              };
+            }
+          }, f);
+        }
+      };
+    };
+  };
+}
+
+exports._attempt = function (Left, Right, aff) {
+  return function(success, error) {
+    return aff(function(v) {
+      try {
+        success(Right(v));
+      } catch (e) {
+        error(e);
+      }
+    }, function(e) {
+      try {
+        success(Left(e));
+      } catch (e) {
+        error(e);
+      }
+    });
+  };
+}
+
+exports._runAff = function (errorT, successT, aff) {
+  return function() {
+    return aff(function(v) {
+      try {
+        successT(v)();
+      } catch (e) {
+        errorT(e)();
+      }
+    }, function(e) {
+      errorT(e)();
+    });
+  };
+}
+
+exports._liftEff = function (nonCanceler, e) {
+  return function(success, error) {
+    try {
+      success(e());
+    } catch (e) {
+      error(e);
+    }
+
+    return nonCanceler;
+  };
+}
+
+},{}],"/Users/eugene/github3/en2/output/Control.Monad.Aff/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var $foreign = require("./foreign");
+var Prelude = require("Prelude");
+var Control_Alt = require("Control.Alt");
+var Control_Alternative = require("Control.Alternative");
+var Control_Monad_Cont_Class = require("Control.Monad.Cont.Class");
+var Control_Monad_Eff = require("Control.Monad.Eff");
+var Control_Monad_Eff_Class = require("Control.Monad.Eff.Class");
+var Control_Monad_Eff_Exception = require("Control.Monad.Eff.Exception");
+var Control_Monad_Error_Class = require("Control.Monad.Error.Class");
+var Control_Monad_Rec_Class = require("Control.Monad.Rec.Class");
+var Control_MonadPlus = require("Control.MonadPlus");
+var Control_Plus = require("Control.Plus");
+var Data_Either = require("Data.Either");
+var Data_Function = require("Data.Function");
+var Data_Monoid = require("Data.Monoid");
+var Canceler = function (x) {
+    return x;
+};
+var runAff = function (ex) {
+    return function (f) {
+        return function (aff) {
+            return $foreign._runAff(ex, f, aff);
+        };
+    };
+};
+var makeAff$prime = function (h) {
+    return $foreign._makeAff(h);
+};
+var launchAff = function (_17) {
+    return runAff(Control_Monad_Eff_Exception.throwException)(Prelude["const"](Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit)))($foreign._unsafeInterleaveAff(_17));
+};
+var functorAff = new Prelude.Functor(function (f) {
+    return function (fa) {
+        return $foreign._fmap(f, fa);
+    };
+});
+var cancel = function (_4) {
+    return _4;
+};
+var attempt = function (aff) {
+    return $foreign._attempt(Data_Either.Left.create, Data_Either.Right.create, aff);
+};
+var apathize = function (a) {
+    return Prelude["<$>"](functorAff)(Prelude["const"](Prelude.unit))(attempt(a));
+};
+var applyAff = new Prelude.Apply(function () {
+    return functorAff;
+}, function (ff) {
+    return function (fa) {
+        return $foreign._bind(alwaysCanceler, ff, function (f) {
+            return Prelude["<$>"](functorAff)(f)(fa);
+        });
+    };
+});
+var applicativeAff = new Prelude.Applicative(function () {
+    return applyAff;
+}, function (v) {
+    return $foreign._pure(nonCanceler, v);
+});
+var nonCanceler = Prelude["const"](Prelude.pure(applicativeAff)(false));
+var alwaysCanceler = Prelude["const"](Prelude.pure(applicativeAff)(true));
+var cancelWith = function (aff) {
+    return function (c) {
+        return $foreign._cancelWith(nonCanceler, aff, c);
+    };
+};
+var forkAff = function (aff) {
+    return $foreign._forkAff(nonCanceler, aff);
+};
+var later$prime = function (n) {
+    return function (aff) {
+        return $foreign._setTimeout(nonCanceler, n, aff);
+    };
+};
+var later = later$prime(0);
+var liftEff$prime = function (eff) {
+    return attempt($foreign._unsafeInterleaveAff($foreign._liftEff(nonCanceler, eff)));
+};
+var makeAff = function (h) {
+    return makeAff$prime(function (e) {
+        return function (a) {
+            return Prelude["<$>"](Control_Monad_Eff.functorEff)(Prelude["const"](nonCanceler))(h(e)(a));
+        };
+    });
+};
+var semigroupAff = function (__dict_Semigroup_0) {
+    return new Prelude.Semigroup(function (a) {
+        return function (b) {
+            return Prelude["<*>"](applyAff)(Prelude["<$>"](functorAff)(Prelude["<>"](__dict_Semigroup_0))(a))(b);
+        };
+    });
+};
+var monoidAff = function (__dict_Monoid_1) {
+    return new Data_Monoid.Monoid(function () {
+        return semigroupAff(__dict_Monoid_1["__superclass_Prelude.Semigroup_0"]());
+    }, Prelude.pure(applicativeAff)(Data_Monoid.mempty(__dict_Monoid_1)));
+};
+var semigroupCanceler = new Prelude.Semigroup(function (_5) {
+    return function (_6) {
+        return function (e) {
+            return Prelude["<*>"](applyAff)(Prelude["<$>"](functorAff)(Prelude["||"](Prelude.booleanAlgebraBoolean))(_5(e)))(_6(e));
+        };
+    };
+});
+var monoidCanceler = new Data_Monoid.Monoid(function () {
+    return semigroupCanceler;
+}, Prelude["const"](Prelude.pure(applicativeAff)(true)));
+var bindAff = new Prelude.Bind(function () {
+    return applyAff;
+}, function (fa) {
+    return function (f) {
+        return $foreign._bind(alwaysCanceler, fa, f);
+    };
+});
+var monadAff = new Prelude.Monad(function () {
+    return applicativeAff;
+}, function () {
+    return bindAff;
+});
+var monadContAff = new Control_Monad_Cont_Class.MonadCont(function () {
+    return monadAff;
+}, function (f) {
+    return makeAff(function (eb) {
+        return function (cb) {
+            return runAff(eb)(cb)(f(function (a) {
+                return makeAff(function (_3) {
+                    return function (_2) {
+                        return cb(a);
+                    };
+                });
+            }));
+        };
+    });
+});
+var monadEffAff = new Control_Monad_Eff_Class.MonadEff(function () {
+    return monadAff;
+}, function (eff) {
+    return $foreign._liftEff(nonCanceler, eff);
+});
+var monadErrorAff = new Control_Monad_Error_Class.MonadError(function () {
+    return monadAff;
+}, function (aff) {
+    return function (ex) {
+        return Prelude[">>="](bindAff)(attempt(aff))(Data_Either.either(ex)(Prelude.pure(applicativeAff)));
+    };
+}, function (e) {
+    return $foreign._throwError(nonCanceler, e);
+});
+var $$finally = function (aff1) {
+    return function (aff2) {
+        return Prelude.bind(bindAff)(attempt(aff1))(function (_0) {
+            return Prelude.bind(bindAff)(aff2)(function () {
+                return Data_Either.either(Control_Monad_Error_Class.throwError(monadErrorAff))(Prelude.pure(applicativeAff))(_0);
+            });
+        });
+    };
+};
+var monadRecAff = new Control_Monad_Rec_Class.MonadRec(function () {
+    return monadAff;
+}, function (f) {
+    return function (a) {
+        var go = function (size) {
+            return function (f_1) {
+                return function (a_1) {
+                    return Prelude.bind(bindAff)(f_1(a_1))(function (_1) {
+                        if (_1 instanceof Data_Either.Left) {
+                            if (size < 100) {
+                                return go(size + 1 | 0)(f_1)(_1.value0);
+                            };
+                            if (Prelude.otherwise) {
+                                return later(Control_Monad_Rec_Class.tailRecM(monadRecAff)(f_1)(_1.value0));
+                            };
+                        };
+                        if (_1 instanceof Data_Either.Right) {
+                            return Prelude.pure(applicativeAff)(_1.value0);
+                        };
+                        throw new Error("Failed pattern match: " + [ _1.constructor.name ]);
+                    });
+                };
+            };
+        };
+        return go(0)(f)(a);
+    };
+});
+var altAff = new Control_Alt.Alt(function () {
+    return functorAff;
+}, function (a1) {
+    return function (a2) {
+        return Prelude[">>="](bindAff)(attempt(a1))(Data_Either.either(Prelude["const"](a2))(Prelude.pure(applicativeAff)));
+    };
+});
+var plusAff = new Control_Plus.Plus(function () {
+    return altAff;
+}, Control_Monad_Error_Class.throwError(monadErrorAff)(Control_Monad_Eff_Exception.error("Always fails")));
+var alternativeAff = new Control_Alternative.Alternative(function () {
+    return plusAff;
+}, function () {
+    return applicativeAff;
+});
+var monadPlusAff = new Control_MonadPlus.MonadPlus(function () {
+    return alternativeAff;
+}, function () {
+    return monadAff;
+});
+module.exports = {
+    Canceler: Canceler, 
+    runAff: runAff, 
+    nonCanceler: nonCanceler, 
+    "makeAff'": makeAff$prime, 
+    makeAff: makeAff, 
+    "liftEff'": liftEff$prime, 
+    launchAff: launchAff, 
+    "later'": later$prime, 
+    later: later, 
+    forkAff: forkAff, 
+    "finally": $$finally, 
+    cancelWith: cancelWith, 
+    cancel: cancel, 
+    attempt: attempt, 
+    apathize: apathize, 
+    semigroupAff: semigroupAff, 
+    monoidAff: monoidAff, 
+    functorAff: functorAff, 
+    applyAff: applyAff, 
+    applicativeAff: applicativeAff, 
+    bindAff: bindAff, 
+    monadAff: monadAff, 
+    monadEffAff: monadEffAff, 
+    monadErrorAff: monadErrorAff, 
+    altAff: altAff, 
+    plusAff: plusAff, 
+    alternativeAff: alternativeAff, 
+    monadPlusAff: monadPlusAff, 
+    monadRecAff: monadRecAff, 
+    monadContAff: monadContAff, 
+    semigroupCanceler: semigroupCanceler, 
+    monoidCanceler: monoidCanceler
+};
+
+},{"./foreign":"/Users/eugene/github3/en2/output/Control.Monad.Aff/foreign.js","Control.Alt":"/Users/eugene/github3/en2/output/Control.Alt/index.js","Control.Alternative":"/Users/eugene/github3/en2/output/Control.Alternative/index.js","Control.Monad.Cont.Class":"/Users/eugene/github3/en2/output/Control.Monad.Cont.Class/index.js","Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","Control.Monad.Eff.Class":"/Users/eugene/github3/en2/output/Control.Monad.Eff.Class/index.js","Control.Monad.Eff.Exception":"/Users/eugene/github3/en2/output/Control.Monad.Eff.Exception/index.js","Control.Monad.Error.Class":"/Users/eugene/github3/en2/output/Control.Monad.Error.Class/index.js","Control.Monad.Rec.Class":"/Users/eugene/github3/en2/output/Control.Monad.Rec.Class/index.js","Control.MonadPlus":"/Users/eugene/github3/en2/output/Control.MonadPlus/index.js","Control.Plus":"/Users/eugene/github3/en2/output/Control.Plus/index.js","Data.Either":"/Users/eugene/github3/en2/output/Data.Either/index.js","Data.Function":"/Users/eugene/github3/en2/output/Data.Function/index.js","Data.Monoid":"/Users/eugene/github3/en2/output/Data.Monoid/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Control.Monad.Cont.Class/index.js":[function(require,module,exports){
 // Generated by psc version 0.7.6.1
 "use strict";
 var Prelude = require("Prelude");
@@ -1147,7 +1631,34 @@ module.exports = {
     monadRWSExceptT: monadRWSExceptT
 };
 
-},{"Control.Alt":"/Users/eugene/github3/en2/output/Control.Alt/index.js","Control.Alternative":"/Users/eugene/github3/en2/output/Control.Alternative/index.js","Control.Monad.Cont.Class":"/Users/eugene/github3/en2/output/Control.Monad.Cont.Class/index.js","Control.Monad.Eff.Class":"/Users/eugene/github3/en2/output/Control.Monad.Eff.Class/index.js","Control.Monad.Error.Class":"/Users/eugene/github3/en2/output/Control.Monad.Error.Class/index.js","Control.Monad.RWS.Class":"/Users/eugene/github3/en2/output/Control.Monad.RWS.Class/index.js","Control.Monad.Reader.Class":"/Users/eugene/github3/en2/output/Control.Monad.Reader.Class/index.js","Control.Monad.Rec.Class":"/Users/eugene/github3/en2/output/Control.Monad.Rec.Class/index.js","Control.Monad.State.Class":"/Users/eugene/github3/en2/output/Control.Monad.State.Class/index.js","Control.Monad.Trans":"/Users/eugene/github3/en2/output/Control.Monad.Trans/index.js","Control.Monad.Writer.Class":"/Users/eugene/github3/en2/output/Control.Monad.Writer.Class/index.js","Control.MonadPlus":"/Users/eugene/github3/en2/output/Control.MonadPlus/index.js","Control.Plus":"/Users/eugene/github3/en2/output/Control.Plus/index.js","Data.Either":"/Users/eugene/github3/en2/output/Data.Either/index.js","Data.Monoid":"/Users/eugene/github3/en2/output/Data.Monoid/index.js","Data.Tuple":"/Users/eugene/github3/en2/output/Data.Tuple/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Control.Monad.Free/index.js":[function(require,module,exports){
+},{"Control.Alt":"/Users/eugene/github3/en2/output/Control.Alt/index.js","Control.Alternative":"/Users/eugene/github3/en2/output/Control.Alternative/index.js","Control.Monad.Cont.Class":"/Users/eugene/github3/en2/output/Control.Monad.Cont.Class/index.js","Control.Monad.Eff.Class":"/Users/eugene/github3/en2/output/Control.Monad.Eff.Class/index.js","Control.Monad.Error.Class":"/Users/eugene/github3/en2/output/Control.Monad.Error.Class/index.js","Control.Monad.RWS.Class":"/Users/eugene/github3/en2/output/Control.Monad.RWS.Class/index.js","Control.Monad.Reader.Class":"/Users/eugene/github3/en2/output/Control.Monad.Reader.Class/index.js","Control.Monad.Rec.Class":"/Users/eugene/github3/en2/output/Control.Monad.Rec.Class/index.js","Control.Monad.State.Class":"/Users/eugene/github3/en2/output/Control.Monad.State.Class/index.js","Control.Monad.Trans":"/Users/eugene/github3/en2/output/Control.Monad.Trans/index.js","Control.Monad.Writer.Class":"/Users/eugene/github3/en2/output/Control.Monad.Writer.Class/index.js","Control.MonadPlus":"/Users/eugene/github3/en2/output/Control.MonadPlus/index.js","Control.Plus":"/Users/eugene/github3/en2/output/Control.Plus/index.js","Data.Either":"/Users/eugene/github3/en2/output/Data.Either/index.js","Data.Monoid":"/Users/eugene/github3/en2/output/Data.Monoid/index.js","Data.Tuple":"/Users/eugene/github3/en2/output/Data.Tuple/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Control.Monad.Except/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Prelude = require("Prelude");
+var Control_Monad_Error_Class = require("Control.Monad.Error.Class");
+var Control_Monad_Except_Trans = require("Control.Monad.Except.Trans");
+var Data_Either = require("Data.Either");
+var Data_Identity = require("Data.Identity");
+var withExcept = Control_Monad_Except_Trans.withExceptT(Data_Identity.functorIdentity);
+var runExcept = function (_0) {
+    return Data_Identity.runIdentity(Control_Monad_Except_Trans.runExceptT(_0));
+};
+var mapExcept = function (f) {
+    return Control_Monad_Except_Trans.mapExceptT(function (_1) {
+        return Data_Identity.Identity(f(Data_Identity.runIdentity(_1)));
+    });
+};
+var except = function (_2) {
+    return Control_Monad_Except_Trans.ExceptT(Data_Identity.Identity(_2));
+};
+module.exports = {
+    withExcept: withExcept, 
+    mapExcept: mapExcept, 
+    runExcept: runExcept, 
+    except: except
+};
+
+},{"Control.Monad.Error.Class":"/Users/eugene/github3/en2/output/Control.Monad.Error.Class/index.js","Control.Monad.Except.Trans":"/Users/eugene/github3/en2/output/Control.Monad.Except.Trans/index.js","Data.Either":"/Users/eugene/github3/en2/output/Data.Either/index.js","Data.Identity":"/Users/eugene/github3/en2/output/Data.Identity/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Control.Monad.Free/index.js":[function(require,module,exports){
 // Generated by psc version 0.7.6.1
 "use strict";
 var Prelude = require("Prelude");
@@ -10520,7 +11031,142 @@ module.exports = {
     profunctorFn: profunctorFn
 };
 
-},{"Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Data.String.Regex/foreign.js":[function(require,module,exports){
+},{"Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Data.Semiring.Free/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Prelude = require("Prelude");
+var Data_List = require("Data.List");
+var Data_Foldable = require("Data.Foldable");
+var Data_Traversable = require("Data.Traversable");
+var Free = function (x) {
+    return x;
+};
+var showFree = function (__dict_Show_2) {
+    return new Prelude.Show(function (_6) {
+        return "Free (" + (Prelude.show(Data_List.showList(Data_List.showList(__dict_Show_2)))(_6) + ")");
+    });
+};
+var semiringFree = new Prelude.Semiring(function (_11) {
+    return function (_12) {
+        return Prelude["<>"](Data_List.semigroupList)(_11)(_12);
+    };
+}, function (_13) {
+    return function (_14) {
+        return Prelude.bind(Data_List.bindList)(_13)(function (_1) {
+            return Prelude.bind(Data_List.bindList)(_14)(function (_0) {
+                return Prelude["return"](Data_List.applicativeList)(Prelude["<>"](Data_List.semigroupList)(_1)(_0));
+            });
+        });
+    };
+}, Data_List.singleton(Data_List.Nil.value), Data_List.Nil.value);
+var runFree = function (_4) {
+    return _4;
+};
+var liftFree = function (__dict_Semiring_4) {
+    return function (f) {
+        return function (_5) {
+            return Data_Foldable.sum(Data_List.foldableList)(__dict_Semiring_4)(Prelude.map(Data_List.functorList)(function (_51) {
+                return Data_Foldable.product(Data_List.foldableList)(__dict_Semiring_4)(Prelude.map(Data_List.functorList)(f)(_51));
+            })(_5));
+        };
+    };
+};
+var functorFree = new Prelude.Functor(function (fn) {
+    return function (_15) {
+        return Free(Prelude["<$>"](Data_List.functorList)(Prelude.map(Data_List.functorList)(fn))(_15));
+    };
+});
+var free = function (a) {
+    return Data_List.singleton(Data_List.singleton(a));
+};
+var lowerFree = function (__dict_Semiring_5) {
+    return function (f) {
+        return function (a) {
+            return f(free(a));
+        };
+    };
+};
+var foldableFree = new Data_Foldable.Foldable(function (__dict_Monoid_6) {
+    return function (fn) {
+        return function (_20) {
+            return Data_Foldable.fold(Data_List.foldableList)(__dict_Monoid_6)(Data_Foldable.foldMap(Data_List.foldableList)(Data_List.monoidList)(Prelude["<$>"](Data_List.functorList)(fn))(_20));
+        };
+    };
+}, function (fn) {
+    return function (accum) {
+        return function (_18) {
+            return Data_Foldable.foldl(Data_List.foldableList)(Data_Foldable.foldl(Data_List.foldableList)(fn))(accum)(_18);
+        };
+    };
+}, function (fn) {
+    return function (accum) {
+        return function (_19) {
+            return Data_Foldable.foldr(Data_List.foldableList)(Prelude.flip(Data_Foldable.foldr(Data_List.foldableList)(fn)))(accum)(_19);
+        };
+    };
+});
+var traversableFree = new Data_Traversable.Traversable(function () {
+    return foldableFree;
+}, function () {
+    return functorFree;
+}, function (__dict_Applicative_0) {
+    return function (_21) {
+        return Prelude["<$>"]((__dict_Applicative_0["__superclass_Prelude.Apply_0"]())["__superclass_Prelude.Functor_0"]())(Free)(Data_Traversable.sequence(Data_List.traversableList)(__dict_Applicative_0)(Prelude["<$>"](Data_List.functorList)(Data_Traversable.sequence(Data_List.traversableList)(__dict_Applicative_0))(_21)));
+    };
+}, function (__dict_Applicative_1) {
+    return function (fn) {
+        return function (freeA) {
+            return Data_Traversable.sequence(traversableFree)(__dict_Applicative_1)(Prelude["<$>"](functorFree)(fn)(freeA));
+        };
+    };
+});
+var eqFree = function (__dict_Eq_7) {
+    return new Prelude.Eq(function (_7) {
+        return function (_8) {
+            return Prelude["=="](Data_List.eqList(Data_List.eqList(__dict_Eq_7)))(_7)(_8);
+        };
+    });
+};
+var ordFree = function (__dict_Ord_3) {
+    return new Prelude.Ord(function () {
+        return eqFree(__dict_Ord_3["__superclass_Prelude.Eq_0"]());
+    }, function (_9) {
+        return function (_10) {
+            return Prelude.compare(Data_List.ordList(Data_List.ordList(__dict_Ord_3)))(_9)(_10);
+        };
+    });
+};
+var applyFree = new Prelude.Apply(function () {
+    return functorFree;
+}, function (_16) {
+    return function (_17) {
+        return Free(Prelude.bind(Data_List.bindList)(_16)(function (_3) {
+            return Prelude.bind(Data_List.bindList)(_17)(function (_2) {
+                return Prelude.pure(Data_List.applicativeList)(Prelude.apply(Data_List.applyList)(_3)(_2));
+            });
+        }));
+    };
+});
+var applicativeFree = new Prelude.Applicative(function () {
+    return applyFree;
+}, free);
+module.exports = {
+    lowerFree: lowerFree, 
+    liftFree: liftFree, 
+    free: free, 
+    runFree: runFree, 
+    showFree: showFree, 
+    eqFree: eqFree, 
+    ordFree: ordFree, 
+    semiringFree: semiringFree, 
+    functorFree: functorFree, 
+    applyFree: applyFree, 
+    applicativeFree: applicativeFree, 
+    foldableFree: foldableFree, 
+    traversableFree: traversableFree
+};
+
+},{"Data.Foldable":"/Users/eugene/github3/en2/output/Data.Foldable/index.js","Data.List":"/Users/eugene/github3/en2/output/Data.List/index.js","Data.Traversable":"/Users/eugene/github3/en2/output/Data.Traversable/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Data.String.Regex/foreign.js":[function(require,module,exports){
 /* global exports */
 "use strict";
 
@@ -11904,7 +12550,145 @@ module.exports = {
     unfoldableArray: unfoldableArray
 };
 
-},{"Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","Control.Monad.ST":"/Users/eugene/github3/en2/output/Control.Monad.ST/index.js","Data.Array.ST":"/Users/eugene/github3/en2/output/Data.Array.ST/index.js","Data.Maybe":"/Users/eugene/github3/en2/output/Data.Maybe/index.js","Data.Traversable":"/Users/eugene/github3/en2/output/Data.Traversable/index.js","Data.Tuple":"/Users/eugene/github3/en2/output/Data.Tuple/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Data.Validation/index.js":[function(require,module,exports){
+},{"Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","Control.Monad.ST":"/Users/eugene/github3/en2/output/Control.Monad.ST/index.js","Data.Array.ST":"/Users/eugene/github3/en2/output/Data.Array.ST/index.js","Data.Maybe":"/Users/eugene/github3/en2/output/Data.Maybe/index.js","Data.Traversable":"/Users/eugene/github3/en2/output/Data.Traversable/index.js","Data.Tuple":"/Users/eugene/github3/en2/output/Data.Tuple/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Data.Validation.Semiring/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Prelude = require("Prelude");
+var Control_Alt = require("Control.Alt");
+var Control_Plus = require("Control.Plus");
+var Control_Alternative = require("Control.Alternative");
+var Valid = (function () {
+    function Valid(value0) {
+        this.value0 = value0;
+    };
+    Valid.create = function (value0) {
+        return new Valid(value0);
+    };
+    return Valid;
+})();
+var Invalid = (function () {
+    function Invalid(value0) {
+        this.value0 = value0;
+    };
+    Invalid.create = function (value0) {
+        return new Invalid(value0);
+    };
+    return Invalid;
+})();
+var showV = function (__dict_Show_0) {
+    return function (__dict_Show_1) {
+        return new Prelude.Show(function (_2) {
+            if (_2 instanceof Invalid) {
+                return "Invalid (" + (Prelude.show(__dict_Show_0)(_2.value0) + ")");
+            };
+            if (_2 instanceof Valid) {
+                return "Valid (" + (Prelude.show(__dict_Show_1)(_2.value0) + ")");
+            };
+            throw new Error("Failed pattern match at Data.Validation.Semiring line 53, column 1 - line 57, column 1: " + [ _2.constructor.name ]);
+        });
+    };
+};
+var runV = function (f) {
+    return function (g) {
+        return function (_0) {
+            if (_0 instanceof Invalid) {
+                return f(_0.value0);
+            };
+            if (_0 instanceof Valid) {
+                return g(_0.value0);
+            };
+            throw new Error("Failed pattern match at Data.Validation.Semiring line 44, column 1 - line 45, column 1: " + [ f.constructor.name, g.constructor.name, _0.constructor.name ]);
+        };
+    };
+};
+var isValid = function (_1) {
+    if (_1 instanceof Valid) {
+        return true;
+    };
+    return false;
+};
+var invalid = Invalid.create;
+var functorV = new Prelude.Functor(function (f) {
+    return function (_3) {
+        if (_3 instanceof Invalid) {
+            return new Invalid(_3.value0);
+        };
+        if (_3 instanceof Valid) {
+            return new Valid(f(_3.value0));
+        };
+        throw new Error("Failed pattern match at Data.Validation.Semiring line 57, column 1 - line 61, column 1: " + [ f.constructor.name, _3.constructor.name ]);
+    };
+});
+var applyV = function (__dict_Semiring_3) {
+    return new Prelude.Apply(function () {
+        return functorV;
+    }, function (_4) {
+        return function (_5) {
+            if (_4 instanceof Invalid && _5 instanceof Invalid) {
+                return new Invalid(Prelude["*"](__dict_Semiring_3)(_4.value0)(_5.value0));
+            };
+            if (_4 instanceof Invalid) {
+                return new Invalid(_4.value0);
+            };
+            if (_5 instanceof Invalid) {
+                return new Invalid(_5.value0);
+            };
+            if (_4 instanceof Valid && _5 instanceof Valid) {
+                return new Valid(_4.value0(_5.value0));
+            };
+            throw new Error("Failed pattern match at Data.Validation.Semiring line 61, column 1 - line 67, column 1: " + [ _4.constructor.name, _5.constructor.name ]);
+        };
+    });
+};
+var applicativeV = function (__dict_Semiring_4) {
+    return new Prelude.Applicative(function () {
+        return applyV(__dict_Semiring_4);
+    }, Valid.create);
+};
+var altV = function (__dict_Semiring_5) {
+    return new Control_Alt.Alt(function () {
+        return functorV;
+    }, function (_6) {
+        return function (_7) {
+            if (_6 instanceof Invalid && _7 instanceof Invalid) {
+                return new Invalid(Prelude["+"](__dict_Semiring_5)(_6.value0)(_7.value0));
+            };
+            if (_6 instanceof Invalid) {
+                return _7;
+            };
+            if (_6 instanceof Valid) {
+                return new Valid(_6.value0);
+            };
+            throw new Error("Failed pattern match at Data.Validation.Semiring line 70, column 1 - line 75, column 1: " + [ _6.constructor.name, _7.constructor.name ]);
+        };
+    });
+};
+var plusV = function (__dict_Semiring_2) {
+    return new Control_Plus.Plus(function () {
+        return altV(__dict_Semiring_2);
+    }, new Invalid(Prelude.zero(__dict_Semiring_2)));
+};
+var alernativeV = function (__dict_Semiring_6) {
+    return new Control_Alternative.Alternative(function () {
+        return plusV(__dict_Semiring_6);
+    }, function () {
+        return applicativeV(__dict_Semiring_6);
+    });
+};
+module.exports = {
+    isValid: isValid, 
+    runV: runV, 
+    invalid: invalid, 
+    showV: showV, 
+    functorV: functorV, 
+    applyV: applyV, 
+    applicativeV: applicativeV, 
+    altV: altV, 
+    plusV: plusV, 
+    alernativeV: alernativeV
+};
+
+},{"Control.Alt":"/Users/eugene/github3/en2/output/Control.Alt/index.js","Control.Alternative":"/Users/eugene/github3/en2/output/Control.Alternative/index.js","Control.Plus":"/Users/eugene/github3/en2/output/Control.Plus/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Data.Validation/index.js":[function(require,module,exports){
 // Generated by psc version 0.7.6.1
 "use strict";
 var Prelude = require("Prelude");
@@ -12026,27 +12810,27 @@ var theSite = new Types.Node({
         title: "Contact", 
         path: "contacts", 
         children: [  ], 
-        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "[mailto:eugene.naumenko <$> gmail.com](eugene.naumenko <$> gmail.com)", "[http://eugenen.github.io/](eugenen.github.io)", "[https://drive.google.com/file/d/0B8speZLVOSYvYTZTMXVIbHVnZWM/view](CV)", "[https://twitter.com/8gene](twitter.com/8gene)", "[https://github.com/EugeneN](github.com/EugeneN)", "[https://plus.google.com/+EugeneNaumenko/](https://plus.google.com/+EugeneNaumenko/)" ]))
+        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "[eugene.naumenko^at^gmail.com](mailto:eugene.naumenko^gmail.com)", "", "", "[eugenen.github.io](htp://eugenen.github.io)", "", "", "[Curriculum Vitae](https://drive.google.com/file/d/0B8speZLVOSYvYTZTMXVIbHVnZWM/view)", "", "", "[twitter.com/8gene](https://twitter.com/8gene)", "", "", "[github.com/EugeneN](https://github.com/EugeneN)", "", "", "[plus.google.com/+EugeneNaumenko](https://plus.google.com/+EugeneNaumenko/)" ]))
     }), new Types.Node({
         title: "Blog", 
         path: "blog", 
         children: [  ], 
-        dataSource: new Types.MemorySource("Nothing")
+        dataSource: new Types.MemorySource("Nothing as in Maybe")
     }), new Types.Node({
         title: "Apps", 
         path: "apps", 
         children: [  ], 
-        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "[http://eugenen.github.io/C.MD](C.MD gist editor)", "[http://eugenen.github.io/pureGoL](pureGoL)", "[https://github.com/EugeneN/twic](twic)" ]))
+        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "[C.MD gist editor](http://eugenen.github.io/C.MD): This is a rich markdown editor for Github Gists.&nbsp;", "This is a 100% client side application written in ClojureScript to explore offline mode and multiprocessing for web applications.", "", "", "[pureGoL](http://eugenen.github.io/pureGoL): \u201cGame of Life\u201d game written in Purescript as a research on&nbsp;", "decoupling and encapsulating state between user interface, application core and input effects in reactive web applications.&nbsp;", "Features a stateful core and few distinct interchangeable stateful user interfaces.", "", "", "[twic](https://github.com/EugeneN/twic): Experimental Twitter client written in Haskell and Purescript with clean UI and simple UX.&nbsp;", "Written to explore component models for web applications and usage of immutable cloud database for eventual consistency." ]))
     }), new Types.Node({
         title: "Presentations", 
         path: "presentations", 
         children: [  ], 
-        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "[https://docs.google.com/presentation/d/1IOM9A3Otxufs5xzvYb3yPrT7JDVPhkJVkdaWvVl8R_E/pub?start=false&loop=false&delayms=3000](Purescript)", "[https://docs.google.com/presentation/d/1lfbKvDcXfBdvdu76anAyTglo6O3vP68oYJUa0K-d7zo/pub?start=false&loop=false&delayms=3000](DNA)", "[https://docs.google.com/presentation/d/1e5dyOXcSAp3UCCS3sJMBTttKDmQw8dDq3qYobsTvpKA/pub?start=false&loop=false&delayms=3000](Evolution of client side applications)" ]))
+        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "[Purescript](https://docs.google.com/presentation/d/1IOM9A3Otxufs5xzvYb3yPrT7JDVPhkJVkdaWvVl8R_E/pub?start=false&loop=false&delayms=3000)", "", "", "[DNA](https://docs.google.com/presentation/d/1lfbKvDcXfBdvdu76anAyTglo6O3vP68oYJUa0K-d7zo/pub?start=false&loop=false&delayms=3000)", "", "", "[Evolution of client side applications](https://docs.google.com/presentation/d/1e5dyOXcSAp3UCCS3sJMBTttKDmQw8dDq3qYobsTvpKA/pub?start=false&loop=false&delayms=3000)" ]))
     }), new Types.Node({
         title: "G4", 
         path: "g4", 
         children: [  ], 
-        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "![http://eugenen.github.io/g4/g4massive.png](Many objects)", "![http://eugenen.github.io/g4/g4manywpts.jpg](Many waypoints)", "![http://eugenen.github.io/g4/g4greenbtn1.png](Login screen)", "![http://eugenen.github.io/g4/g4chartsnew.png](Track charts)", "![http://eugenen.github.io/g4/g4evolving.png](More charts)", "![http://eugenen.github.io/g4/g4r.jpg](Tracks comparison)" ]))
+        dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "G4 is a rich web application for managing geospatial data \u2013 GPS tracks, waypoints, geotagged items, custom maps etc. ", "&nbsp;The application features complex geographical/geometric calculations, automatic categorization and clustering of data, ", "&nbsp;real-time push based communications, external RESTful API, spatial search, uses advanced HTML5 ", "&nbsp;features like drag-and-drop multi-file upload, sound effects, interactive svg charting etc.", "", "", "The application is currently offline, but you can see some screenshots here:", "", "![Many objects](http://eugenen.github.io/g4/g4massive.png)", "![Many waypoints](http://eugenen.github.io/g4/g4manywpts.jpg)", "![Login screen](http://eugenen.github.io/g4/g4greenbtn1.png)", "![Track charts](http://eugenen.github.io/g4/g4chartsnew.png)", "![More charts](http://eugenen.github.io/g4/g4evolving.png)", "![Tracks comparison](http://eugenen.github.io/g4/g4r.jpg)" ]))
     }) ]
 });
 var initialState = new Types.AppState({
@@ -12066,6 +12850,8 @@ var Control_Monad_Eff_Console = require("Control.Monad.Eff.Console");
 var Control_Monad_Eff = require("Control.Monad.Eff");
 var Signal = require("Signal");
 var Signal_Channel = require("Signal.Channel");
+var Routing_Hash = require("Routing.Hash");
+var Routing = require("Routing");
 var Types = require("Types");
 var Data = require("Data");
 var Core = require("Core");
@@ -12073,28 +12859,40 @@ var Utils = require("Utils");
 var UI_Console_Main = require("UI.Console.Main");
 var UI_HTML_Main = require("UI.HTML.Main");
 var main = function __do() {
-    var _1 = Utils.getParameterByName("ui")();
+    var _2 = Utils.getParameterByName("ui")();
+    var _1 = Routing_Hash.getHash();
     var _0 = Signal_Channel.channel(Types.Noop.value)();
     return (function () {
         var actionsSig = Signal_Channel.subscribe(_0);
         var app = Signal.foldp(Core.appLogic)(Data.initialState)(actionsSig);
         var renderer = (function () {
-            if (_1 === "html") {
+            if (_2 === "html") {
                 return UI_HTML_Main.renderHTML(_0);
             };
-            if (_1 === "console") {
+            if (_2 === "console") {
                 return UI_Console_Main.renderCLI(_0);
             };
             return UI_Console_Main.renderCLI(_0);
         })();
-        return Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(renderer)(app));
+        return function __do() {
+            Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(renderer)(app))();
+            return Routing.hashChanged(function (old) {
+                return function ($$new) {
+                    return function __do() {
+                        Control_Monad_Eff_Console.log("hash changed: " + (old + (" -> " + $$new)))();
+                        Signal_Channel.send(_0)(new Types.Navigate([ $$new ]))();
+                        return Prelude.unit;
+                    };
+                };
+            })();
+        };
     })()();
 };
 module.exports = {
     main: main
 };
 
-},{"Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","Control.Monad.Eff.Console":"/Users/eugene/github3/en2/output/Control.Monad.Eff.Console/index.js","Core":"/Users/eugene/github3/en2/output/Core/index.js","Data":"/Users/eugene/github3/en2/output/Data/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js","Signal":"/Users/eugene/github3/en2/output/Signal/index.js","Signal.Channel":"/Users/eugene/github3/en2/output/Signal.Channel/index.js","Types":"/Users/eugene/github3/en2/output/Types/index.js","UI.Console.Main":"/Users/eugene/github3/en2/output/UI.Console.Main/index.js","UI.HTML.Main":"/Users/eugene/github3/en2/output/UI.HTML.Main/index.js","Utils":"/Users/eugene/github3/en2/output/Utils/index.js"}],"/Users/eugene/github3/en2/output/Math/foreign.js":[function(require,module,exports){
+},{"Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","Control.Monad.Eff.Console":"/Users/eugene/github3/en2/output/Control.Monad.Eff.Console/index.js","Core":"/Users/eugene/github3/en2/output/Core/index.js","Data":"/Users/eugene/github3/en2/output/Data/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js","Routing":"/Users/eugene/github3/en2/output/Routing/index.js","Routing.Hash":"/Users/eugene/github3/en2/output/Routing.Hash/index.js","Signal":"/Users/eugene/github3/en2/output/Signal/index.js","Signal.Channel":"/Users/eugene/github3/en2/output/Signal.Channel/index.js","Types":"/Users/eugene/github3/en2/output/Types/index.js","UI.Console.Main":"/Users/eugene/github3/en2/output/UI.Console.Main/index.js","UI.HTML.Main":"/Users/eugene/github3/en2/output/UI.HTML.Main/index.js","Utils":"/Users/eugene/github3/en2/output/Utils/index.js"}],"/Users/eugene/github3/en2/output/Math/foreign.js":[function(require,module,exports){
 /* global exports */
 "use strict";
 
@@ -13275,7 +14073,535 @@ module.exports = {
     showOrdering: showOrdering
 };
 
-},{"./foreign":"/Users/eugene/github3/en2/output/Prelude/foreign.js"}],"/Users/eugene/github3/en2/output/Signal.Channel/foreign.js":[function(require,module,exports){
+},{"./foreign":"/Users/eugene/github3/en2/output/Prelude/foreign.js"}],"/Users/eugene/github3/en2/output/Routing.Hash/foreign.js":[function(require,module,exports){
+// module Routing.Hash
+
+exports.setHash = function(hash) {
+    return function() {
+        var uri = document.location.href.split('#')[0];
+        document.location.href = uri + '#' + hash;
+    };
+};
+
+exports.getHash = function() {
+    return document.location.href.split('#').splice(1).join('#');
+};
+
+},{}],"/Users/eugene/github3/en2/output/Routing.Hash/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var $foreign = require("./foreign");
+var Prelude = require("Prelude");
+var Control_Monad_Eff = require("Control.Monad.Eff");
+var DOM = require("DOM");
+var modifyHash = function (fn) {
+    return Prelude[">>="](Control_Monad_Eff.bindEff)(Prelude["<$>"](Control_Monad_Eff.functorEff)(fn)($foreign.getHash))($foreign.setHash);
+};
+module.exports = {
+    modifyHash: modifyHash, 
+    getHash: $foreign.getHash, 
+    setHash: $foreign.setHash
+};
+
+},{"./foreign":"/Users/eugene/github3/en2/output/Routing.Hash/foreign.js","Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","DOM":"/Users/eugene/github3/en2/output/DOM/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Routing.Match.Class/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Prelude = require("Prelude");
+var Control_Alternative = require("Control.Alternative");
+var MatchClass = function (__superclass_Control$dotAlternative$dotAlternative_0, bool, fail, lit, num, param, str) {
+    this["__superclass_Control.Alternative.Alternative_0"] = __superclass_Control$dotAlternative$dotAlternative_0;
+    this.bool = bool;
+    this.fail = fail;
+    this.lit = lit;
+    this.num = num;
+    this.param = param;
+    this.str = str;
+};
+var str = function (dict) {
+    return dict.str;
+};
+var param = function (dict) {
+    return dict.param;
+};
+var num = function (dict) {
+    return dict.num;
+};
+var lit = function (dict) {
+    return dict.lit;
+};
+var fail = function (dict) {
+    return dict.fail;
+};
+var bool = function (dict) {
+    return dict.bool;
+};
+module.exports = {
+    MatchClass: MatchClass, 
+    fail: fail, 
+    bool: bool, 
+    num: num, 
+    param: param, 
+    str: str, 
+    lit: lit
+};
+
+},{"Control.Alternative":"/Users/eugene/github3/en2/output/Control.Alternative/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Routing.Match.Error/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Prelude = require("Prelude");
+var UnexpectedPath = (function () {
+    function UnexpectedPath(value0) {
+        this.value0 = value0;
+    };
+    UnexpectedPath.create = function (value0) {
+        return new UnexpectedPath(value0);
+    };
+    return UnexpectedPath;
+})();
+var ExpectedBoolean = (function () {
+    function ExpectedBoolean() {
+
+    };
+    ExpectedBoolean.value = new ExpectedBoolean();
+    return ExpectedBoolean;
+})();
+var ExpectedNumber = (function () {
+    function ExpectedNumber() {
+
+    };
+    ExpectedNumber.value = new ExpectedNumber();
+    return ExpectedNumber;
+})();
+var ExpectedString = (function () {
+    function ExpectedString() {
+
+    };
+    ExpectedString.value = new ExpectedString();
+    return ExpectedString;
+})();
+var ExpectedQuery = (function () {
+    function ExpectedQuery() {
+
+    };
+    ExpectedQuery.value = new ExpectedQuery();
+    return ExpectedQuery;
+})();
+var ExpectedPathPart = (function () {
+    function ExpectedPathPart() {
+
+    };
+    ExpectedPathPart.value = new ExpectedPathPart();
+    return ExpectedPathPart;
+})();
+var KeyNotFound = (function () {
+    function KeyNotFound(value0) {
+        this.value0 = value0;
+    };
+    KeyNotFound.create = function (value0) {
+        return new KeyNotFound(value0);
+    };
+    return KeyNotFound;
+})();
+var Fail = (function () {
+    function Fail(value0) {
+        this.value0 = value0;
+    };
+    Fail.create = function (value0) {
+        return new Fail(value0);
+    };
+    return Fail;
+})();
+var showMatchError = function (err) {
+    if (err instanceof UnexpectedPath) {
+        return "expected path part: " + err.value0;
+    };
+    if (err instanceof KeyNotFound) {
+        return "key: " + (err.value0 + " has not found in query part");
+    };
+    if (err instanceof ExpectedQuery) {
+        return "expected query - found path";
+    };
+    if (err instanceof ExpectedNumber) {
+        return "expected number";
+    };
+    if (err instanceof ExpectedBoolean) {
+        return "expected boolean";
+    };
+    if (err instanceof ExpectedString) {
+        return "expected string var";
+    };
+    if (err instanceof ExpectedPathPart) {
+        return "expected path part, found query";
+    };
+    if (err instanceof Fail) {
+        return "match error: " + err.value0;
+    };
+    throw new Error("Failed pattern match at Routing.Match.Error line 23, column 1 - line 24, column 1: " + [ err.constructor.name ]);
+};
+module.exports = {
+    UnexpectedPath: UnexpectedPath, 
+    ExpectedBoolean: ExpectedBoolean, 
+    ExpectedNumber: ExpectedNumber, 
+    ExpectedString: ExpectedString, 
+    ExpectedQuery: ExpectedQuery, 
+    ExpectedPathPart: ExpectedPathPart, 
+    KeyNotFound: KeyNotFound, 
+    Fail: Fail, 
+    showMatchError: showMatchError
+};
+
+},{"Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js"}],"/Users/eugene/github3/en2/output/Routing.Match/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Prelude = require("Prelude");
+var Data_Either = require("Data.Either");
+var Data_Tuple = require("Data.Tuple");
+var Data_Maybe = require("Data.Maybe");
+var Data_List = require("Data.List");
+var Control_Alt = require("Control.Alt");
+var Control_Plus = require("Control.Plus");
+var Control_Alternative = require("Control.Alternative");
+var Control_Monad_Except = require("Control.Monad.Except");
+var Global = require("Global");
+var Data_Semiring_Free = require("Data.Semiring.Free");
+var Data_Foldable = require("Data.Foldable");
+var Data_Validation_Semiring = require("Data.Validation.Semiring");
+var Data_Map = require("Data.Map");
+var Data_String = require("Data.String");
+var Routing_Parser = require("Routing.Parser");
+var Routing_Types = require("Routing.Types");
+var Routing_Match_Class = require("Routing.Match.Class");
+var Routing_Match_Error = require("Routing.Match.Error");
+var Match = function (x) {
+    return x;
+};
+var unMatch = function (_5) {
+    return _5;
+};
+var runMatch = function (_7) {
+    return function (route) {
+        var foldErrors = function (errs) {
+            return Data_Either.Left.create(Data_Foldable.foldl(Data_List.foldableList)(function (b) {
+                return function (a) {
+                    return a + ("\n" + b);
+                };
+            })("")(Prelude.bind(Data_List.bindList)(Prelude["<$>"](Data_List.functorList)(Data_List.reverse)(Data_Semiring_Free.runFree(errs)))(function (_0) {
+                return Prelude.pure(Data_List.applicativeList)(Data_Foldable.foldl(Data_List.foldableList)(function (b) {
+                    return function (a) {
+                        return a + (";" + b);
+                    };
+                })("")(Prelude["<$>"](Data_List.functorList)(Routing_Match_Error.showMatchError)(_0)));
+            })));
+        };
+        return Data_Validation_Semiring.runV(foldErrors)(function (_76) {
+            return Data_Either.Right.create(Data_Tuple.snd(_76));
+        })(_7(route));
+    };
+};
+var matchFunctor = new Prelude.Functor(function (fn) {
+    return function (_9) {
+        return Match(function (r) {
+            return Data_Validation_Semiring.runV(Data_Validation_Semiring.invalid)(function (_2) {
+                return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(_2.value0, fn(_2.value1)));
+            })(_9(r));
+        });
+    };
+});
+var matchApply = new Prelude.Apply(function () {
+    return matchFunctor;
+}, function (_12) {
+    return function (_13) {
+        var processFnRes = function (_14) {
+            return Data_Validation_Semiring.runV(Data_Validation_Semiring.invalid)(function (_3) {
+                return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(_3.value0, _14.value1(_3.value1)));
+            })(_13(_14.value0));
+        };
+        var processFnErr = function (r) {
+            return function (err) {
+                return Data_Validation_Semiring.invalid(Prelude["*"](Data_Semiring_Free.semiringFree)(err)(Data_Validation_Semiring.runV(Prelude.id(Prelude.categoryFn))(Prelude["const"](Prelude.one(Data_Semiring_Free.semiringFree)))(_13(r))));
+            };
+        };
+        return Match(function (r) {
+            return Data_Validation_Semiring.runV(processFnErr(r))(processFnRes)(_12(r));
+        });
+    };
+});
+var matchApplicative = new Prelude.Applicative(function () {
+    return matchApply;
+}, function (a) {
+    return function (r) {
+        return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(r, a));
+    };
+});
+var matchAlt = new Control_Alt.Alt(function () {
+    return matchFunctor;
+}, function (_10) {
+    return function (_11) {
+        return Match(function (r) {
+            return Control_Alt["<|>"](Data_Validation_Semiring.altV(Data_Semiring_Free.semiringFree))(_10(r))(_11(r));
+        });
+    };
+});
+var matchPlus = new Control_Plus.Plus(function () {
+    return matchAlt;
+}, Match(Prelude["const"](Data_Validation_Semiring.invalid(Prelude.one(Data_Semiring_Free.semiringFree)))));
+var matchAlternative = new Control_Alternative.Alternative(function () {
+    return matchPlus;
+}, function () {
+    return matchApplicative;
+});
+var matchMatchClass = new Routing_Match_Class.MatchClass(function () {
+    return matchAlternative;
+}, Match(function (route) {
+    if (route instanceof Data_List.Cons && (route.value0 instanceof Routing_Types.Path && Prelude["=="](Prelude.eqString)(route.value0.value0)("true"))) {
+        return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(route.value1, true));
+    };
+    if (route instanceof Data_List.Cons && (route.value0 instanceof Routing_Types.Path && Prelude["=="](Prelude.eqString)(route.value0.value0)("false"))) {
+        return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(route.value1, false));
+    };
+    return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(Routing_Match_Error.ExpectedBoolean.value));
+}), function (msg) {
+    return function (_1) {
+        return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(new Routing_Match_Error.Fail(msg)));
+    };
+}, function (input) {
+    return Match(function (route) {
+        if (route instanceof Data_List.Cons && (route.value0 instanceof Routing_Types.Path && Prelude["=="](Prelude.eqString)(route.value0.value0)(input))) {
+            return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(route.value1, Prelude.unit));
+        };
+        if (route instanceof Data_List.Cons && route.value0 instanceof Routing_Types.Path) {
+            return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(new Routing_Match_Error.UnexpectedPath(input)));
+        };
+        return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(Routing_Match_Error.ExpectedPathPart.value));
+    });
+}, Match(function (route) {
+    if (route instanceof Data_List.Cons && route.value0 instanceof Routing_Types.Path) {
+        var res = Global.readFloat(route.value0.value0);
+        var _51 = Global.isNaN(res);
+        if (_51) {
+            return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(Routing_Match_Error.ExpectedNumber.value));
+        };
+        if (!_51) {
+            return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(route.value1, res));
+        };
+        throw new Error("Failed pattern match at Routing.Match line 30, column 1 - line 79, column 1: " + [ _51.constructor.name ]);
+    };
+    return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(Routing_Match_Error.ExpectedNumber.value));
+}), function (key) {
+    return Match(function (route) {
+        if (route instanceof Data_List.Cons && route.value0 instanceof Routing_Types.Query) {
+            var _56 = Data_Map.lookup(Prelude.ordString)(key)(route.value0.value0);
+            if (_56 instanceof Data_Maybe.Nothing) {
+                return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(new Routing_Match_Error.KeyNotFound(key)));
+            };
+            if (_56 instanceof Data_Maybe.Just) {
+                return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(new Data_List.Cons(Routing_Types.Query.create(Data_Map["delete"](Prelude.ordString)(key)(route.value0.value0)), route.value1), _56.value0));
+            };
+            throw new Error("Failed pattern match at Routing.Match line 30, column 1 - line 79, column 1: " + [ _56.constructor.name ]);
+        };
+        return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(Routing_Match_Error.ExpectedQuery.value));
+    });
+}, Match(function (route) {
+    if (route instanceof Data_List.Cons && route.value0 instanceof Routing_Types.Path) {
+        return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(route.value1, route.value0.value0));
+    };
+    return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(Routing_Match_Error.ExpectedString.value));
+}));
+var list = function (_6) {
+    var go = function (accum) {
+        return function (r) {
+            return Data_Validation_Semiring.runV(Prelude["const"](Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(r, Data_List.reverse(accum)))))(function (_4) {
+                return go(new Data_List.Cons(_4.value1, accum))(_4.value0);
+            })(_6(r));
+        };
+    };
+    return Match(go(Data_List.Nil.value));
+};
+var eitherMatch = function (_8) {
+    var runEither = function (_15) {
+        if (_15.value1 instanceof Data_Either.Left) {
+            return Data_Validation_Semiring.invalid(Data_Semiring_Free.free(new Routing_Match_Error.Fail("Nested check failed")));
+        };
+        if (_15.value1 instanceof Data_Either.Right) {
+            return Prelude.pure(Data_Validation_Semiring.applicativeV(Data_Semiring_Free.semiringFree))(new Data_Tuple.Tuple(_15.value0, _15.value1.value0));
+        };
+        throw new Error("Failed pattern match at Routing.Match line 150, column 3 - line 153, column 36: " + [ _15.value1.constructor.name ]);
+    };
+    return Match(function (r) {
+        return Data_Validation_Semiring.runV(Data_Validation_Semiring.invalid)(runEither)(_8(r));
+    });
+};
+module.exports = {
+    Match: Match, 
+    eitherMatch: eitherMatch, 
+    runMatch: runMatch, 
+    list: list, 
+    unMatch: unMatch, 
+    matchMatchClass: matchMatchClass, 
+    matchFunctor: matchFunctor, 
+    matchAlt: matchAlt, 
+    matchPlus: matchPlus, 
+    matchAlternative: matchAlternative, 
+    matchApply: matchApply, 
+    matchApplicative: matchApplicative
+};
+
+},{"Control.Alt":"/Users/eugene/github3/en2/output/Control.Alt/index.js","Control.Alternative":"/Users/eugene/github3/en2/output/Control.Alternative/index.js","Control.Monad.Except":"/Users/eugene/github3/en2/output/Control.Monad.Except/index.js","Control.Plus":"/Users/eugene/github3/en2/output/Control.Plus/index.js","Data.Either":"/Users/eugene/github3/en2/output/Data.Either/index.js","Data.Foldable":"/Users/eugene/github3/en2/output/Data.Foldable/index.js","Data.List":"/Users/eugene/github3/en2/output/Data.List/index.js","Data.Map":"/Users/eugene/github3/en2/output/Data.Map/index.js","Data.Maybe":"/Users/eugene/github3/en2/output/Data.Maybe/index.js","Data.Semiring.Free":"/Users/eugene/github3/en2/output/Data.Semiring.Free/index.js","Data.String":"/Users/eugene/github3/en2/output/Data.String/index.js","Data.Tuple":"/Users/eugene/github3/en2/output/Data.Tuple/index.js","Data.Validation.Semiring":"/Users/eugene/github3/en2/output/Data.Validation.Semiring/index.js","Global":"/Users/eugene/node_modules/Global/window.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js","Routing.Match.Class":"/Users/eugene/github3/en2/output/Routing.Match.Class/index.js","Routing.Match.Error":"/Users/eugene/github3/en2/output/Routing.Match.Error/index.js","Routing.Parser":"/Users/eugene/github3/en2/output/Routing.Parser/index.js","Routing.Types":"/Users/eugene/github3/en2/output/Routing.Types/index.js"}],"/Users/eugene/github3/en2/output/Routing.Parser/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Prelude = require("Prelude");
+var Control_MonadPlus = require("Control.MonadPlus");
+var Data_Maybe = require("Data.Maybe");
+var Data_Tuple = require("Data.Tuple");
+var Data_List = require("Data.List");
+var Data_Traversable = require("Data.Traversable");
+var Data_Map = require("Data.Map");
+var Data_String = require("Data.String");
+var Data_Array = require("Data.Array");
+var Routing_Types = require("Routing.Types");
+var Data_Foldable = require("Data.Foldable");
+var parsePart = function (str) {
+    var parts = Data_List.toList(Data_Foldable.foldableArray)(Data_String.split("&")(Data_String.drop(1)(str)));
+    var part2tuple = function (input) {
+        var keyVal = Data_String.split("=")(input);
+        return Prelude.bind(Data_Maybe.bindMaybe)(Control_MonadPlus.guard(Data_Maybe.monadPlusMaybe)(Data_Array.length(keyVal) <= 2))(function () {
+            return Prelude["<*>"](Data_Maybe.applyMaybe)(Prelude["<$>"](Data_Maybe.functorMaybe)(Data_Tuple.Tuple.create)(Data_Array.head(keyVal)))(Data_Array["!!"](keyVal)(1));
+        });
+    };
+    return Data_Maybe.fromMaybe(new Routing_Types.Path(str))(Prelude.bind(Data_Maybe.bindMaybe)(Control_MonadPlus.guard(Data_Maybe.monadPlusMaybe)(Prelude["=="](Prelude.eqString)(Data_String.take(1)(str))("?")))(function () {
+        return Prelude.map(Data_Maybe.functorMaybe)(function (_0) {
+            return Routing_Types.Query.create(Data_Map.fromList(Prelude.ordString)(_0));
+        })(Data_Traversable.traverse(Data_List.traversableList)(Data_Maybe.applicativeMaybe)(part2tuple)(parts));
+    }));
+};
+var parse = function (decoder) {
+    return function (hash) {
+        return Prelude.map(Data_List.functorList)(Prelude[">>>"](Prelude.semigroupoidFn)(decoder)(parsePart))(Data_List.toList(Data_Foldable.foldableArray)(Data_String.split("/")(hash)));
+    };
+};
+module.exports = {
+    parse: parse
+};
+
+},{"Control.MonadPlus":"/Users/eugene/github3/en2/output/Control.MonadPlus/index.js","Data.Array":"/Users/eugene/github3/en2/output/Data.Array/index.js","Data.Foldable":"/Users/eugene/github3/en2/output/Data.Foldable/index.js","Data.List":"/Users/eugene/github3/en2/output/Data.List/index.js","Data.Map":"/Users/eugene/github3/en2/output/Data.Map/index.js","Data.Maybe":"/Users/eugene/github3/en2/output/Data.Maybe/index.js","Data.String":"/Users/eugene/github3/en2/output/Data.String/index.js","Data.Traversable":"/Users/eugene/github3/en2/output/Data.Traversable/index.js","Data.Tuple":"/Users/eugene/github3/en2/output/Data.Tuple/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js","Routing.Types":"/Users/eugene/github3/en2/output/Routing.Types/index.js"}],"/Users/eugene/github3/en2/output/Routing.Types/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var Data_List = require("Data.List");
+var Data_Map = require("Data.Map");
+var Path = (function () {
+    function Path(value0) {
+        this.value0 = value0;
+    };
+    Path.create = function (value0) {
+        return new Path(value0);
+    };
+    return Path;
+})();
+var Query = (function () {
+    function Query(value0) {
+        this.value0 = value0;
+    };
+    Query.create = function (value0) {
+        return new Query(value0);
+    };
+    return Query;
+})();
+module.exports = {
+    Path: Path, 
+    Query: Query
+};
+
+},{"Data.List":"/Users/eugene/github3/en2/output/Data.List/index.js","Data.Map":"/Users/eugene/github3/en2/output/Data.Map/index.js"}],"/Users/eugene/github3/en2/output/Routing/foreign.js":[function(require,module,exports){
+// module Routing
+
+exports.hashChanged = function(handler) {
+    return function() {
+        var getHash = function() {
+            return document.location.href.split('#').splice(1).join('#');
+        };
+        var oldHash = '';
+        handler('')(getHash())();
+        window.addEventListener('hashchange', function(ev) {
+            var newHash = getHash();
+            handler(oldHash)(newHash)();
+            oldHash = newHash;
+        });
+    };
+};
+
+exports.decodeURIComponent = window.decodeURIComponent;
+
+},{}],"/Users/eugene/github3/en2/output/Routing/index.js":[function(require,module,exports){
+// Generated by psc version 0.7.6.1
+"use strict";
+var $foreign = require("./foreign");
+var Prelude = require("Prelude");
+var Control_Monad_Eff = require("Control.Monad.Eff");
+var Control_Monad_Aff = require("Control.Monad.Aff");
+var Data_Maybe = require("Data.Maybe");
+var Data_Either = require("Data.Either");
+var Data_Tuple = require("Data.Tuple");
+var Data_String_Regex = require("Data.String.Regex");
+var Routing_Parser = require("Routing.Parser");
+var Routing_Match = require("Routing.Match");
+var matchHash$prime = function (decoder) {
+    return function (matcher) {
+        return function (hash) {
+            return Routing_Match.runMatch(matcher)(Routing_Parser.parse(decoder)(hash));
+        };
+    };
+};
+var matchHash = matchHash$prime($foreign.decodeURIComponent);
+var hashes = function (cb) {
+    var dropHash = function (h) {
+        return Data_String_Regex.replace(Data_String_Regex.regex("^[^#]*#")(Data_String_Regex.noFlags))("")(h);
+    };
+    return $foreign.hashChanged(function (old) {
+        return function ($$new) {
+            return cb(dropHash(old))(dropHash($$new));
+        };
+    });
+};
+var matches$prime = function (decoder) {
+    return function (routing) {
+        return function (cb) {
+            return hashes(function (old) {
+                return function ($$new) {
+                    var mr = matchHash$prime(decoder)(routing);
+                    var fst = Data_Either.either(Prelude["const"](Data_Maybe.Nothing.value))(Data_Maybe.Just.create)(mr(old));
+                    return Data_Either.either(Prelude["const"](Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit)))(cb(fst))(mr($$new));
+                };
+            });
+        };
+    };
+};
+var matches = matches$prime($foreign.decodeURIComponent);
+var matchesAff$prime = function (decoder) {
+    return function (routing) {
+        return Control_Monad_Aff.makeAff(function (_0) {
+            return function (k) {
+                return matches$prime(decoder)(routing)(function (old) {
+                    return function ($$new) {
+                        return k(new Data_Tuple.Tuple(old, $$new));
+                    };
+                });
+            };
+        });
+    };
+};
+var matchesAff = matchesAff$prime($foreign.decodeURIComponent);
+module.exports = {
+    "matchesAff'": matchesAff$prime, 
+    matchesAff: matchesAff, 
+    "matchHash'": matchHash$prime, 
+    matchHash: matchHash, 
+    "matches'": matches$prime, 
+    matches: matches, 
+    hashes: hashes, 
+    hashChanged: $foreign.hashChanged
+};
+
+},{"./foreign":"/Users/eugene/github3/en2/output/Routing/foreign.js","Control.Monad.Aff":"/Users/eugene/github3/en2/output/Control.Monad.Aff/index.js","Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","Data.Either":"/Users/eugene/github3/en2/output/Data.Either/index.js","Data.Maybe":"/Users/eugene/github3/en2/output/Data.Maybe/index.js","Data.String.Regex":"/Users/eugene/github3/en2/output/Data.String.Regex/index.js","Data.Tuple":"/Users/eugene/github3/en2/output/Data.Tuple/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js","Routing.Match":"/Users/eugene/github3/en2/output/Routing.Match/index.js","Routing.Parser":"/Users/eugene/github3/en2/output/Routing.Parser/index.js"}],"/Users/eugene/github3/en2/output/Signal.Channel/foreign.js":[function(require,module,exports){
 // module Signal.Channel
 
 exports.channelP =
@@ -19578,7 +20904,7 @@ module.exports = {
 },{"./foreign":"/Users/eugene/github3/en2/output/UI.Console.Main/foreign.js","Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js","Control.Monad.Eff.Console":"/Users/eugene/github3/en2/output/Control.Monad.Eff.Console/index.js","Core":"/Users/eugene/github3/en2/output/Core/index.js","Data":"/Users/eugene/github3/en2/output/Data/index.js","Data.Maybe":"/Users/eugene/github3/en2/output/Data.Maybe/index.js","Prelude":"/Users/eugene/github3/en2/output/Prelude/index.js","Signal.Channel":"/Users/eugene/github3/en2/output/Signal.Channel/index.js","Text.Markdown.SlamDown.Parser":"/Users/eugene/github3/en2/output/Text.Markdown.SlamDown.Parser/index.js","Text.Markdown.SlamDown.Pretty":"/Users/eugene/github3/en2/output/Text.Markdown.SlamDown.Pretty/index.js","Types":"/Users/eugene/github3/en2/output/Types/index.js"}],"/Users/eugene/github3/en2/output/UI.HTML.Main/foreign.js":[function(require,module,exports){
 // module UI.HTML.Main
 
-exports.setInnerHTML = function (html) {return function() {document.body.innerHTML = html; return {}; } }
+exports.injectBody = function (html) {return function() {document.body.innerHTML = html; return {}; } }
 exports.toString = function (a) {
   console.log(a)
   return a.toString() }
@@ -19605,6 +20931,18 @@ var Text_Smolder_Renderer_String = require("Text.Smolder.Renderer.String");
 var Data = require("Data");
 var Types = require("Types");
 var Core = require("Core");
+var MenuItem = (function () {
+    function MenuItem(value0, value1) {
+        this.value0 = value0;
+        this.value1 = value1;
+    };
+    MenuItem.create = function (value0) {
+        return function (value1) {
+            return new MenuItem(value0, value1);
+        };
+    };
+    return MenuItem;
+})();
 var ToHtml = function (toHtml) {
     this.toHtml = toHtml;
 };
@@ -19628,32 +20966,22 @@ var toHtmlInline = new ToHtml(function (_10) {
         return Text_Smolder_HTML.br;
     };
     if (_10 instanceof Text_Markdown_SlamDown.Emph) {
-        return Text_Smolder_HTML.em(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(function (x) {
-            return toHtml(toHtmlInline)(x);
-        }));
+        return Text_Smolder_HTML.em(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(toHtml(toHtmlInline)));
     };
     if (_10 instanceof Text_Markdown_SlamDown.Strong) {
-        return Text_Smolder_HTML.strong(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(function (x) {
-            return toHtml(toHtmlInline)(x);
-        }));
+        return Text_Smolder_HTML.strong(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(toHtml(toHtmlInline)));
     };
     if (_10 instanceof Text_Markdown_SlamDown.Code) {
         return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("inline-code"))(Text_Smolder_Markup.text(_10.value1));
     };
     if (_10 instanceof Text_Markdown_SlamDown.Link && _10.value1 instanceof Text_Markdown_SlamDown.InlineLink) {
-        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_10.value1.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(function (x) {
-            return toHtml(toHtmlInline)(x);
-        }));
+        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_10.value1.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(toHtml(toHtmlInline)));
     };
     if (_10 instanceof Text_Markdown_SlamDown.Link && (_10.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _10.value1.value0 instanceof Data_Maybe.Nothing)) {
-        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(function (x) {
-            return toHtml(toHtmlInline)(x);
-        }));
+        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(toHtml(toHtmlInline)));
     };
     if (_10 instanceof Text_Markdown_SlamDown.Link && (_10.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _10.value1.value0 instanceof Data_Maybe.Just)) {
-        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_10.value1.value0.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(function (x) {
-            return toHtml(toHtmlInline)(x);
-        }));
+        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_10.value1.value0.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_10.value0)(toHtml(toHtmlInline)));
     };
     if (_10 instanceof Text_Markdown_SlamDown.Image) {
         return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.img)(Text_Smolder_HTML_Attributes.src(_10.value1));
@@ -19664,62 +20992,40 @@ var toHtmlInline = new ToHtml(function (_10) {
     throw new Error("Failed pattern match: " + [ _10.constructor.name ]);
 });
 var toHtmlListBlock = new ToHtml(function (as) {
-    return Text_Smolder_HTML.p(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(as)(function (x) {
-        return toHtml(toHtmlBlock)(x);
-    }));
+    return Text_Smolder_HTML.p(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(as)(toHtml(toHtmlBlock)));
 });
 var toHtmlBlock = new ToHtml(function (_9) {
     if (_9 instanceof Text_Markdown_SlamDown.Paragraph) {
-        return Text_Smolder_HTML.p(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value0)(function (x) {
-            return toHtml(toHtmlInline)(x);
-        }));
+        return Text_Smolder_HTML.p(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value0)(toHtml(toHtmlInline)));
     };
     if (_9 instanceof Text_Markdown_SlamDown.Header) {
         if (_9.value0 === 1) {
-            return Text_Smolder_HTML.h1(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-                return toHtml(toHtmlInline)(x);
-            }));
+            return Text_Smolder_HTML.h1(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlInline)));
         };
         if (_9.value0 === 2) {
-            return Text_Smolder_HTML.h2(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-                return toHtml(toHtmlInline)(x);
-            }));
+            return Text_Smolder_HTML.h2(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlInline)));
         };
         if (_9.value0 === 3) {
-            return Text_Smolder_HTML.h3(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-                return toHtml(toHtmlInline)(x);
-            }));
+            return Text_Smolder_HTML.h3(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlInline)));
         };
         if (_9.value0 === 4) {
-            return Text_Smolder_HTML.h4(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-                return toHtml(toHtmlInline)(x);
-            }));
+            return Text_Smolder_HTML.h4(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlInline)));
         };
         if (_9.value0 === 5) {
-            return Text_Smolder_HTML.h5(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-                return toHtml(toHtmlInline)(x);
-            }));
+            return Text_Smolder_HTML.h5(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlInline)));
         };
         if (_9.value0 === 6) {
-            return Text_Smolder_HTML.h6(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-                return toHtml(toHtmlInline)(x);
-            }));
+            return Text_Smolder_HTML.h6(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlInline)));
         };
     };
     if (_9 instanceof Text_Markdown_SlamDown.Blockquote) {
-        return Text_Smolder_HTML.blockquote(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value0)(function (x) {
-            return toHtml(toHtmlBlock)(x);
-        }));
+        return Text_Smolder_HTML.blockquote(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value0)(toHtml(toHtmlBlock)));
     };
     if (_9 instanceof Text_Markdown_SlamDown.Lst && _9.value0 instanceof Text_Markdown_SlamDown.Bullet) {
-        return Text_Smolder_HTML.ul(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-            return toHtml(toHtmlListBlock)(x);
-        }));
+        return Text_Smolder_HTML.ul(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlListBlock)));
     };
     if (_9 instanceof Text_Markdown_SlamDown.Lst && _9.value0 instanceof Text_Markdown_SlamDown.Ordered) {
-        return Text_Smolder_HTML.ol(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(function (x) {
-            return toHtml(toHtmlListBlock)(x);
-        }));
+        return Text_Smolder_HTML.ol(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_9.value1)(toHtml(toHtmlListBlock)));
     };
     if (_9 instanceof Text_Markdown_SlamDown.CodeBlock) {
         return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("code"))(Text_Smolder_Markup.text(Prelude.show(Data_List.showList(Prelude.showString))(_9.value1)));
@@ -19739,79 +21045,52 @@ var readSource = function (_2) {
     if (_2 instanceof Types.MemorySource) {
         return _2.value0;
     };
-    throw new Error("Failed pattern match at UI.HTML.Main line 33, column 1 - line 35, column 1: " + [ _2.constructor.name ]);
+    throw new Error("Failed pattern match at UI.HTML.Main line 28, column 1 - line 30, column 1: " + [ _2.constructor.name ]);
 };
 var parseBody = function (_3) {
-    if (_3 instanceof Data_Maybe.Nothing) {
-        return new Text_Markdown_SlamDown.SlamDown(Data_Monoid.mempty(Data_List.monoidList));
-    };
-    if (_3 instanceof Data_Maybe.Just) {
-        return Text_Markdown_SlamDown_Parser.parseMd(readSource(_3.value0.value0.dataSource));
-    };
-    throw new Error("Failed pattern match at UI.HTML.Main line 35, column 1 - line 36, column 1: " + [ _3.constructor.name ]);
+    return Text_Markdown_SlamDown_Parser.parseMd(readSource(_3.value0.dataSource));
 };
-var getTitle = function (_5) {
-    return _5.value0.title;
+var page404 = Text_Markdown_SlamDown_Parser.parseMd("## 404 Not found");
+var getTitle = function (_4) {
+    return _4.value0.title;
+};
+var getPath = function (_5) {
+    return _5.value0.path;
 };
 var getMenuItems = function (_6) {
     return Prelude["<#>"](Prelude.functorArray)(_6.value0.children)(function (_0) {
-        return _0.value0.title;
+        return new MenuItem(_0.value0.path, _0.value0.title);
     });
 };
 var renderHTML = function (inputChannel) {
     return function (_7) {
-        var markdownAST = parseBody(Core.getCurrentNode(_7));
+        var markdownAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(parseBody)(Core.getCurrentNode(_7)));
         var payloadHtml = toHtml(toHtmlSlamDown)(markdownAST);
-        var doc = Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.html)(Text_Smolder_HTML_Attributes.lang("en"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.head(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.meta)(Text_Smolder_HTML_Attributes.charset("utf-8")))(function () {
-            return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.title(Text_Smolder_Markup.text(getTitle(Data.theSite))))(function () {
-                return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.meta)(Text_Smolder_HTML_Attributes.name("description")))(Text_Smolder_HTML_Attributes.content("YES OMG HAI LOL")))(function () {
-                    return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.meta)(Text_Smolder_HTML_Attributes.name("viewport")))(Text_Smolder_HTML_Attributes.content("width=device-width")))(function () {
-                        return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.link)(Text_Smolder_HTML_Attributes.rel("stylesheet")))(Text_Smolder_HTML_Attributes.href("https://fonts.googleapis.com/css?family=Montserrat:400,700|Montserrat+Alternates:400,700|Montserrat+Subrayada:400,700|Quattrocento:400,700|Quattrocento+Sans:400,400italic,700,700italic&subset=latin,latin-ext")))(function () {
-                            return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.link)(Text_Smolder_HTML_Attributes.rel("stylesheet")))(Text_Smolder_HTML_Attributes.href("https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic,700italic|Source+Code+Pro:100,200,300,400,600,700,900&subset=latin,cyrillic,cyrillic-ext,greek-ext,greek,latin-ext")))(function () {
-                                return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.link)(Text_Smolder_HTML_Attributes.rel("stylesheet")))(Text_Smolder_HTML_Attributes.href("screen.css"));
-                            });
-                        });
-                    });
+        var currentPath = Data_Maybe.fromMaybe("404")(Prelude["<$>"](Data_Maybe.functorMaybe)(getPath)(Core.getCurrentNode(_7)));
+        var doc = Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("CLI mode")))(function () {
+            return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.h1)(Text_Smolder_HTML_Attributes.className("name"))(Text_Smolder_Markup.text(getTitle(Data.theSite))))(function () {
+                return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(getMenuItems(Data.theSite))(function (_1) {
+                    var _65 = Prelude["=="](Prelude.eqString)(_1.value0)(currentPath);
+                    if (_65) {
+                        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("current-menu-item")))(Text_Smolder_HTML_Attributes.href("#" + _1.value0))(Text_Smolder_Markup.text(_1.value1));
+                    };
+                    if (!_65) {
+                        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#" + _1.value0))(Text_Smolder_Markup.text(_1.value1));
+                    };
+                    throw new Error("Failed pattern match at UI.HTML.Main line 87, column 7 - line 107, column 3: " + [ _65.constructor.name ]);
+                })))(function () {
+                    return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(payloadHtml))(function () {
+                        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section footer"))(Text_Smolder_HTML.span(Text_Smolder_Markup.text("&copy; 2015")));
+                    }));
                 });
             });
-        })))(function () {
-            return Text_Smolder_HTML.body(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("Console UI")))(function () {
-                return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.h1)(Text_Smolder_HTML_Attributes.className("name"))(Text_Smolder_Markup.text(getTitle(Data.theSite))))(function () {
-                    return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(getMenuItems(Data.theSite))(function (x) {
-                        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#" + x))(Text_Smolder_Markup.text(x));
-                    })))(function () {
-                        return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.h2(Text_Smolder_Markup.text(Data_Maybe.fromMaybe("-no title-")(Prelude["<$>"](Data_Maybe.functorMaybe)(getTitle)(Core.getCurrentNode(_7))))))(function () {
-                            return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(payloadHtml))(function () {
-                                return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section footer"))(Text_Smolder_HTML.span(Text_Smolder_Markup.text("&copy; 2015")));
-                            });
-                        }));
-                    });
-                });
-            }))));
-        }));
+        })));
         return function __do() {
             Control_Monad_Eff_Console.log(Prelude.show(Text_Markdown_SlamDown.showSlamDown)(markdownAST))();
             Control_Monad_Eff_Console.log($foreign.toString(payloadHtml))();
-            return $foreign.setInnerHTML(Text_Smolder_Renderer_String.render(doc))();
+            return $foreign.injectBody(Text_Smolder_Renderer_String.render(doc))();
         };
     };
-};
-var formatText = function (title) {
-    return function (_4) {
-        if (_4 instanceof Types.MemorySource) {
-            return "\n\n" + (Text_Markdown_SlamDown_Pretty.prettyPrintMd(Text_Markdown_SlamDown_Parser.parseMd(title + ("\n========\n\n" + _4.value0))) + "\n(c) 2015\n\n");
-        };
-        return "\n\n" + (Text_Markdown_SlamDown_Pretty.prettyPrintMd(Text_Markdown_SlamDown_Parser.parseMd(title + "\n========\n\n-no data-")) + "\n(c) 2015\n\n");
-    };
-};
-var showNode = function (_1) {
-    if (_1 instanceof Data_Maybe.Nothing) {
-        return "404 No such page";
-    };
-    if (_1 instanceof Data_Maybe.Just) {
-        return formatText(_1.value0.value0.title)(_1.value0.value0.dataSource);
-    };
-    throw new Error("Failed pattern match at UI.HTML.Main line 29, column 1 - line 30, column 1: " + [ _1.constructor.name ]);
 };
 module.exports = {
     renderHTML: renderHTML
@@ -19856,4 +21135,17 @@ module.exports = {
 },{"./foreign":"/Users/eugene/github3/en2/output/Utils/foreign.js","Control.Monad.Eff":"/Users/eugene/github3/en2/output/Control.Monad.Eff/index.js"}],"/Users/eugene/github3/en2/output/browserify.js":[function(require,module,exports){
 require('Main').main();
 
-},{"Main":"/Users/eugene/github3/en2/output/Main/index.js"}]},{},["/Users/eugene/github3/en2/output/browserify.js"]);
+},{"Main":"/Users/eugene/github3/en2/output/Main/index.js"}],"/Users/eugene/node_modules/Global/window.js":[function(require,module,exports){
+(function (global){
+if (typeof window !== "undefined") {
+    module.exports = window;
+} else if (typeof global !== "undefined") {
+    module.exports = global;
+} else if (typeof self !== "undefined"){
+    module.exports = self;
+} else {
+    module.exports = {};
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}]},{},["/Users/eugene/github3/en2/output/browserify.js"]);
