@@ -1405,14 +1405,28 @@
 	  var Data_Maybe = PS["Data.Maybe"];
 	  var Data_Array = PS["Data.Array"];
 	  var Types = PS["Types"];     
-	  var theSite = new Types.Node({
+	  var initialState = new Types.AppState({
+	      actionsCount: 0, 
+	      currentPath: [ "about" ]
+	  });
+	  var appDNA = new Types.Node({
 	      path: "", 
 	      title: "Eugene Naumenko", 
 	      dataSource: new Types.MemorySource("The root"), 
 	      children: [ new Types.Node({
 	          title: "About", 
 	          path: "about", 
-	          children: [  ], 
+	          children: [ new Types.Node({
+	              title: "Photos", 
+	              path: "photos", 
+	              children: [  ], 
+	              dataSource: new Types.MemorySource("# Photos here")
+	          }), new Types.Node({
+	              title: "Tweets", 
+	              path: "tweets", 
+	              children: [  ], 
+	              dataSource: new Types.MemorySource("# Tweets here")
+	          }) ], 
 	          dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "Hi, I'm Eugene.", "", "Software {engineer, architect} with 10 years of experience in networking, distributed and high load systems, web development, software design and project management.", "", "Worked on online education systems, spam protection systems, online GIS systems, accounting and trading software, rich web applications, IT/network infrastructure systems.", "", "Created own small language for web development and a few open source utilities and applications.", "", "", "> ![Prom.ua](http://static-cache.ua.uaprom.net/image/i18n-domain/UA/logo_main-trans.png?r=e8abc69e68fadede022fc4e4a50e327b)", "> ![Cisco](https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Cisco_logo.svg/225px-Cisco_logo.svg.png)", "> ![Pearson](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJcAAAAsCAMAAABfTNr9AAAAdVBMVEXtawbtagPuchjsYADtZwD8+/L79er7+O7sYwDsXQD8/vXsWgD42MH66tr2zLj1v6D549HwkVv43Mj2z7f78eTvgULudSnxnXD0tZPuezX0so71wab0upzufTvvh0/rVADzrIfypn/2ya70u5fxlmPyoXjwh0myEfQ+AAAEh0lEQVRYhe2W25KqOhCGiUmnAwRlOCgqOsDovP8j7j8H0DVVuzZzt6o2XV4IhPClD393svs7LRF/pyWbbbbZZpv9T03IYEaFa4W/zqRcmoPA5atTGGne14cF7ob4eUMtd5R5Lcdma7hMUVVlWVbTQ7pX1d3We2e1PcZtRbuf6uUbZqrxzNZdmy63jn1V2v4sZ6r03Nmy3D9VJFDjfv+h5vf7+u1I/2qyYc6yjIiKFuvVR+aucUkzl+kyzuZtE2mJyS+wSVhgnhRsCmvUro439BCcboaM9S6sTgvSMvlvk4Xm0/1+AZ57Vd1J03DprtPir7xkzdO8l6yZp3GosKxKPcZ3hsfjQZP17lFnbNUcxgEHyGofXfUkzVUIdFpysYqrZL4ZZVSj6Wo8F3++55c4k9a6mWcRs2d6SpOPpLO7iqBfuZFH7Q8idpqpRhKa/K411Y5dnbAF9f4YacXlKq6KucWG5kTuBXGDc/L3BaYjW3H2mPPjynTC/89C02iCA8hFWSV+hbTMVR7C14LdrVUPdzR6+OWWq99wqW/ScLA4/+SSRfYciG36Jxf2p3H2V6nwz7Ooe6bpHM8gD6yL3CUt9sa+zqGppd9xwV8WXEcOcZyrWd0y3iVIoZi35uB5RN7orPXJ88DD4hbDbia4Kx7Bp4BbBC5GUBEP4bjqX3ApZLfzuecax/Fy6E3kwPkQHBrma3AZk37R/H15ABj1QaFSlFG3CBTg3XvgojN8Rlf5K65vmX8jS1yoxI61drqRlf6rwjTAQEFxmb+4bn0FXYkeTFInA5AZhyNB8lz0CUnOfeBqcRJkm3Fca4QVXNR2DJDJhcJxMXTUVkEZECVGbUkdoxa4nhk3w6shyHOJxPYa94MLxd4FrqMApOZzXq32F7VXLqZWhjKHvz59owk711x0w9AhPFe5cCG5+f52aiUPruKgJY7ka3mSBsrAJRKkWPH5C6777mhkOKTjatLlqXefk3fQNr4XOa5L3gPj+N4Q00vQBJTrSwd83h9F5PJlSde1+YXEur86rMv7Ny4DhSgra6sS+uPkwXN1xqlxGQOpZh2niwsZXHmO28mefVpCv3xXS3EcnHMlFwTv1Uh/cOUFlz6qn32sfycEvXF+pGvoQw9fiXksWUdsg64qLPJ67Lgcq0+xtVzFn1zQ+8Lrl/Rimzkn+Pvww00ELvQrc8p09vQVWBRt6tpQ6EsKIk+H3CgljwXTFPsQtbFJgWudrjYxQMGc7DfD5fJ1nUAhJxSFin5lPpgg7+ByBQFQ5QuWq8uhgWz6E7iGRuV4/+iRmTb07TFyJcaFeR2X5mx847pnce7B6REtmpu/6YkZX8GcQ5NxXadhahIhzphq2P1mPTMfxTwKHcIMYS5Z6PE4zpW4WcOl7FQ/37g+yrr2Y2HZCnWy9hKLXrRVbaFQmAutFwL1sLWFOIn02FVFYcdlYFXmZDHrlP1xrozBVnGAE6au7Zq5MJGzRMRNpR+kpZ9z1CxjSRi4fUHO99Qscpia01S+ajoRCjfSt8nayOUbbps1WJttttlmm2222T+OK0cIBMLjzQAAAABJRU5ErkJggg==)", "> ![G4](https://bytebucket.org/technowolf/wolfden_1/raw/6d4ce0e0b6f27612ede53642ca96e33d03218cd4/g4/media/images/g4logo_wolf.png?token=7bb2b0d4916016a8db3c603b6651ddaef5cb5168)", "> ![SoftServe](http://softserve.ua/html/img/softserve_logo-01.svg)" ]))
 	      }), new Types.Node({
 	          title: "Contact", 
@@ -1446,11 +1460,7 @@
 	          dataSource: new Types.MemorySource(Data_String.joinWith("\n")([ "This \xabweb site\xbb is a concept **application** aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage.", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- conventional HTML-based, rendered using virtual dom;", "- REPL-based using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]))
 	      }) ]
 	  });
-	  var initialState = new Types.AppState({
-	      actionsCount: 0, 
-	      currentPath: [ "about" ]
-	  });
-	  exports["theSite"] = theSite;
+	  exports["appDNA"] = appDNA;
 	  exports["initialState"] = initialState;;
 	 
 	})(PS["Data"] = PS["Data"] || {});
@@ -1564,10 +1574,10 @@
 	      };
 	  };
 	  var getCurrentNode = function (appState) {
-	      return findChildNodeByPath(Data.theSite)(getCurrentPath(appState));
+	      return findChildNodeByPath(Data.appDNA)(getCurrentPath(appState));
 	  };
 	  var calcTitle = function (appState) {
-	      return Data_String.joinWith(" <*> ")([ Data_Maybe.fromMaybe("404")(Prelude["<$>"](Data_Maybe.functorMaybe)(Utils.getTitle)(getCurrentNode(appState))), Utils.getTitle(Data.theSite) ]);
+	      return Data_String.joinWith(" <*> ")([ Data_Maybe.fromMaybe("404")(Prelude["<$>"](Data_Maybe.functorMaybe)(Utils.getTitle)(getCurrentNode(appState))), Utils.getTitle(Data.appDNA) ]);
 	  };
 	  var appLogic = function (_1) {
 	      return function (_2) {
@@ -5131,7 +5141,7 @@
 	      throw new Error("Failed pattern match at UI.Console.Main line 50, column 1 - line 51, column 1: " + [ _4.constructor.name ]);
 	  };
 	  var footer = function (_6) {
-	      return "\n\n(c) 2015" + ("\n\n-------------------------------------------------" + ("\nActions count: " + (Prelude.show(Prelude.showInt)(_6.value0.actionsCount) + ("\nEnter `go(<page>)` to navigate to the respective page" + ("\nAvailable pages: " + Prelude.show(Prelude.showArray(Prelude.showString))(Core.getChildNodes(Data.theSite)))))));
+	      return "\n\n(c) 2015" + ("\n\n-------------------------------------------------" + ("\nActions count: " + (Prelude.show(Prelude.showInt)(_6.value0.actionsCount) + ("\nEnter `go(<page>)` to navigate to the respective page" + ("\nAvailable pages: " + Prelude.show(Prelude.showArray(Prelude.showString))(Core.getChildNodes(Data.appDNA)))))));
 	  };
 	  var renderPage = function (appState) {
 	      return header + (showPage(Core.getCurrentNode(appState)) + footer(appState));
@@ -5825,8 +5835,8 @@
 	      var currentPath = Data_Maybe.fromMaybe("404")(Prelude["<$>"](Data_Maybe.functorMaybe)(Utils.getPath)(Core.getCurrentNode(_6)));
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode")))(function () {
-	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.h1)(Text_Smolder_HTML_Attributes.className("name"))(Text_Smolder_Markup.text(Utils.getTitle(Data.theSite))))(function () {
-	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(Data.theSite))(function (_2) {
+	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.h1)(Text_Smolder_HTML_Attributes.className("name"))(Text_Smolder_Markup.text(Utils.getTitle(Data.appDNA))))(function () {
+	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(Data.appDNA))(function (_2) {
 	                      var _12 = Prelude["=="](Prelude.eqString)(_2.value0)(currentPath);
 	                      if (_12) {
 	                          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("current-menu-item")))(Text_Smolder_HTML_Attributes.href("#" + _2.value0))(Text_Smolder_Markup.text(_2.value1));
@@ -6034,7 +6044,7 @@
 	      throw new Error("Failed pattern match at UI.Telnet.Main line 106, column 1 - line 107, column 1: " + [ _7.constructor.name ]);
 	  };
 	  var footer = function (_9) {
-	      return "\n\n(c) 2015" + ("\n\n-------------------------------------------------" + ("\nActions count: " + (Prelude.show(Prelude.showInt)(_9.value0.actionsCount) + ("\nEnter page name to navigate to the respective page," + ("\nor `bye` to disconnect." + ("\nAvailable pages: " + (Prelude.show(Prelude.showArray(Prelude.showString))(Core.getChildNodes(Data.theSite)) + "\n\nEnter your choice: ")))))));
+	      return "\n\n(c) 2015" + ("\n\n-------------------------------------------------" + ("\nActions count: " + (Prelude.show(Prelude.showInt)(_9.value0.actionsCount) + ("\nEnter page name to navigate to the respective page," + ("\nor `bye` to disconnect." + ("\nAvailable pages: " + (Prelude.show(Prelude.showArray(Prelude.showString))(Core.getChildNodes(Data.appDNA)) + "\n\nEnter your choice: ")))))));
 	  };
 	  var renderPage = function (appState) {
 	      return header + (showPage(Core.getCurrentNode(appState)) + footer(appState));
