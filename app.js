@@ -5906,9 +5906,7 @@
 	(function(exports) {
 	  // module UI.Telnet.Main
 
-	  exports.exit = function(c) {
-	      return function() { process.exit(c); };
-	  }
+	  exports.exit = function(c) { return function() { process.exit(c); }; }
 	 
 	})(PS["UI.Telnet.Main"] = PS["UI.Telnet.Main"] || {});
 	(function(exports) {
@@ -5941,6 +5939,10 @@
 	    return function() { return s.write(d,cb); };
 	  }
 
+	  exports.end = function(s) {
+	    return function() { s.end(); };
+	  }
+
 	  exports.listenTCPImpl = function(h,p,s) {
 	    return function() { s.listen(p,h); };
 	  }
@@ -5971,6 +5973,7 @@
 	  exports["onData"] = onData;
 	  exports["onEvent"] = onEvent;
 	  exports["defaultServerOptions"] = defaultServerOptions;
+	  exports["end"] = $foreign.end;
 	  exports["createServer"] = $foreign.createServer;;
 	 
 	})(PS["Node.Net.Socket"] = PS["Node.Net.Socket"] || {});
@@ -6007,62 +6010,63 @@
 	  var port = 8888;
 	  var onListening$prime = Prelude.flip(Node_Net_Socket.onEvent("listening"));
 	  var onError$prime = Prelude.flip(Node_Net_Socket.onError);
+	  var onEnd$prime = Prelude.flip(Node_Net_Socket.onEvent("end"));
 	  var onData$prime = Prelude.flip(Node_Net_Socket.onData);
 	  var onConnection$prime = Prelude.flip(Node_Net_Socket.onConnection);
 	  var onClose$prime = Prelude.flip(Node_Net_Socket.onEvent("close"));
 	  var host = "localhost";
 	  var header = "\n\n";
 	  var formatPage = function (title) {
-	      return function (_7) {
-	          if (_7 instanceof Types.MemorySource) {
-	              return Text_Markdown_SlamDown_Pretty.prettyPrintMd(Text_Markdown_SlamDown_Parser.parseMd("#" + (title + ("\n\n" + _7.value0))));
+	      return function (_8) {
+	          if (_8 instanceof Types.MemorySource) {
+	              return Text_Markdown_SlamDown_Pretty.prettyPrintMd(Text_Markdown_SlamDown_Parser.parseMd("#" + (title + ("\n\n" + _8.value0))));
 	          };
 	          return Text_Markdown_SlamDown_Pretty.prettyPrintMd(Text_Markdown_SlamDown_Parser.parseMd("#" + (title + "\n\n-no data-")));
 	      };
 	  };
-	  var showPage = function (_6) {
-	      if (_6 instanceof Data_Maybe.Nothing) {
+	  var showPage = function (_7) {
+	      if (_7 instanceof Data_Maybe.Nothing) {
 	          return "404 No such page";
 	      };
-	      if (_6 instanceof Data_Maybe.Just) {
-	          return formatPage(_6.value0.value0.title)(_6.value0.value0.dataSource);
+	      if (_7 instanceof Data_Maybe.Just) {
+	          return formatPage(_7.value0.value0.title)(_7.value0.value0.dataSource);
 	      };
-	      throw new Error("Failed pattern match at UI.Telnet.Main line 102, column 1 - line 103, column 1: " + [ _6.constructor.name ]);
+	      throw new Error("Failed pattern match at UI.Telnet.Main line 106, column 1 - line 107, column 1: " + [ _7.constructor.name ]);
 	  };
-	  var footer = function (_8) {
-	      return "\n\n(c) 2015" + ("\n\n-------------------------------------------------" + ("\nActions count: " + (Prelude.show(Prelude.showInt)(_8.value0.actionsCount) + ("\nEnter page name to navigate to the respective page" + ("\nAvailable pages: " + (Prelude.show(Prelude.showArray(Prelude.showString))(Core.getChildNodes(Data.theSite)) + "\n\nEnter your choice: "))))));
+	  var footer = function (_9) {
+	      return "\n\n(c) 2015" + ("\n\n-------------------------------------------------" + ("\nActions count: " + (Prelude.show(Prelude.showInt)(_9.value0.actionsCount) + ("\nEnter page name to navigate to the respective page," + ("\nor `bye` to disconnect." + ("\nAvailable pages: " + (Prelude.show(Prelude.showArray(Prelude.showString))(Core.getChildNodes(Data.theSite)) + "\n\nEnter your choice: ")))))));
 	  };
 	  var renderPage = function (appState) {
 	      return header + (showPage(Core.getCurrentNode(appState)) + footer(appState));
 	  };
-	  var uiLogic = function (_4) {
-	      return function (_5) {
-	          if (_4 instanceof Types.RenderState) {
+	  var uiLogic = function (_5) {
+	      return function (_6) {
+	          if (_5 instanceof Types.RenderState) {
 	              return new UIState((function () {
-	                  var _20 = {};
-	                  for (var _21 in _5.value0) {
-	                      if (_5.value0.hasOwnProperty(_21)) {
-	                          _20[_21] = _5.value0[_21];
+	                  var _21 = {};
+	                  for (var _22 in _6.value0) {
+	                      if (_6.value0.hasOwnProperty(_22)) {
+	                          _21[_22] = _6.value0[_22];
 	                      };
 	                  };
-	                  _20.text = renderPage(_4.value0);
-	                  _20.title = Core.calcTitle(_4.value0);
-	                  return _20;
+	                  _21.text = renderPage(_5.value0);
+	                  _21.title = Core.calcTitle(_5.value0);
+	                  return _21;
 	              })());
 	          };
-	          if (_4 instanceof Types.RenderNoop) {
-	              return _5;
+	          if (_5 instanceof Types.RenderNoop) {
+	              return _6;
 	          };
-	          throw new Error("Failed pattern match at UI.Telnet.Main line 96, column 1 - line 98, column 1: " + [ _4.constructor.name, _5.constructor.name ]);
+	          throw new Error("Failed pattern match at UI.Telnet.Main line 100, column 1 - line 102, column 1: " + [ _5.constructor.name, _6.constructor.name ]);
 	      };
 	  };
 	  var clientHandler = function (ui) {
 	      return function (inputChannel) {
 	          return function (clientSocket) {
 	              var printPage = function (clientSocket_1) {
-	                  return function (_9) {
+	                  return function (_10) {
 	                      return function __do() {
-	                          Node_Net_Socket.write(_9.value0.text)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit))(clientSocket_1)();
+	                          Node_Net_Socket.write(_10.value0.text)(Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit))(clientSocket_1)();
 	                          return Prelude.unit;
 	                      };
 	                  };
@@ -6074,13 +6078,26 @@
 	                      return Control_Monad_Eff_Console.log("Error: " + Prelude.show(Control_Monad_Eff_Exception.showError)(e));
 	                  })();
 	                  onData$prime(clientSocket)(function (x) {
+	                      var cmd = Data_String.trim(Utils.toString(x));
 	                      return function __do() {
-	                          Control_Monad_Eff_Console.log("Page request: >>>" + (Data_String.trim(Utils.toString(x)) + "<<<"))();
-	                          Signal_Channel.send(inputChannel)(new Types.Navigate([ Data_String.trim(Utils.toString(x)) ]))();
+	                          Control_Monad_Eff_Console.log("Page request: >" + (cmd + "<"))();
+	                          (function () {
+	                              var _28 = Prelude["=="](Prelude.eqString)(cmd)("bye");
+	                              if (_28) {
+	                                  return Node_Net_Socket.end(clientSocket);
+	                              };
+	                              if (!_28) {
+	                                  return Signal_Channel.send(inputChannel)(new Types.Navigate([ cmd ]));
+	                              };
+	                              throw new Error("Failed pattern match at UI.Telnet.Main line 41, column 1 - line 42, column 1: " + [ _28.constructor.name ]);
+	                          })()();
 	                          return Prelude.unit;
 	                      };
 	                  })();
 	                  onClose$prime(clientSocket)(function (_2) {
+	                      return Control_Monad_Eff_Console.log("Connection interrupted");
+	                  })();
+	                  onEnd$prime(clientSocket)(function (_3) {
 	                      return Control_Monad_Eff_Console.log("Client disconnected");
 	                  })();
 	                  return Prelude.unit;
@@ -6096,10 +6113,10 @@
 	                  return function __do() {
 	                      var _0 = Node_Net_Socket.createServer(Node_Net_Socket.defaultServerOptions)();
 	                      onError$prime(_0)(function (e) {
-	                          return Control_Apply["*>"](Control_Monad_Eff.applyEff)(Control_Monad_Eff_Console.log("Error: " + Prelude.show(Control_Monad_Eff_Exception.showError)(e)))($foreign.exit(1));
+	                          return Control_Apply["*>"](Control_Monad_Eff.applyEff)(Control_Monad_Eff_Console.log("General error: " + Prelude.show(Control_Monad_Eff_Exception.showError)(e)))($foreign.exit(1));
 	                      })();
 	                      onConnection$prime(_0)(clientHandler$prime)();
-	                      onListening$prime(_0)(function (_3) {
+	                      onListening$prime(_0)(function (_4) {
 	                          return Control_Monad_Eff_Console.log("Listening...");
 	                      })();
 	                      Node_Net_Socket.listenTCP(host_1)(port_1)(_0)();
