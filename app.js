@@ -6397,7 +6397,7 @@
 	      if (_4 instanceof Data_Maybe.Just) {
 	          return formatPage(_4.value0.value0.title)(_4.value0.value0.dataSource);
 	      };
-	      throw new Error("Failed pattern match at UI.Console.Main line 54, column 1 - line 55, column 1: " + [ _4.constructor.name ]);
+	      throw new Error("Failed pattern match at UI.Console.Main line 65, column 1 - line 66, column 1: " + [ _4.constructor.name ]);
 	  };
 	  var footer = function (_6) {
 	      return "\n\n(c) 2015" + ("\n\n-------------------------------------------------" + ("\nActions count: " + (Prelude.show(Prelude.showInt)(_6.value0.actionsCount) + ("\nEnter `go([<page>])` to navigate to the respective page" + ("\nAvailable pages: " + Prelude.show(Prelude.showArray(Prelude.showString))(Core.getChildNodes(Data.appDNA)))))));
@@ -6423,12 +6423,12 @@
 	          if (_2 instanceof Types.RenderNoop) {
 	              return _3;
 	          };
-	          throw new Error("Failed pattern match at UI.Console.Main line 48, column 1 - line 50, column 1: " + [ _2.constructor.name, _3.constructor.name ]);
+	          throw new Error("Failed pattern match at UI.Console.Main line 59, column 1 - line 61, column 1: " + [ _2.constructor.name, _3.constructor.name ]);
 	      };
 	  };
 	  var setupCliUi = function (inputChannel) {
 	      return function __do() {
-	          Utils.injectBody("<h4 class=text>This site currently is in REPL interface mode.</h4><h4 class=text>Please open browser console to use the site, or switch to <a href='?ui=html#about'>html</a> or <a href='app.js'>CLI/telnet</a>* mode</h4><h6>*To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat.</h6>")();
+	          Utils.injectBody(Utils.unlines([ "<div class='repl-message'>", "<p>Application is in REPL interface mode.</p>", "<p>To use the aplication please open browser console and follow prompts. ", "Alternatively switch to <a href='?ui=html#about'>HTML</a> or ", "<a href='app.js'>CLI/telnet</a> mode.</p>", "<p>For CLI/telnet mode please run `app.js` with Node.js and ", "connect to it with telnet or netcat.</p>", "</div>" ]))();
 	          var _0 = Signal_Channel.channel(Types.RenderNoop.value)();
 	          return (function () {
 	              var renderSignal = Signal_Channel.subscribe(_0);
