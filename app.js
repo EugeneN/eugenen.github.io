@@ -2770,7 +2770,7 @@
 	          path: "about", 
 	          processor: Types.TextProcessor.value, 
 	          children: [  ], 
-	          dataSource: new Types.StringSource(Utils.unlines([ "Hi, I'm Eugene Naumenko.", "", "Software {engineer, architect} with 10 years of experience in networking, distributed and high load systems, web development, software design and project management.", "", "Worked on online education systems, spam protection systems, online GIS systems, accounting and trading software, rich web applications, IT/network infrastructure systems.", "", "Created own small language for web development and a few open source utilities and applications.", "", "", "> - [eugene.naumenko@gmail.com](mailto:eugene.naumenko@gmail.com)", "> - [github.com/EugeneN](https://github.com/EugeneN)", "> - [twitter.com/8gene](https://twitter.com/8gene)", "", "", "> ![Prom.ua](promua.png)", "> ![Cisco](cisco.png)", "> ![Pearson](pearson.png)", "> ![G4](g4.png)", "> ![SoftServe](softserve.png)" ]))
+	          dataSource: new Types.StringSource(Utils.unlines([ "Hi, I'm Eugene Naumenko.", "", "Software {engineer, architect} with 10 years of experience in networking, distributed and high load systems, web development, software design and project management.", "", "Worked on online education systems, spam protection systems, online GIS systems, accounting and trading software, rich web applications, IT/network infrastructure systems.", "Created own small language for web development and a few open source utilities and applications.", "", "Contacts: [e-mail](mailto:eugene.naumenko@gmail.com), [github](https://github.com/EugeneN), [twitter](https://twitter.com/8gene).", "", "", "_", "", "", "> ![Prom.ua](promua.png)", "> ![Cisco](cisco.png)", "> ![Pearson](pearson.png)", "> ![G4](g4.png)", "> ![SoftServe](softserve.png)" ]))
 	      }), new Types.Node({
 	          title: "CV", 
 	          path: "cv", 
@@ -2838,8 +2838,8 @@
 	          }) ], 
 	          dataSource: new Types.ChildSource("cmd")
 	      }), new Types.Node({
-	          title: "Slides", 
-	          path: "slides", 
+	          title: "Talks", 
+	          path: "talks", 
 	          processor: Types.TextProcessor.value, 
 	          children: [  ], 
 	          dataSource: new Types.StringSource(Utils.unlines([ "[Purescript](https://docs.google.com/presentation/d/1IOM9A3Otxufs5xzvYb3yPrT7JDVPhkJVkdaWvVl8R_E/pub?start=false&loop=false&delayms=3000)", "", "", "[DNA](https://docs.google.com/presentation/d/1lfbKvDcXfBdvdu76anAyTglo6O3vP68oYJUa0K-d7zo/pub?start=false&loop=false&delayms=3000)", "", "", "[Evolution of client side applications](https://docs.google.com/presentation/d/1e5dyOXcSAp3UCCS3sJMBTttKDmQw8dDq3qYobsTvpKA/pub?start=false&loop=false&delayms=3000)" ]))
@@ -5574,7 +5574,7 @@
 	              if (Prelude.otherwise) {
 	                  return Text_Markdown_SlamDown.Space.value;
 	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 195, column 5 - line 202, column 3: " + [ cs.constructor.name ]);
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 196, column 5 - line 203, column 3: " + [ cs.constructor.name ]);
 	          };
 	          return Prelude["<$>"](Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(function (_106) {
 	              return toSpace(Prelude["<$>"](Data_List.functorList)(Data_String.fromChar)(_106));
@@ -5596,7 +5596,7 @@
 	      });
 	      var isAlphaNum = function (c) {
 	          var s = Data_String.fromChar(c);
-	          return Prelude[">="](Prelude.ordString)(s)("a") && Prelude["<="](Prelude.ordString)(s)("z") || (Prelude[">="](Prelude.ordString)(s)("A") && Prelude["<="](Prelude.ordString)(s)("Z") || Prelude[">="](Prelude.ordString)(s)("0") && Prelude["<="](Prelude.ordString)(s)("9"));
+	          return Prelude[">="](Prelude.ordString)(s)("a") && Prelude["<="](Prelude.ordString)(s)("z") || (Prelude[">="](Prelude.ordString)(s)("A") && Prelude["<="](Prelude.ordString)(s)("Z") || (Prelude[">="](Prelude.ordString)(s)("0") && Prelude["<="](Prelude.ordString)(s)("9") || Prelude[">="](Prelude.ordString)(s)(":") && Prelude["<="](Prelude.ordString)(s)(";")));
 	      };
 	      var formElement = (function () {
 	          var unevaluated = Prelude.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Data_Identity.monadIdentity)("!"))(function () {
@@ -5724,7 +5724,7 @@
 	              if (Prelude.otherwise) {
 	                  return s;
 	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 240, column 5 - line 241, column 5: " + [ s.constructor.name ]);
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 241, column 5 - line 242, column 5: " + [ s.constructor.name ]);
 	          };
 	          return Prelude.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Data_Identity.monadIdentity)("<"))(function () {
 	              return Prelude.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Prelude["<$>"](Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(function (_112) {
