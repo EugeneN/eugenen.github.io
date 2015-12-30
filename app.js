@@ -6771,8 +6771,13 @@
 	          };
 	          throw new Error("Failed pattern match at Processors.Blog.Main line 107, column 1 - line 108, column 1: " + [ _16.constructor.name ]);
 	      };
+	      var blogNote = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(Utils.unlines([ "*NB*: Posts for this blog are written and persisted in Github's Gists. ", "Individual entries will open in C.MD gist viewer. Here is just an index.", "", "", "Thus, the blog is a symbiosis between 2 *pure clientside* ", "applications and 3rd-party API/service via CORS. There is no backend, ", "and no databases were harmed in making this blog :-)" ])));
 	      var renderListH = function (ps_1) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(renderEitherH));
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("blog-note"))(blogNote))(function () {
+	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.hr)(function () {
+	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(renderEitherH));
+	              });
+	          });
 	      };
 	      return Data_Maybe.Just.create(Types.HTML.create(renderListH(ps)));
 	  };
