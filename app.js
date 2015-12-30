@@ -65,6 +65,18 @@
 	    };
 	  };
 
+	  //- Bind -----------------------------------------------------------------------
+
+	  exports.arrayBind = function (arr) {
+	    return function (f) {
+	      var result = [];
+	      for (var i = 0, l = arr.length; i < l; i++) {
+	        Array.prototype.push.apply(result, f(arr[i]));
+	      }
+	      return result;
+	    };
+	  };
+
 	  //- Monoid ---------------------------------------------------------------------
 
 	  exports.concatString = function (s1) {
@@ -297,6 +309,9 @@
 	  var disj = function (dict) {
 	      return dict.disj;
 	  };
+	  var $bar$bar = function (__dict_BooleanAlgebra_11) {
+	      return disj(__dict_BooleanAlgebra_11);
+	  };
 	  var $$const = function (a) {
 	      return function (_3) {
 	          return a;
@@ -411,6 +426,22 @@
 	          };
 	      };
 	  };
+	  var monadArray = new Monad(function () {
+	      return applicativeArray;
+	  }, function () {
+	      return bindArray;
+	  });
+	  var bindArray = new Bind(function () {
+	      return applyArray;
+	  }, $foreign.arrayBind);
+	  var applyArray = new Apply(function () {
+	      return functorArray;
+	  }, ap(monadArray));
+	  var applicativeArray = new Applicative(function () {
+	      return applyArray;
+	  }, function (x) {
+	      return [ x ];
+	  });
 	  exports["LT"] = LT;
 	  exports["GT"] = GT;
 	  exports["EQ"] = EQ;
@@ -428,6 +459,7 @@
 	  exports["Category"] = Category;
 	  exports["Semigroupoid"] = Semigroupoid;
 	  exports["show"] = show;
+	  exports["||"] = $bar$bar;
 	  exports["not"] = not;
 	  exports["disj"] = disj;
 	  exports["conj"] = conj;
@@ -467,6 +499,10 @@
 	  exports["categoryFn"] = categoryFn;
 	  exports["functorFn"] = functorFn;
 	  exports["functorArray"] = functorArray;
+	  exports["applyArray"] = applyArray;
+	  exports["applicativeArray"] = applicativeArray;
+	  exports["bindArray"] = bindArray;
+	  exports["monadArray"] = monadArray;
 	  exports["semigroupString"] = semigroupString;
 	  exports["semigroupArray"] = semigroupArray;
 	  exports["eqInt"] = eqInt;
@@ -576,6 +612,64 @@
 	(function(exports) {
 	  /* global exports */
 	  "use strict";
+
+	  // module Control.Monad.Aff
+
+	  exports._cancelWith = function (nonCanceler, aff, canceler1) {
+	    return function(success, error) {
+	      var canceler2 = aff(success, error);
+
+	      return function(e) {
+	        return function(success, error) {
+	          var cancellations = 0;
+	          var result        = false;
+	          var errored       = false;
+
+	          var s = function(bool) {
+	            cancellations = cancellations + 1;
+	            result        = result || bool;
+
+	            if (cancellations === 2 && !errored) {
+	              try {
+	                success(result);
+	              } catch (e) {
+	                error(e);
+	              }
+	            }
+	          };
+
+	          var f = function(err) {
+	            if (!errored) {
+	              errored = true;
+
+	              error(err);
+	            }
+	          };
+
+	          canceler2(e)(s, f);
+	          canceler1(e)(s, f);
+
+	          return nonCanceler;
+	        };
+	      };
+	    };
+	  }
+
+	  exports._forkAff = function (nonCanceler, aff) {
+	    var voidF = function(){};
+
+	    return function(success, error) {
+	      var canceler = aff(voidF, voidF);
+
+	      try {
+	        success(canceler);
+	      } catch (e) {
+	        error(e);
+	      }
+
+	      return nonCanceler;
+	    };
+	  }
 
 	  exports._makeAff = function (cb) {
 	    return function(success, error) {
@@ -905,26 +999,12 @@
 	  var fromMaybe = function (a) {
 	      return maybe(a)(Prelude.id(Prelude.categoryFn));
 	  };
-	  var applyMaybe = new Prelude.Apply(function () {
-	      return functorMaybe;
-	  }, function (_3) {
-	      return function (x) {
-	          if (_3 instanceof Just) {
-	              return Prelude["<$>"](functorMaybe)(_3.value0)(x);
-	          };
-	          if (_3 instanceof Nothing) {
-	              return Nothing.value;
-	          };
-	          throw new Error("Failed pattern match at Data.Maybe line 121, column 1 - line 145, column 1: " + [ _3.constructor.name, x.constructor.name ]);
-	      };
-	  });
 	  exports["Nothing"] = Nothing;
 	  exports["Just"] = Just;
 	  exports["isJust"] = isJust;
 	  exports["fromMaybe"] = fromMaybe;
 	  exports["maybe"] = maybe;
 	  exports["functorMaybe"] = functorMaybe;
-	  exports["applyMaybe"] = applyMaybe;
 	  exports["showMaybe"] = showMaybe;;
 	 
 	})(PS["Data.Maybe"] = PS["Data.Maybe"] || {});
@@ -1109,6 +1189,134 @@
 	 
 	})(PS["Data.Foldable"] = PS["Data.Foldable"] || {});
 	(function(exports) {
+	  /* global exports */
+	  "use strict";
+
+	  // module Data.Traversable
+
+	  // jshint maxparams: 3
+
+	  exports.traverseArrayImpl = function () {
+	    function Cont (fn) {
+	      this.fn = fn;
+	    }
+
+	    var emptyList = {};
+
+	    var ConsCell = function (head, tail) {
+	      this.head = head;
+	      this.tail = tail;
+	    };
+
+	    function consList (x) {
+	      return function (xs) {
+	        return new ConsCell(x, xs);
+	      };
+	    }
+
+	    function listToArray (list) {
+	      var arr = [];
+	      while (list !== emptyList) {
+	        arr.push(list.head);
+	        list = list.tail;
+	      }
+	      return arr;
+	    }
+
+	    return function (apply) {
+	      return function (map) {
+	        return function (pure) {
+	          return function (f) {
+	            var buildFrom = function (x, ys) {
+	              return apply(map(consList)(f(x)))(ys);
+	            };
+
+	            var go = function (acc, currentLen, xs) {
+	              if (currentLen === 0) {
+	                return acc;
+	              } else {
+	                var last = xs[currentLen - 1];
+	                return new Cont(function () {
+	                  return go(buildFrom(last, acc), currentLen - 1, xs);
+	                });
+	              }
+	            };
+
+	            return function (array) {
+	              var result = go(pure(emptyList), array.length, array);
+	              while (result instanceof Cont) {
+	                result = result.fn();
+	              }
+
+	              return map(listToArray)(result);
+	            };
+	          };
+	        };
+	      };
+	    };
+	  }();
+	 
+	})(PS["Data.Traversable"] = PS["Data.Traversable"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var $foreign = PS["Data.Traversable"];
+	  var Prelude = PS["Prelude"];
+	  var Data_Foldable = PS["Data.Foldable"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_Maybe_First = PS["Data.Maybe.First"];
+	  var Data_Maybe_Last = PS["Data.Maybe.Last"];
+	  var Data_Monoid_Additive = PS["Data.Monoid.Additive"];
+	  var Data_Monoid_Conj = PS["Data.Monoid.Conj"];
+	  var Data_Monoid_Disj = PS["Data.Monoid.Disj"];
+	  var Data_Monoid_Dual = PS["Data.Monoid.Dual"];
+	  var Data_Monoid_Multiplicative = PS["Data.Monoid.Multiplicative"];
+	  var Traversable = function (__superclass_Data$dotFoldable$dotFoldable_1, __superclass_Prelude$dotFunctor_0, sequence, traverse) {
+	      this["__superclass_Data.Foldable.Foldable_1"] = __superclass_Data$dotFoldable$dotFoldable_1;
+	      this["__superclass_Prelude.Functor_0"] = __superclass_Prelude$dotFunctor_0;
+	      this.sequence = sequence;
+	      this.traverse = traverse;
+	  };
+	  var traverse = function (dict) {
+	      return dict.traverse;
+	  };
+	  var sequenceDefault = function (__dict_Traversable_12) {
+	      return function (__dict_Applicative_13) {
+	          return function (tma) {
+	              return traverse(__dict_Traversable_12)(__dict_Applicative_13)(Prelude.id(Prelude.categoryFn))(tma);
+	          };
+	      };
+	  };
+	  var traversableArray = new Traversable(function () {
+	      return Data_Foldable.foldableArray;
+	  }, function () {
+	      return Prelude.functorArray;
+	  }, function (__dict_Applicative_15) {
+	      return sequenceDefault(traversableArray)(__dict_Applicative_15);
+	  }, function (__dict_Applicative_14) {
+	      return $foreign.traverseArrayImpl(Prelude.apply(__dict_Applicative_14["__superclass_Prelude.Apply_0"]()))(Prelude.map((__dict_Applicative_14["__superclass_Prelude.Apply_0"]())["__superclass_Prelude.Functor_0"]()))(Prelude.pure(__dict_Applicative_14));
+	  });
+	  var sequence = function (dict) {
+	      return dict.sequence;
+	  }; 
+	  var $$for = function (__dict_Applicative_26) {
+	      return function (__dict_Traversable_27) {
+	          return function (x) {
+	              return function (f) {
+	                  return traverse(__dict_Traversable_27)(__dict_Applicative_26)(f)(x);
+	              };
+	          };
+	      };
+	  };
+	  exports["Traversable"] = Traversable;
+	  exports["for"] = $$for;
+	  exports["sequenceDefault"] = sequenceDefault;
+	  exports["sequence"] = sequence;
+	  exports["traverse"] = traverse;
+	  exports["traversableArray"] = traversableArray;;
+	 
+	})(PS["Data.Traversable"] = PS["Data.Traversable"] || {});
+	(function(exports) {
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
 	  var Prelude = PS["Prelude"];
@@ -1175,6 +1383,17 @@
 	          throw new Error("Failed pattern match at Data.Either line 92, column 1 - line 116, column 1: " + [ _4.constructor.name, r.constructor.name ]);
 	      };
 	  });
+	  var bindEither = new Prelude.Bind(function () {
+	      return applyEither;
+	  }, either(function (e) {
+	      return function (_0) {
+	          return new Left(e);
+	      };
+	  })(function (a) {
+	      return function (f) {
+	          return f(a);
+	      };
+	  }));
 	  var applicativeEither = new Prelude.Applicative(function () {
 	      return applyEither;
 	  }, Right.create);
@@ -1183,7 +1402,8 @@
 	  exports["either"] = either;
 	  exports["functorEither"] = functorEither;
 	  exports["applyEither"] = applyEither;
-	  exports["applicativeEither"] = applicativeEither;;
+	  exports["applicativeEither"] = applicativeEither;
+	  exports["bindEither"] = bindEither;;
 	 
 	})(PS["Data.Either"] = PS["Data.Either"] || {});
 	(function(exports) {
@@ -1277,13 +1497,28 @@
 	  });
 	  var nonCanceler = Prelude["const"](Prelude.pure(applicativeAff)(false));
 	  var alwaysCanceler = Prelude["const"](Prelude.pure(applicativeAff)(true));
+	  var cancelWith = function (aff) {
+	      return function (c) {
+	          return $foreign._cancelWith(nonCanceler, aff, c);
+	      };
+	  };
+	  var forkAff = function (aff) {
+	      return $foreign._forkAff(nonCanceler, aff);
+	  };
 	  var makeAff = function (h) {
 	      return makeAff$prime(function (e) {
 	          return function (a) {
 	              return Prelude["<$>"](Control_Monad_Eff.functorEff)(Prelude["const"](nonCanceler))(h(e)(a));
 	          };
 	      });
-	  };                                                       
+	  };
+	  var semigroupCanceler = new Prelude.Semigroup(function (_5) {
+	      return function (_6) {
+	          return function (e) {
+	              return Prelude["<*>"](applyAff)(Prelude["<$>"](functorAff)(Prelude["||"](Prelude.booleanAlgebraBoolean))(_5(e)))(_6(e));
+	          };
+	      };
+	  });                                                      
 	  var bindAff = new Prelude.Bind(function () {
 	      return applyAff;
 	  }, function (fa) {
@@ -1305,14 +1540,159 @@
 	  exports["nonCanceler"] = nonCanceler;
 	  exports["makeAff'"] = makeAff$prime;
 	  exports["makeAff"] = makeAff;
+	  exports["forkAff"] = forkAff;
+	  exports["cancelWith"] = cancelWith;
 	  exports["functorAff"] = functorAff;
 	  exports["applyAff"] = applyAff;
 	  exports["applicativeAff"] = applicativeAff;
 	  exports["bindAff"] = bindAff;
 	  exports["monadAff"] = monadAff;
-	  exports["monadEffAff"] = monadEffAff;;
+	  exports["monadEffAff"] = monadEffAff;
+	  exports["semigroupCanceler"] = semigroupCanceler;;
 	 
 	})(PS["Control.Monad.Aff"] = PS["Control.Monad.Aff"] || {});
+	(function(exports) {
+	  /* global exports */
+	  "use strict";
+
+	  // module Control.Monad.Aff.AVar
+
+	  exports._makeVar = function (nonCanceler) {
+	    return function(success, error) {
+	      try {
+	        success({
+	          consumers: [],
+	          producers: [],
+	          error: undefined 
+	        });
+	      } catch (e) {
+	        error(e);
+	      }
+
+	      return nonCanceler;
+	    }
+	  }
+
+	  exports._takeVar = function (nonCanceler, avar) {
+	    return function(success, error) {
+	      if (avar.error !== undefined) {
+	        error(avar.error);
+	      } else if (avar.producers.length > 0) {
+	        var producer = avar.producers.shift();
+
+	        producer(success, error);
+	      } else {
+	        avar.consumers.push({success: success, error: error});
+	      }
+
+	      return nonCanceler;
+	    } 
+	  }
+
+	  exports._putVar = function (nonCanceler, avar, a) {
+	    return function(success, error) {
+	      if (avar.error !== undefined) {
+	        error(avar.error);
+	      } else if (avar.consumers.length === 0) {
+	        avar.producers.push(function(success, error) {
+	          try {
+	            success(a);
+	          } catch (e) {
+	            error(e);
+	          }
+	        });
+
+	        success({});
+	      } else {
+	        var consumer = avar.consumers.shift();
+
+	        try {
+	          consumer.success(a);
+	        } catch (e) {
+	          error(e);
+
+	          return;                  
+	        }
+
+	        success({});
+	      }
+
+	      return nonCanceler;
+	    }
+	  }
+	 
+	})(PS["Control.Monad.Aff.AVar"] = PS["Control.Monad.Aff.AVar"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var $foreign = PS["Control.Monad.Aff.AVar"];
+	  var Prelude = PS["Prelude"];
+	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+	  var Control_Monad_Eff_Exception = PS["Control.Monad.Eff.Exception"];
+	  var Data_Function = PS["Data.Function"];     
+	  var takeVar = function (q) {
+	      return $foreign._takeVar(Control_Monad_Aff.nonCanceler, q);
+	  };
+	  var putVar = function (q) {
+	      return function (a) {
+	          return $foreign._putVar(Control_Monad_Aff.nonCanceler, q, a);
+	      };
+	  };
+	  var makeVar = $foreign._makeVar(Control_Monad_Aff.nonCanceler);
+	  exports["takeVar"] = takeVar;
+	  exports["putVar"] = putVar;
+	  exports["makeVar"] = makeVar;;
+	 
+	})(PS["Control.Monad.Aff.AVar"] = PS["Control.Monad.Aff.AVar"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Prelude = PS["Prelude"];
+	  var Control_Alt = PS["Control.Alt"];
+	  var Control_Alternative = PS["Control.Alternative"];
+	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+	  var Control_Monad_Aff_AVar = PS["Control.Monad.Aff.AVar"];
+	  var Control_Plus = PS["Control.Plus"];
+	  var Data_Either = PS["Data.Either"];
+	  var Data_Monoid = PS["Data.Monoid"];     
+	  var Par = function (x) {
+	      return x;
+	  };
+	  var runPar = function (_9) {
+	      return _9;
+	  };
+	  var functorPar = new Prelude.Functor(function (f) {
+	      return function (_10) {
+	          return Prelude["<$>"](Control_Monad_Aff.functorAff)(f)(_10);
+	      };
+	  });
+	  var applyPar = new Prelude.Apply(function () {
+	      return functorPar;
+	  }, function (_11) {
+	      return function (_12) {
+	          return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Aff_AVar.makeVar)(function (_3) {
+	              return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Aff_AVar.makeVar)(function (_2) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Aff.forkAff(Prelude[">>="](Control_Monad_Aff.bindAff)(_11)(Control_Monad_Aff_AVar.putVar(_3))))(function (_1) {
+	                      return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Aff.forkAff(Prelude[">>="](Control_Monad_Aff.bindAff)(_12)(Control_Monad_Aff_AVar.putVar(_2))))(function (_0) {
+	                          return Control_Monad_Aff.cancelWith(Prelude["<*>"](Control_Monad_Aff.applyAff)(Control_Monad_Aff_AVar.takeVar(_3))(Control_Monad_Aff_AVar.takeVar(_2)))(Prelude["<>"](Control_Monad_Aff.semigroupCanceler)(_1)(_0));
+	                      });
+	                  });
+	              });
+	          });
+	      };
+	  });
+	  var applicativePar = new Prelude.Applicative(function () {
+	      return applyPar;
+	  }, function (v) {
+	      return Prelude.pure(Control_Monad_Aff.applicativeAff)(v);
+	  });
+	  exports["Par"] = Par;
+	  exports["runPar"] = runPar;
+	  exports["functorPar"] = functorPar;
+	  exports["applyPar"] = applyPar;
+	  exports["applicativePar"] = applicativePar;;
+	 
+	})(PS["Control.Monad.Aff.Par"] = PS["Control.Monad.Aff.Par"] || {});
 	(function(exports) {
 	  /* global exports, console */
 	  "use strict";
@@ -1526,14 +1906,28 @@
 	          return new Data_Maybe.Just(xs);
 	      };
 	  });
+	  var singleton = function (a) {
+	      return [ a ];
+	  };
 	  var head = $foreign["uncons'"](Prelude["const"](Data_Maybe.Nothing.value))(function (x) {
 	      return function (_6) {
 	          return new Data_Maybe.Just(x);
 	      };
 	  });
+	  var concatMap = Prelude.flip(Prelude.bind(Prelude.bindArray));
+	  var mapMaybe = function (f) {
+	      return concatMap(function (_48) {
+	          return Data_Maybe.maybe([  ])(singleton)(f(_48));
+	      });
+	  };
+	  var catMaybes = mapMaybe(Prelude.id(Prelude.categoryFn));
+	  exports["catMaybes"] = catMaybes;
+	  exports["mapMaybe"] = mapMaybe;
+	  exports["concatMap"] = concatMap;
 	  exports["uncons"] = uncons;
 	  exports["tail"] = tail;
 	  exports["head"] = head;
+	  exports["singleton"] = singleton;
 	  exports["filter"] = $foreign.filter;
 	  exports["snoc"] = $foreign.snoc;;
 	 
@@ -1675,6 +2069,112 @@
 	})(PS["Data.String"] = PS["Data.String"] || {});
 	(function(exports) {
 	  /* global exports */
+	  "use strict";
+
+	  exports["regex'"] = function (s1) {
+	    return function (s2) {
+	      return new RegExp(s1, s2);
+	    };
+	  };
+
+	  exports.test = function (r) {
+	    return function (s) {
+	      return r.test(s);
+	    };
+	  };
+
+	  exports._match = function (just) {
+	    return function (nothing) {
+	      return function (r) {
+	        return function (s) {
+	          var m = s.match(r);
+	          if (m == null) {
+	            return nothing;
+	          } else {
+	            var list = [];
+	            for (var i = 0; i < m.length; i++) {
+	              list.push(m[i] == null ? nothing : just(m[i]));
+	            }
+	            return just(list);
+	          }
+	        };
+	      };
+	    };
+	  };
+	 
+	})(PS["Data.String.Regex"] = PS["Data.String.Regex"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var $foreign = PS["Data.String.Regex"];
+	  var Prelude = PS["Prelude"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_String = PS["Data.String"];                                            
+	  var renderFlags = function (f) {
+	      return (function () {
+	          if (f.global) {
+	              return "g";
+	          };
+	          if (!f.global) {
+	              return "";
+	          };
+	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.global.constructor.name ]);
+	      })() + ((function () {
+	          if (f.ignoreCase) {
+	              return "i";
+	          };
+	          if (!f.ignoreCase) {
+	              return "";
+	          };
+	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.ignoreCase.constructor.name ]);
+	      })() + ((function () {
+	          if (f.multiline) {
+	              return "m";
+	          };
+	          if (!f.multiline) {
+	              return "";
+	          };
+	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.multiline.constructor.name ]);
+	      })() + ((function () {
+	          if (f.sticky) {
+	              return "y";
+	          };
+	          if (!f.sticky) {
+	              return "";
+	          };
+	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.sticky.constructor.name ]);
+	      })() + (function () {
+	          if (f.unicode) {
+	              return "u";
+	          };
+	          if (!f.unicode) {
+	              return "";
+	          };
+	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.unicode.constructor.name ]);
+	      })())));
+	  };
+	  var regex = function (s) {
+	      return function (f) {
+	          return $foreign["regex'"](s)(renderFlags(f));
+	      };
+	  };
+	  var noFlags = {
+	      global: false, 
+	      ignoreCase: false, 
+	      multiline: false, 
+	      sticky: false, 
+	      unicode: false
+	  };
+	  var match = $foreign._match(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
+	  exports["noFlags"] = noFlags;
+	  exports["match"] = match;
+	  exports["renderFlags"] = renderFlags;
+	  exports["regex"] = regex;
+	  exports["test"] = $foreign.test;;
+	 
+	})(PS["Data.String.Regex"] = PS["Data.String.Regex"] || {});
+	(function(exports) {
+	  /* global exports */
 	  /* global XMLHttpRequest */
 	  /* global module */
 	  "use strict";
@@ -1763,15 +2263,67 @@
 	  /* global exports */
 	  "use strict";
 
+	  // module Data.Foreign
+
+	  // jshint maxparams: 3
+	  exports.parseJSONImpl = function (left, right, str) {
+	    try {
+	      return right(JSON.parse(str));
+	    } catch (e) {
+	      return left(e.toString());
+	    }
+	  };
+
 	  exports.unsafeFromForeign = function (value) {
 	    return value;
+	  };
+
+	  exports.typeOf = function (value) {
+	    return typeof value;
 	  };
 
 	  exports.tagOf = function (value) {
 	    return Object.prototype.toString.call(value).slice(8, -1);
 	  };
+
+	  exports.isNull = function (value) {
+	    return value === null;
+	  };
+
+	  exports.isUndefined = function (value) {
+	    return value === undefined;
+	  };
 	 
 	})(PS["Data.Foreign"] = PS["Data.Foreign"] || {});
+	(function(exports) {
+	  /* global exports */
+	  "use strict";
+
+	  // module Data.Int
+
+	  exports.fromNumberImpl = function (just) {
+	    return function (nothing) {
+	      return function (n) {
+	        /* jshint bitwise: false */
+	        return (n | 0) === n ? just(n) : nothing;
+	      };
+	    };
+	  };
+	 
+	})(PS["Data.Int"] = PS["Data.Int"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var $foreign = PS["Data.Int"];
+	  var Prelude = PS["Prelude"];
+	  var Data_Int_Bits = PS["Data.Int.Bits"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_Maybe_Unsafe = PS["Data.Maybe.Unsafe"];
+	  var $$Math = PS["Math"];                                                                   
+	  var fromNumber = $foreign.fromNumberImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
+	  exports["fromNumber"] = fromNumber;;
+	 
+	})(PS["Data.Int"] = PS["Data.Int"] || {});
 	(function(exports) {
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
@@ -1851,13 +2403,32 @@
 	      throw new Error("Failed pattern match: " + [ _0.constructor.name ]);
 	  });
 	  var readString = unsafeReadTagged("String");
+	  var readNumber = unsafeReadTagged("Number");
+	  var readInt = function (value) {
+	      var error = Data_Either.Left.create(new TypeMismatch("Int", $foreign.tagOf(value)));
+	      var fromNumber = function (_30) {
+	          return Data_Maybe.maybe(error)(Prelude.pure(Data_Either.applicativeEither))(Data_Int.fromNumber(_30));
+	      };
+	      return Data_Either.either(Prelude["const"](error))(fromNumber)(readNumber(value));
+	  };
+	  var parseJSON = function (json) {
+	      return $foreign.parseJSONImpl(function (_32) {
+	          return Data_Either.Left.create(JSONError.create(_32));
+	      }, Data_Either.Right.create, json);
+	  };
 	  exports["TypeMismatch"] = TypeMismatch;
 	  exports["ErrorAtIndex"] = ErrorAtIndex;
 	  exports["ErrorAtProperty"] = ErrorAtProperty;
 	  exports["JSONError"] = JSONError;
+	  exports["readInt"] = readInt;
+	  exports["readNumber"] = readNumber;
 	  exports["readString"] = readString;
 	  exports["unsafeReadTagged"] = unsafeReadTagged;
-	  exports["showForeignError"] = showForeignError;;
+	  exports["parseJSON"] = parseJSON;
+	  exports["showForeignError"] = showForeignError;
+	  exports["isUndefined"] = $foreign.isUndefined;
+	  exports["isNull"] = $foreign.isNull;
+	  exports["typeOf"] = $foreign.typeOf;;
 	 
 	})(PS["Data.Foreign"] = PS["Data.Foreign"] || {});
 	(function(exports) {
@@ -2513,16 +3084,194 @@
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
 	  var Prelude = PS["Prelude"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_Monoid = PS["Data.Monoid"];
+	  var Control_Apply = PS["Control.Apply"];     
+	  var Attr = (function () {
+	      function Attr(value0, value1) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	      };
+	      Attr.create = function (value0) {
+	          return function (value1) {
+	              return new Attr(value0, value1);
+	          };
+	      };
+	      return Attr;
+	  })();
+	  var Attribute = (function () {
+	      function Attribute(value0) {
+	          this.value0 = value0;
+	      };
+	      Attribute.create = function (value0) {
+	          return new Attribute(value0);
+	      };
+	      return Attribute;
+	  })();
+	  var Element = (function () {
+	      function Element(value0, value1, value2, value3) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	          this.value3 = value3;
+	      };
+	      Element.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return function (value3) {
+	                      return new Element(value0, value1, value2, value3);
+	                  };
+	              };
+	          };
+	      };
+	      return Element;
+	  })();
+	  var Content = (function () {
+	      function Content(value0, value1) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	      };
+	      Content.create = function (value0) {
+	          return function (value1) {
+	              return new Content(value0, value1);
+	          };
+	      };
+	      return Content;
+	  })();
+	  var Return = (function () {
+	      function Return(value0) {
+	          this.value0 = value0;
+	      };
+	      Return.create = function (value0) {
+	          return new Return(value0);
+	      };
+	      return Return;
+	  })();
+	  var Attributable = function ($$with) {
+	      this["with"] = $$with;
+	  };
+	  var $$with = function (dict) {
+	      return dict["with"];
+	  };
+	  var $bang = function (__dict_Attributable_0) {
+	      return $$with(__dict_Attributable_0);
+	  };
+	  var text = function (s) {
+	      return new Content(s, new Return(Prelude.unit));
+	  }; 
+	  var parent = function (el) {
+	      return function (kids) {
+	          return new Element(el, new Data_Maybe.Just(kids), [  ], new Return(Prelude.unit));
+	      };
+	  };                                                             
+	  var leaf = function (el) {
+	      return new Element(el, Data_Maybe.Nothing.value, [  ], new Return(Prelude.unit));
+	  };
+	  var functorMarkupM = new Prelude.Functor(function (f) {
+	      return function (_0) {
+	          if (_0 instanceof Element) {
+	              return new Element(_0.value0, _0.value1, _0.value2, Prelude.map(functorMarkupM)(f)(_0.value3));
+	          };
+	          if (_0 instanceof Content) {
+	              return new Content(_0.value0, Prelude.map(functorMarkupM)(f)(_0.value1));
+	          };
+	          if (_0 instanceof Return) {
+	              return new Return(f(_0.value0));
+	          };
+	          throw new Error("Failed pattern match: " + [ f.constructor.name, _0.constructor.name ]);
+	      };
+	  });
+	  var attribute = function (key) {
+	      return function (value) {
+	          return new Attribute([ new Attr(key, value) ]);
+	      };
+	  };
+	  var attributableMarkupM = new Attributable(function (_4) {
+	      return function (_5) {
+	          if (_4 instanceof Element) {
+	              return new Element(_4.value0, _4.value1, Prelude["<>"](Prelude.semigroupArray)(_4.value2)(_5.value0), _4.value3);
+	          };
+	          throw new Error("Failed pattern match at Text.Smolder.Markup line 79, column 1 - line 82, column 1: " + [ _4.constructor.name, _5.constructor.name ]);
+	      };
+	  });
+	  var attributableMarkupMF = new Attributable(function (k) {
+	      return function (xs) {
+	          return function (m) {
+	              return $$with(attributableMarkupM)(k(m))(xs);
+	          };
+	      };
+	  });
+	  var monadMarkupM = new Prelude.Monad(function () {
+	      return applicativeMarkupM;
+	  }, function () {
+	      return bindMarkupM;
+	  });
+	  var bindMarkupM = new Prelude.Bind(function () {
+	      return applyMarkupM;
+	  }, function (_1) {
+	      return function (f) {
+	          if (_1 instanceof Element) {
+	              return new Element(_1.value0, _1.value1, _1.value2, Prelude.bind(bindMarkupM)(_1.value3)(f));
+	          };
+	          if (_1 instanceof Content) {
+	              return new Content(_1.value0, Prelude.bind(bindMarkupM)(_1.value1)(f));
+	          };
+	          if (_1 instanceof Return) {
+	              return f(_1.value0);
+	          };
+	          throw new Error("Failed pattern match: " + [ _1.constructor.name, f.constructor.name ]);
+	      };
+	  });
+	  var applyMarkupM = new Prelude.Apply(function () {
+	      return functorMarkupM;
+	  }, Prelude.ap(monadMarkupM));
+	  var applicativeMarkupM = new Prelude.Applicative(function () {
+	      return applyMarkupM;
+	  }, Return.create);
+	  var semigroupMarkupM = new Prelude.Semigroup(function (x) {
+	      return function (y) {
+	          return Control_Apply["*>"](applyMarkupM)(x)(y);
+	      };
+	  });
+	  var monoidMarkup = new Data_Monoid.Monoid(function () {
+	      return semigroupMarkupM;
+	  }, new Return(Prelude.unit));
+	  exports["Attr"] = Attr;
+	  exports["Element"] = Element;
+	  exports["Content"] = Content;
+	  exports["Return"] = Return;
+	  exports["Attributable"] = Attributable;
+	  exports["!"] = $bang;
+	  exports["attribute"] = attribute;
+	  exports["text"] = text;
+	  exports["leaf"] = leaf;
+	  exports["parent"] = parent;
+	  exports["semigroupMarkupM"] = semigroupMarkupM;
+	  exports["monoidMarkup"] = monoidMarkup;
+	  exports["functorMarkupM"] = functorMarkupM;
+	  exports["applyMarkupM"] = applyMarkupM;
+	  exports["applicativeMarkupM"] = applicativeMarkupM;
+	  exports["bindMarkupM"] = bindMarkupM;
+	  exports["monadMarkupM"] = monadMarkupM;
+	  exports["attributableMarkupM"] = attributableMarkupM;
+	  exports["attributableMarkupMF"] = attributableMarkupMF;;
+	 
+	})(PS["Text.Smolder.Markup"] = PS["Text.Smolder.Markup"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Prelude = PS["Prelude"];
 	  var Signal_DOM = PS["Signal.DOM"];
 	  var Data_Maybe = PS["Data.Maybe"];
 	  var Signal_Channel = PS["Signal.Channel"];
-	  var Control_Monad_Eff = PS["Control.Monad.Eff"];     
-	  var GistProcessor = (function () {
-	      function GistProcessor() {
+	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];     
+	  var MdProcessor = (function () {
+	      function MdProcessor() {
 
 	      };
-	      GistProcessor.value = new GistProcessor();
-	      return GistProcessor;
+	      MdProcessor.value = new MdProcessor();
+	      return MdProcessor;
 	  })();
 	  var ImgListProcessor = (function () {
 	      function ImgListProcessor() {
@@ -2538,12 +3287,12 @@
 	      TextProcessor.value = new TextProcessor();
 	      return TextProcessor;
 	  })();
-	  var GithubProcessor = (function () {
-	      function GithubProcessor() {
+	  var BlogProcessor = (function () {
+	      function BlogProcessor() {
 
 	      };
-	      GithubProcessor.value = new GithubProcessor();
-	      return GithubProcessor;
+	      BlogProcessor.value = new BlogProcessor();
+	      return BlogProcessor;
 	  })();
 	  var Browser = (function () {
 	      function Browser() {
@@ -2565,6 +3314,56 @@
 	      };
 	      Unknown.value = new Unknown();
 	      return Unknown;
+	  })();
+	  var GlobalPP = (function () {
+	      function GlobalPP() {
+
+	      };
+	      GlobalPP.value = new GlobalPP();
+	      return GlobalPP;
+	  })();
+	  var ProcessorInternalPP = (function () {
+	      function ProcessorInternalPP() {
+
+	      };
+	      ProcessorInternalPP.value = new ProcessorInternalPP();
+	      return ProcessorInternalPP;
+	  })();
+	  var Md = (function () {
+	      function Md(value0) {
+	          this.value0 = value0;
+	      };
+	      Md.create = function (value0) {
+	          return new Md(value0);
+	      };
+	      return Md;
+	  })();
+	  var HTML = (function () {
+	      function HTML(value0) {
+	          this.value0 = value0;
+	      };
+	      HTML.create = function (value0) {
+	          return new HTML(value0);
+	      };
+	      return HTML;
+	  })();
+	  var StringInput = (function () {
+	      function StringInput(value0) {
+	          this.value0 = value0;
+	      };
+	      StringInput.create = function (value0) {
+	          return new StringInput(value0);
+	      };
+	      return StringInput;
+	  })();
+	  var ArrayInput = (function () {
+	      function ArrayInput(value0) {
+	          this.value0 = value0;
+	      };
+	      ArrayInput.create = function (value0) {
+	          return new ArrayInput(value0);
+	      };
+	      return ArrayInput;
 	  })();
 	  var StringSource = (function () {
 	      function StringSource(value0) {
@@ -2592,6 +3391,24 @@
 	          return new ChildSource(value0);
 	      };
 	      return ChildSource;
+	  })();
+	  var GistSource = (function () {
+	      function GistSource(value0) {
+	          this.value0 = value0;
+	      };
+	      GistSource.create = function (value0) {
+	          return new GistSource(value0);
+	      };
+	      return GistSource;
+	  })();
+	  var GithubSource = (function () {
+	      function GithubSource(value0) {
+	          this.value0 = value0;
+	      };
+	      GithubSource.create = function (value0) {
+	          return new GithubSource(value0);
+	      };
+	      return GithubSource;
 	  })();
 	  var Node = (function () {
 	      function Node(value0) {
@@ -2653,18 +3470,26 @@
 	      if (_0 instanceof Unknown) {
 	          return "Unknown";
 	      };
-	      throw new Error("Failed pattern match at Types line 47, column 1 - line 50, column 18: " + [ _0.constructor.name ]);
+	      throw new Error("Failed pattern match at Types line 55, column 1 - line 58, column 18: " + [ _0.constructor.name ]);
 	  });
 	  exports["Browser"] = Browser;
 	  exports["Nodejs"] = Nodejs;
 	  exports["Unknown"] = Unknown;
+	  exports["Md"] = Md;
+	  exports["HTML"] = HTML;
+	  exports["StringInput"] = StringInput;
+	  exports["ArrayInput"] = ArrayInput;
 	  exports["StringSource"] = StringSource;
 	  exports["ArraySource"] = ArraySource;
 	  exports["ChildSource"] = ChildSource;
-	  exports["GistProcessor"] = GistProcessor;
+	  exports["GistSource"] = GistSource;
+	  exports["GithubSource"] = GithubSource;
+	  exports["GlobalPP"] = GlobalPP;
+	  exports["ProcessorInternalPP"] = ProcessorInternalPP;
+	  exports["MdProcessor"] = MdProcessor;
 	  exports["ImgListProcessor"] = ImgListProcessor;
 	  exports["TextProcessor"] = TextProcessor;
-	  exports["GithubProcessor"] = GithubProcessor;
+	  exports["BlogProcessor"] = BlogProcessor;
 	  exports["Node"] = Node;
 	  exports["AppState"] = AppState;
 	  exports["RenderState"] = RenderState;
@@ -2703,6 +3528,7 @@
 
 	  exports.parseGistResponse = function(gist) {
 	    var jsn = JSON.parse(gist);
+	    console.log(jsn);
 	    var filenames = Object.keys(jsn.files);
 	    return jsn.files[filenames[0]].content;
 	  }
@@ -2765,74 +3591,73 @@
 	      title: "Eugene Naumenko", 
 	      dataSource: new Types.ChildSource("about"), 
 	      processor: Types.TextProcessor.value, 
+	      pathProcessor: Types.GlobalPP.value, 
 	      children: [ new Types.Node({
 	          title: "About", 
 	          path: "about", 
-	          processor: Types.TextProcessor.value, 
+	          processor: Types.MdProcessor.value, 
+	          pathProcessor: Types.GlobalPP.value, 
 	          children: [  ], 
 	          dataSource: new Types.StringSource(Utils.unlines([ "Hi, I'm Eugene Naumenko.", "", "Software {engineer, architect} with 10 years of experience in networking, distributed and high load systems, web development, software design and project management.", "", "Worked on online education systems, spam protection systems, online GIS systems, accounting and trading software, rich web applications, IT/network infrastructure systems.", "Created own small language for web development and a few open source utilities and applications.", "", "Contacts: [e-mail](mailto:eugene.naumenko@gmail.com), [github](https://github.com/EugeneN), [twitter](https://twitter.com/8gene).", "", "", "_", "", "", "> ![Prom.ua](promua.png)", "> ![Cisco](cisco.png)", "> ![Pearson](pearson.png)", "> ![G4](g4.png)", "> ![SoftServe](softserve.png)" ]))
 	      }), new Types.Node({
+	          title: "Photos", 
+	          path: "photos", 
+	          processor: Types.ImgListProcessor.value, 
+	          pathProcessor: Types.GlobalPP.value, 
+	          children: [  ], 
+	          dataSource: new Types.ArraySource([ "https://lh3.googleusercontent.com/eWwR1tPCh42kvp3g5cd2ajogkUhGp9ol0_N08gsJf8DvIAK8AI_0zRW0WaWUxnQ0eGhUlerXo_psMw=w1084-h610-no", "https://lh3.googleusercontent.com/-kkUBuYKmHSBTj5ad8yHfC5uRgH1V2edL9nnSgBY2GqFaDegNV02fCEQogrogXf60J0wmOW1PjrffQ=w1474-h1105-no", "https://lh3.googleusercontent.com/mR9FX06r0JlFByYSku73j9XBAAg-z8YC9jv3ack1kgRchM9XM0pdgNbTPHQhGsc4JGSGB_soVRJwLw=w1280-h853-no", "https://lh3.googleusercontent.com/waE6y-kWoGdJ_MuZWIx-8bH2ZVCno06xyu0ahwWELVqf2SS2Rcpd30-3sKH33oMNgwrQjCToRFcEQznAvl0TLl28OnW-HPJPPe_XHhLh00nZoXUjekl4ACAYiBT63DVyKDmQGaUlw7xqztbNl3cth8cOUIqM80f-fNhxyct2HeZWWB0da9UrPuTwjDW0fohPam-3BLRpOhc0zwRxVi4RYLbyivh1MLmPsxAu0OxChtX4ecRbHmYjzj7cm7M1ccPKvL2LfI9wqfWu23Z_mbSVy04D25ah0lVAD6XtOoMqRB8vAwAg8L4y3YWQMmdB6PA4gcG7sAxxDiCwahSDzsbA3cuwo2l_ENEm3mqzQCbwXNn0Qu5Rpa7DhicEtgQW67mdN5wQHjb5YIls5MnEusDTjCnSBSgf7EtSfKsu6uHMSJQD-qFmymAsqr4oRxPqw4PCwL4TrbnAQViNc96tveLFu41AI9Pfbb3SA6OVLaA671Y9U5FVGaFWf9UWB8_cCTuW-Dz_XYK6Mye3QJlaoZhzGKo0c2uq3Zhq6Sxpd13wnEk=w800-h600-no", "https://lh3.googleusercontent.com/C-kMUvnWjLxt1xrMPHPSK9n6BAbjznxA_1wD3xaItuiGf0-t2p1sjNGzDA3nih1mMTlZJBk1lROS7pCzT-0i-vTU2SUTGHHOF3X0HY-0dJasZJ_DYcM8mHU2_dXnFsVtkMWg2pi14aCfBW8OoodUmA3Yr0AirbxhEqEqSPaOXap6XN5jqQploGBzgiaiB1wtKDjD1XiVn7hqfs_wDQSarIhr8K51l4Xd1dnI1eyrrRCYTqxshME9vphC5Hk39903hCIhRKaOkz7KxpL2u4QeGWTNJcjrAsrgVhyR3BfvmHpMfAR9-4WxnHBqyUxGMrUfikdMg2FCWn9Itr8zk-xpjBVL2ryA9kcHfXp1hxu7Zx9nbp41vR0u2-R_6SPVbhcPsmY1DIPTRRv7xvNCIIY8jxcdvlkUIKdRR3aZrAsZfTo3GCRLLln-JgvgUJuYXTSnwJ2lqnMfOuDZGi4zm4Ix3CKH3Gn2wpWh6BLPv5dtMQ2YqjUZd21ybnBfqe29ItNdL9JxhGBzaPcqVTvL4Q8toqJIGvyjO89FQD_9YngNekg=w600-h800-no", "https://lh3.googleusercontent.com/Emg8T6PyLUioQrB2SbIJ2V58eLQ71PrsQDBPgpdvtgJsM4kQ3TWI5Gpb425FFV5rwu6rjkBXH2emutL-e0N5C3y-aQ7zfjvm2Nof9SiKEYSAGzb9qAqPILBVOoZbcEGbVemKGBqSnlpH-sgT1Yn1Qewhn3wFZoTFR9aBKROu2GLXNiqdUkwhmMsa6cB04sgE-5rxWV6YGJvPGnsZESqo0sjsTXWcG3H-irmNw1NQOeiTIrJfUjW8Er6BHbp20-kMh-adw_AFB9dAnKIWsznXszOTE6K-bLlBRJR2E45naH4DlRlVFdVCfbCFejKreZzi95PkEzteY__8m44L920IP_A46MOyWGxLsglmWGoQvxgzBr5PiEAYnKEdFaxy7PELhOR5vPubP-TNRgqTJZ0J25XbJvOIske-Na5VLXWHLShgrPCv1V5tsMQXHm6LnklEbMwpQlc7M1Gn2Y8wvMGNBjujZOnRMIinFO10zVdakPc2qRby4d2OOo7fOSV7qWRUCk6W33C-AAxdBCDIWLJl2WBLLb4yj7fxL3ILh3lquBtcJURmoA-garnKaeOj0_b-6jap=w600-h800-no", "https://lh3.googleusercontent.com/-yxRMkF93Hh21waoSUO5iMpgj4CRSV0Z8s_ht8gsPYBYobWbZ3BTttR6vnUwF5-tF9MqSg_ToyC7zMsjH_uAi3avFT5MjalPyeWxrXLKTzzqKQtyCWHzavafVUWvwy60p2mVrR63zvS9VRE7jxI6zoSlgJWayrZ-0T-4y52mhwXdN37-DjKKMbp7p6OQ_vbp_8LdN8QzEM6S2TkSko_PLKko4inzyLO45qoC6p5hgm4ZJaNWDxAZH5zxhf7RkKKYcd-5Le-CoGOLUfNG2dX7t5MBSfkhYFvO-nTg9Vlkhn5W4l5x-ZIn3nrukUyjQUsjuDfLz5iY_Hn6X0WiOwCkuqt44-lyj2WWUMPv6tvLzkqxmGK3tq4yZrMA80mxZfONXUh_ErgzBf_szFatRYmHX6N_sDzCMvElhJf0EjSU5Eqv95eJ4FJOLAlIid8X5rmI_Q-tyFw40h6_5CcKUrv7Td-4eAaUOWhPCu6-C9FrJb-q4s40allLKd9EIT3clNGWE4tlq5KWXcOCwDDLE7o8vtDsMnHqSBW9pacyCdZiH6zdFU07XrrGn8jZxRDw56c_YeFd=w540-h720-no", "https://lh3.googleusercontent.com/b92cOfZh56TqNKtBoTaQZeVRq_qE1NRDKZz6G_jvtF4HfRdPeLsXazrR8nhlMtzUeiSyHdrzl09k75MPl7GaW4Th5PyAYkB8N97q1PCydhiSn79r3EWe4er3DDwDL7g0PENL8J7bEfFpFD3EVG5CiiZi0gN6Vog9mhZLrb4TSDXxLHraepmneJ2XftY-DI-J_qrsjSv7tFH6XLMDDU5TNFeF-IlQOfjVO52u3TlZKCWUXn8s_CzmSLB3xeRJgh8iq71swiozi2sRFD1wCLRgcBRgUhbsJnLdk_aVSA1YyLy28jP9QhQhPVfLSwYDk8pRL8o4LrT2SHUKK7N6wU6ErOtyGjTRbQPn-Yq8ha27SYXa4moD0WSeNMFR4GSBYjlaVb7mYc348Sf9oeKgUuJMcmV6CS1t8AyzpuWBXTpA3uxmcrWylWyhURqpMXUg5qh_TTkvfrULyK0eLjd0zj23tnFuRa0mKjVD2KOYi2h-cqFTHc9gfGa7yWpYwtn44Uq_4oqluKnTBbtpeeAZEq2DI5c-epIGGIIBEO9CS_5gg6k=w800-h534-no", "https://lh3.googleusercontent.com/xr1xGfYfaljVuvZxrF0QaVrWQUQGFzRDmlISK6BC0qdS6r1TNW0GdAvQPV087YdsGP8aemGTOEbdzxy3dGzsUgkINdEg2iGlVvZRVCwwB8rDGB11noTzvzqNUj5uM8YAClWlTTMvCcvTSLe5EuUuWIbyOVLBywTm-TyVe7d2n_CMc6_LeGAcpSHvnHzmx106gaHQT7q_avdVcsXdPMp8GrXGV0EQP7YQLHdkDPAXdSe7xI-eqMclSJalGng7bntjBK3umPjxcfEowWwBS8z4I7o1k7UeaPFdXAu1IZ6L_Vp9bbG2JkRe60iRcq5de1CA5TBRG-dJu-Q8_2rOIzGR-2NxEbdPElokPiepb6r7jVOIkmjz9-IrmParyaFIQH-r5eVP3939SX_2RycZLcMc3Rw8UUJnCjAeIDGNP4l4UkKsXW2xGepmS4RuDNye9FA3qJLrxNsqRWMNKp4VpupvLWCuDsEjeTvKoz65Zhrv6hPrUHrdcMRqsdcVA06Wh5uWEDqet9yaWvFq4umThIuADHOH4y4Ft26zX_erbtRRpDs=w658-h441-no", "https://lh3.googleusercontent.com/h_j3F5mdoJR4NJmhmMHrWYJ30z7at9KbLAtrzouypKDRqEh_UXzei_m7EkR3pdYIbTZyC1BBOlV51hPzPNTbeh0hxiPrR35tDFgDZ_mlfhgfPH0TBq9QtW9StDP3W81wOEhI9ClycyxnuuZhpbnxtxSW6aCb7a3KhcpICfVZ7klIUo8cwjCyj_hHHey70fiPDBOFTmsi0ZzWXbUK8OcnashPoQoi34pHkcOGs_kpUsBDUjkXlsat7vtIB3fPTdkXrpyLkc_F6eRg6BCxwFyo88Fx4im1ZdtUrK3-rZ8FuvKjWE38R-oG4un7N3CkD-TKCYpRJyMXU4yWdeNAXiTQgq1MrvdhgFLfdMsEOHMqx5SkDOtGBJa6_SU9KbjEbMUvgxwFBCHUfBmXfZUNrc4HkDnJIt9zlkjlZDCO6OR-2WUi3qAs2_yfLMcjOKpS3BwipDYR95hd158K4_DOpsKYLKpfEwVBnk7IzwGN6Gpb4ZV9YYwOHTwFeqSHyxfni4tTCp_taoh4dANKTmjEwOqUtYIeel11DB4CvK6HUDd7GXQ=w441-h658-no" ])
+	      }), new Types.Node({
 	          title: "CV", 
 	          path: "cv", 
-	          processor: Types.GistProcessor.value, 
+	          processor: Types.MdProcessor.value, 
+	          pathProcessor: Types.GlobalPP.value, 
 	          children: [  ], 
-	          dataSource: new Types.StringSource("e1a6a166728f7d403fc4")
+	          dataSource: new Types.GistSource("e1a6a166728f7d403fc4")
 	      }), new Types.Node({
 	          title: "Blog", 
 	          path: "blog", 
-	          processor: Types.TextProcessor.value, 
-	          children: [ new Types.Node({
-	              title: "DNA Architecture", 
-	              path: "dna-arch", 
-	              processor: Types.GistProcessor.value, 
-	              children: [  ], 
-	              dataSource: new Types.StringSource("cdc388425dacf87cba71")
-	          }), new Types.Node({
-	              title: "Cats", 
-	              path: "cats", 
-	              processor: Types.GistProcessor.value, 
-	              children: [  ], 
-	              dataSource: new Types.StringSource("6c6a56e4abb7ff7fa7fa")
-	          }), new Types.Node({
-	              title: "Photos", 
-	              path: "photos", 
-	              processor: Types.ImgListProcessor.value, 
-	              children: [  ], 
-	              dataSource: new Types.ArraySource([ "https://lh3.googleusercontent.com/eWwR1tPCh42kvp3g5cd2ajogkUhGp9ol0_N08gsJf8DvIAK8AI_0zRW0WaWUxnQ0eGhUlerXo_psMw=w1084-h610-no", "https://lh3.googleusercontent.com/-kkUBuYKmHSBTj5ad8yHfC5uRgH1V2edL9nnSgBY2GqFaDegNV02fCEQogrogXf60J0wmOW1PjrffQ=w1474-h1105-no", "https://lh3.googleusercontent.com/mR9FX06r0JlFByYSku73j9XBAAg-z8YC9jv3ack1kgRchM9XM0pdgNbTPHQhGsc4JGSGB_soVRJwLw=w1280-h853-no", "https://lh3.googleusercontent.com/waE6y-kWoGdJ_MuZWIx-8bH2ZVCno06xyu0ahwWELVqf2SS2Rcpd30-3sKH33oMNgwrQjCToRFcEQznAvl0TLl28OnW-HPJPPe_XHhLh00nZoXUjekl4ACAYiBT63DVyKDmQGaUlw7xqztbNl3cth8cOUIqM80f-fNhxyct2HeZWWB0da9UrPuTwjDW0fohPam-3BLRpOhc0zwRxVi4RYLbyivh1MLmPsxAu0OxChtX4ecRbHmYjzj7cm7M1ccPKvL2LfI9wqfWu23Z_mbSVy04D25ah0lVAD6XtOoMqRB8vAwAg8L4y3YWQMmdB6PA4gcG7sAxxDiCwahSDzsbA3cuwo2l_ENEm3mqzQCbwXNn0Qu5Rpa7DhicEtgQW67mdN5wQHjb5YIls5MnEusDTjCnSBSgf7EtSfKsu6uHMSJQD-qFmymAsqr4oRxPqw4PCwL4TrbnAQViNc96tveLFu41AI9Pfbb3SA6OVLaA671Y9U5FVGaFWf9UWB8_cCTuW-Dz_XYK6Mye3QJlaoZhzGKo0c2uq3Zhq6Sxpd13wnEk=w800-h600-no", "https://lh3.googleusercontent.com/C-kMUvnWjLxt1xrMPHPSK9n6BAbjznxA_1wD3xaItuiGf0-t2p1sjNGzDA3nih1mMTlZJBk1lROS7pCzT-0i-vTU2SUTGHHOF3X0HY-0dJasZJ_DYcM8mHU2_dXnFsVtkMWg2pi14aCfBW8OoodUmA3Yr0AirbxhEqEqSPaOXap6XN5jqQploGBzgiaiB1wtKDjD1XiVn7hqfs_wDQSarIhr8K51l4Xd1dnI1eyrrRCYTqxshME9vphC5Hk39903hCIhRKaOkz7KxpL2u4QeGWTNJcjrAsrgVhyR3BfvmHpMfAR9-4WxnHBqyUxGMrUfikdMg2FCWn9Itr8zk-xpjBVL2ryA9kcHfXp1hxu7Zx9nbp41vR0u2-R_6SPVbhcPsmY1DIPTRRv7xvNCIIY8jxcdvlkUIKdRR3aZrAsZfTo3GCRLLln-JgvgUJuYXTSnwJ2lqnMfOuDZGi4zm4Ix3CKH3Gn2wpWh6BLPv5dtMQ2YqjUZd21ybnBfqe29ItNdL9JxhGBzaPcqVTvL4Q8toqJIGvyjO89FQD_9YngNekg=w600-h800-no", "https://lh3.googleusercontent.com/Emg8T6PyLUioQrB2SbIJ2V58eLQ71PrsQDBPgpdvtgJsM4kQ3TWI5Gpb425FFV5rwu6rjkBXH2emutL-e0N5C3y-aQ7zfjvm2Nof9SiKEYSAGzb9qAqPILBVOoZbcEGbVemKGBqSnlpH-sgT1Yn1Qewhn3wFZoTFR9aBKROu2GLXNiqdUkwhmMsa6cB04sgE-5rxWV6YGJvPGnsZESqo0sjsTXWcG3H-irmNw1NQOeiTIrJfUjW8Er6BHbp20-kMh-adw_AFB9dAnKIWsznXszOTE6K-bLlBRJR2E45naH4DlRlVFdVCfbCFejKreZzi95PkEzteY__8m44L920IP_A46MOyWGxLsglmWGoQvxgzBr5PiEAYnKEdFaxy7PELhOR5vPubP-TNRgqTJZ0J25XbJvOIske-Na5VLXWHLShgrPCv1V5tsMQXHm6LnklEbMwpQlc7M1Gn2Y8wvMGNBjujZOnRMIinFO10zVdakPc2qRby4d2OOo7fOSV7qWRUCk6W33C-AAxdBCDIWLJl2WBLLb4yj7fxL3ILh3lquBtcJURmoA-garnKaeOj0_b-6jap=w600-h800-no", "https://lh3.googleusercontent.com/-yxRMkF93Hh21waoSUO5iMpgj4CRSV0Z8s_ht8gsPYBYobWbZ3BTttR6vnUwF5-tF9MqSg_ToyC7zMsjH_uAi3avFT5MjalPyeWxrXLKTzzqKQtyCWHzavafVUWvwy60p2mVrR63zvS9VRE7jxI6zoSlgJWayrZ-0T-4y52mhwXdN37-DjKKMbp7p6OQ_vbp_8LdN8QzEM6S2TkSko_PLKko4inzyLO45qoC6p5hgm4ZJaNWDxAZH5zxhf7RkKKYcd-5Le-CoGOLUfNG2dX7t5MBSfkhYFvO-nTg9Vlkhn5W4l5x-ZIn3nrukUyjQUsjuDfLz5iY_Hn6X0WiOwCkuqt44-lyj2WWUMPv6tvLzkqxmGK3tq4yZrMA80mxZfONXUh_ErgzBf_szFatRYmHX6N_sDzCMvElhJf0EjSU5Eqv95eJ4FJOLAlIid8X5rmI_Q-tyFw40h6_5CcKUrv7Td-4eAaUOWhPCu6-C9FrJb-q4s40allLKd9EIT3clNGWE4tlq5KWXcOCwDDLE7o8vtDsMnHqSBW9pacyCdZiH6zdFU07XrrGn8jZxRDw56c_YeFd=w540-h720-no", "https://lh3.googleusercontent.com/b92cOfZh56TqNKtBoTaQZeVRq_qE1NRDKZz6G_jvtF4HfRdPeLsXazrR8nhlMtzUeiSyHdrzl09k75MPl7GaW4Th5PyAYkB8N97q1PCydhiSn79r3EWe4er3DDwDL7g0PENL8J7bEfFpFD3EVG5CiiZi0gN6Vog9mhZLrb4TSDXxLHraepmneJ2XftY-DI-J_qrsjSv7tFH6XLMDDU5TNFeF-IlQOfjVO52u3TlZKCWUXn8s_CzmSLB3xeRJgh8iq71swiozi2sRFD1wCLRgcBRgUhbsJnLdk_aVSA1YyLy28jP9QhQhPVfLSwYDk8pRL8o4LrT2SHUKK7N6wU6ErOtyGjTRbQPn-Yq8ha27SYXa4moD0WSeNMFR4GSBYjlaVb7mYc348Sf9oeKgUuJMcmV6CS1t8AyzpuWBXTpA3uxmcrWylWyhURqpMXUg5qh_TTkvfrULyK0eLjd0zj23tnFuRa0mKjVD2KOYi2h-cqFTHc9gfGa7yWpYwtn44Uq_4oqluKnTBbtpeeAZEq2DI5c-epIGGIIBEO9CS_5gg6k=w800-h534-no", "https://lh3.googleusercontent.com/xr1xGfYfaljVuvZxrF0QaVrWQUQGFzRDmlISK6BC0qdS6r1TNW0GdAvQPV087YdsGP8aemGTOEbdzxy3dGzsUgkINdEg2iGlVvZRVCwwB8rDGB11noTzvzqNUj5uM8YAClWlTTMvCcvTSLe5EuUuWIbyOVLBywTm-TyVe7d2n_CMc6_LeGAcpSHvnHzmx106gaHQT7q_avdVcsXdPMp8GrXGV0EQP7YQLHdkDPAXdSe7xI-eqMclSJalGng7bntjBK3umPjxcfEowWwBS8z4I7o1k7UeaPFdXAu1IZ6L_Vp9bbG2JkRe60iRcq5de1CA5TBRG-dJu-Q8_2rOIzGR-2NxEbdPElokPiepb6r7jVOIkmjz9-IrmParyaFIQH-r5eVP3939SX_2RycZLcMc3Rw8UUJnCjAeIDGNP4l4UkKsXW2xGepmS4RuDNye9FA3qJLrxNsqRWMNKp4VpupvLWCuDsEjeTvKoz65Zhrv6hPrUHrdcMRqsdcVA06Wh5uWEDqet9yaWvFq4umThIuADHOH4y4Ft26zX_erbtRRpDs=w658-h441-no", "https://lh3.googleusercontent.com/h_j3F5mdoJR4NJmhmMHrWYJ30z7at9KbLAtrzouypKDRqEh_UXzei_m7EkR3pdYIbTZyC1BBOlV51hPzPNTbeh0hxiPrR35tDFgDZ_mlfhgfPH0TBq9QtW9StDP3W81wOEhI9ClycyxnuuZhpbnxtxSW6aCb7a3KhcpICfVZ7klIUo8cwjCyj_hHHey70fiPDBOFTmsi0ZzWXbUK8OcnashPoQoi34pHkcOGs_kpUsBDUjkXlsat7vtIB3fPTdkXrpyLkc_F6eRg6BCxwFyo88Fx4im1ZdtUrK3-rZ8FuvKjWE38R-oG4un7N3CkD-TKCYpRJyMXU4yWdeNAXiTQgq1MrvdhgFLfdMsEOHMqx5SkDOtGBJa6_SU9KbjEbMUvgxwFBCHUfBmXfZUNrc4HkDnJIt9zlkjlZDCO6OR-2WUi3qAs2_yfLMcjOKpS3BwipDYR95hd158K4_DOpsKYLKpfEwVBnk7IzwGN6Gpb4ZV9YYwOHTwFeqSHyxfni4tTCp_taoh4dANKTmjEwOqUtYIeel11DB4CvK6HUDd7GXQ=w441-h658-no" ])
-	          }) ], 
-	          dataSource: new Types.ChildSource("dna-arch")
+	          processor: Types.BlogProcessor.value, 
+	          pathProcessor: Types.ProcessorInternalPP.value, 
+	          children: [  ], 
+	          dataSource: new Types.GistSource("ff3d182ce385cebb1774")
 	      }), new Types.Node({
 	          title: "Apps", 
 	          path: "apps", 
 	          processor: Types.TextProcessor.value, 
+	          pathProcessor: Types.GlobalPP.value, 
 	          children: [ new Types.Node({
 	              title: "C.MD", 
 	              path: "cmd", 
-	              processor: Types.TextProcessor.value, 
+	              processor: Types.MdProcessor.value, 
+	              pathProcessor: Types.GlobalPP.value, 
 	              children: [  ], 
 	              dataSource: new Types.StringSource(Utils.unlines([ "This is a rich markdown editor for Github Gists, a 100% client side application written in ClojureScript to explore offline mode and multiprocessing for web applications.", "", "[C.MD](http://eugenen.github.io/C.MD)", "# ![cmd](cmd.png)", "" ]))
 	          }), new Types.Node({
 	              title: "pureGoL", 
 	              path: "pureGoL", 
-	              processor: Types.TextProcessor.value, 
+	              processor: Types.MdProcessor.value, 
+	              pathProcessor: Types.GlobalPP.value, 
 	              children: [  ], 
 	              dataSource: new Types.StringSource(Utils.unlines([ "\u201cGame of Life\u201d game written in Purescript as a research on", "decoupling and encapsulating state between user interface, application core and input effects in reactive web applications. ", "Features a stateful core and few distinct interchangeable stateful user interfaces.", "", "[pureGoL](http://eugenen.github.io/pureGoL)", "# ![gol](gol.png)", "" ]))
 	          }), new Types.Node({
 	              title: "twic", 
 	              path: "twic", 
-	              processor: Types.TextProcessor.value, 
+	              processor: Types.MdProcessor.value, 
+	              pathProcessor: Types.GlobalPP.value, 
 	              children: [  ], 
 	              dataSource: new Types.StringSource(Utils.unlines([ "Experimental Twitter client written in Haskell and Purescript with clean UI and simple UX. ", "Written to explore component models for web applications and usage of immutable cloud database for eventual consistency.", "", "[twic](https://github.com/EugeneN/twic)", "# ![twic](twic.png)", "" ]))
 	          }), new Types.Node({
 	              title: "meta.repl", 
 	              path: "meta.repl", 
-	              processor: Types.TextProcessor.value, 
+	              processor: Types.MdProcessor.value, 
+	              pathProcessor: Types.GlobalPP.value, 
 	              children: [  ], 
 	              dataSource: new Types.StringSource(Utils.unlines([ "This application. Experiments with better ways to build apllications.", "", "[meta.repl](https://github.com/EugeneN/meta.repl) (draft)", "# ![meta.repl](meta.repl.png)" ]))
 	          }), new Types.Node({
 	              title: "G4", 
 	              path: "g4", 
-	              processor: Types.TextProcessor.value, 
+	              processor: Types.MdProcessor.value, 
+	              pathProcessor: Types.GlobalPP.value, 
 	              children: [  ], 
 	              dataSource: new Types.StringSource(Utils.unlines([ "G4 is a rich web application for managing geospatial data \u2013 GPS tracks, waypoints, geotagged items, custom maps etc. ", "The application features complex geographical/geometric calculations, automatic categorization and clustering of data, ", "real-time push based communications, external RESTful API, spatial search, uses advanced HTML5 ", "features like drag-and-drop multi-file upload, sound effects, interactive svg charting etc.", "", "", "The application is currently offline, but you can see some screenshots here:", "", "# ![Many objects](http://eugenen.github.io/g4/g4massive.png)", "# ![Many waypoints](http://eugenen.github.io/g4/g4manywpts.jpg)", "# ![Login screen](http://eugenen.github.io/g4/g4greenbtn1.png)", "# ![Track charts](http://eugenen.github.io/g4/g4chartsnew.png)", "# ![More charts](http://eugenen.github.io/g4/g4evolving.png)", "# ![Tracks comparison](http://eugenen.github.io/g4/g4r.jpg)" ]))
 	          }) ], 
@@ -2840,15 +3665,17 @@
 	      }), new Types.Node({
 	          title: "Talks", 
 	          path: "talks", 
-	          processor: Types.TextProcessor.value, 
+	          processor: Types.MdProcessor.value, 
+	          pathProcessor: Types.GlobalPP.value, 
 	          children: [  ], 
 	          dataSource: new Types.StringSource(Utils.unlines([ "[Purescript](https://docs.google.com/presentation/d/1IOM9A3Otxufs5xzvYb3yPrT7JDVPhkJVkdaWvVl8R_E/pub?start=false&loop=false&delayms=3000)", "", "", "[DNA](https://docs.google.com/presentation/d/1lfbKvDcXfBdvdu76anAyTglo6O3vP68oYJUa0K-d7zo/pub?start=false&loop=false&delayms=3000)", "", "", "[Evolution of client side applications](https://docs.google.com/presentation/d/1e5dyOXcSAp3UCCS3sJMBTttKDmQw8dDq3qYobsTvpKA/pub?start=false&loop=false&delayms=3000)" ]))
 	      }), new Types.Node({
 	          title: "Help", 
 	          path: "help", 
-	          processor: Types.TextProcessor.value, 
+	          processor: Types.MdProcessor.value, 
+	          pathProcessor: Types.GlobalPP.value, 
 	          children: [  ], 
-	          dataSource: new Types.StringSource(Utils.unlines([ "This \xabweb site\xbb is a concept **application** aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage. Github link: [https://github.com/EugeneN/meta.repl](https://github.com/EugeneN/meta.repl) ", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- [conventional HTML-based](?ui=html#about), rendered using virtual dom;", "- [REPL-based](?ui=console#about) using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without a browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]))
+	          dataSource: new Types.StringSource(Utils.unlines([ "This \xabweb site\xbb is a concept *application* aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage. Github link: [https://github.com/EugeneN/meta.repl](https://github.com/EugeneN/meta.repl) ", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- [conventional HTML-based](?ui=html#about), rendered using virtual dom;", "- [REPL-based](?ui=console#about) using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without a browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]))
 	      }) ]
 	  });
 	  exports["appDNA"] = appDNA;
@@ -2856,235 +3683,193 @@
 	 
 	})(PS["Data"] = PS["Data"] || {});
 	(function(exports) {
+	  /* global exports */
+	  "use strict";
+
+	  // module Data.Foreign.Index
+
+	  // jshint maxparams: 4
+	  exports.unsafeReadPropImpl = function (f, s, key, value) {
+	    return value == null ? f : s(value[key]);
+	  };
+
+	  // jshint maxparams: 2
+	  exports.unsafeHasOwnProperty = function (prop, value) {
+	    return Object.prototype.hasOwnProperty.call(value, prop);
+	  };
+
+	  exports.unsafeHasProperty = function (prop, value) {
+	    return prop in value;
+	  };
+	 
+	})(PS["Data.Foreign.Index"] = PS["Data.Foreign.Index"] || {});
+	(function(exports) {
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
-	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
-	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
-	  var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
-	  var Data_Array = PS["Data.Array"];
-	  var Data_Maybe = PS["Data.Maybe"];
-	  var Data_String = PS["Data.String"];
-	  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
+	  var $foreign = PS["Data.Foreign.Index"];
 	  var Prelude = PS["Prelude"];
-	  var Signal_Channel = PS["Signal.Channel"];
-	  var Types = PS["Types"];
-	  var Data = PS["Data"];
-	  var Utils = PS["Utils"];
-	  var Network_HTTP_Affjax_Response = PS["Network.HTTP.Affjax.Response"];
-	  var getTitle = function (_10) {
-	      return _10.value0.title;
+	  var Data_Either = PS["Data.Either"];
+	  var Data_Foreign = PS["Data.Foreign"];
+	  var Data_Function = PS["Data.Function"];
+	  var Data_Int = PS["Data.Int"];     
+	  var Index = function (errorAt, hasOwnProperty, hasProperty, ix) {
+	      this.errorAt = errorAt;
+	      this.hasOwnProperty = hasOwnProperty;
+	      this.hasProperty = hasProperty;
+	      this.ix = ix;
 	  };
-	  var getProcessor = function (_13) {
-	      return _13.value0.processor;
-	  };
-	  var getDataSource = function (_12) {
-	      return _12.value0.dataSource;
-	  };
-	  var getCurrentPath = function (_8) {
-	      return _8.value0.currentPath;
-	  };
-	  var getChildNodes = function (_6) {
-	      return Prelude["<#>"](Prelude.functorArray)(_6.value0.children)(function (_2) {
-	          return _2.value0.path;
-	      });
-	  };
-	  var findChildNodeByPath = function (__copy_pathElements) {
-	      return function (__copy__7) {
-	          var pathElements = __copy_pathElements;
-	          var _7 = __copy__7;
-	          tco: while (true) {
-	              var match = function (p) {
-	                  return function (_16) {
-	                      return Prelude["=="](Prelude.eqString)(_16.value0.path)(p);
-	                  };
-	              };
-	              var find = function (path_) {
-	                  return function (nodes) {
-	                      return Data_Array.head(Data_Array.filter(match(path_))(nodes));
-	                  };
-	              };
-	              var _38 = Data_Array.uncons(pathElements);
-	              if (_38 instanceof Data_Maybe.Nothing) {
-	                  return Data_Maybe.Nothing.value;
-	              };
-	              if (_38 instanceof Data_Maybe.Just && _38.value0.tail.length === 0) {
-	                  return find(_38.value0.head)(_7.value0.children);
-	              };
-	              if (_38 instanceof Data_Maybe.Just) {
-	                  var _42 = find(_38.value0.head)(_7.value0.children);
-	                  if (_42 instanceof Data_Maybe.Nothing) {
-	                      return Data_Maybe.Nothing.value;
-	                  };
-	                  if (_42 instanceof Data_Maybe.Just) {
-	                      pathElements = _38.value0.tail;
-	                      _7 = _42.value0;
-	                      continue tco;
-	                  };
-	                  throw new Error("Failed pattern match: " + [ _42.constructor.name ]);
-	              };
-	              throw new Error("Failed pattern match: " + [ _38.constructor.name ]);
-	          };
+	  var unsafeReadProp = function (k) {
+	      return function (value) {
+	          return $foreign.unsafeReadPropImpl(new Data_Either.Left(new Data_Foreign.TypeMismatch("object", Data_Foreign.typeOf(value))), Prelude.pure(Data_Either.applicativeEither), k, value);
 	      };
 	  };
-	  var getCurrentNode = function (appState) {
-	      return findChildNodeByPath(getCurrentPath(appState))(Data.appDNA);
+	  var prop = unsafeReadProp;
+	  var ix = function (dict) {
+	      return dict.ix;
 	  };
-	  var calcTitle = function (appState) {
-	      return Data_String.joinWith(" <*> ")([ Data_Maybe.fromMaybe("404")(Prelude["<$>"](Data_Maybe.functorMaybe)(getTitle)(getCurrentNode(appState))), getTitle(Data.appDNA) ]);
-	  };
-	  var appLogic = function (_4) {
-	      return function (_5) {
-	          if (_4 instanceof Types.Navigate) {
-	              var mbNode = findChildNodeByPath(_4.value0)(Data.appDNA);
-	              var mbSource = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(mbNode);
-	              var newPath = (function () {
-	                  if (mbSource instanceof Data_Maybe.Just && mbSource.value0 instanceof Types.ChildSource) {
-	                      return Prelude["<>"](Prelude.semigroupArray)(_4.value0)([ mbSource.value0.value0 ]);
-	                  };
-	                  return _4.value0;
-	              })();
-	              return new Types.AppState((function () {
-	                  var _53 = {};
-	                  for (var _54 in _5.value0) {
-	                      if (_5.value0.hasOwnProperty(_54)) {
-	                          _53[_54] = _5.value0[_54];
-	                      };
-	                  };
-	                  _53.actionsCount = _5.value0.actionsCount + 1 | 0;
-	                  _53.currentPath = newPath;
-	                  return _53;
-	              })());
+	  var $bang = function (__dict_Index_0) {
+	      return ix(__dict_Index_0);
+	  };                         
+	  var hasPropertyImpl = function (p) {
+	      return function (value) {
+	          if (Data_Foreign.isNull(value)) {
+	              return false;
 	          };
-	          if (_4 instanceof Types.Noop) {
-	              return new Types.AppState((function () {
-	                  var _57 = {};
-	                  for (var _58 in _5.value0) {
-	                      if (_5.value0.hasOwnProperty(_58)) {
-	                          _57[_58] = _5.value0[_58];
-	                      };
-	                  };
-	                  _57.actionsCount = _5.value0.actionsCount + 1 | 0;
-	                  return _57;
-	              })());
+	          if (Data_Foreign.isUndefined(value)) {
+	              return false;
 	          };
-	          throw new Error("Failed pattern match at Core line 62, column 1 - line 63, column 1: " + [ _4.constructor.name, _5.constructor.name ]);
+	          if (Prelude["=="](Prelude.eqString)(Data_Foreign.typeOf(value))("object") || Prelude["=="](Prelude.eqString)(Data_Foreign.typeOf(value))("function")) {
+	              return $foreign.unsafeHasProperty(p, value);
+	          };
+	          return false;
 	      };
 	  };
-	  var appEffectsLogic = function (uiChannel) {
-	      return function (_3) {
-	          var mdImg = function (s_1) {
-	              return "# ![" + (s_1 + ("](" + (s_1 + ")")));
-	          };
-	          var loadGist = function (gid) {
-	              return Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)("https://api.github.com/gists/" + gid);
-	          };
-	          var handleResult = function (x) {
-	              return Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
-	                  var _62 = {};
-	                  for (var _63 in _3.value0) {
-	                      if (_3.value0.hasOwnProperty(_63)) {
-	                          _62[_63] = _3.value0[_63];
-	                      };
-	                  };
-	                  _62.currentContent = new Data_Maybe.Just(x);
-	                  return _62;
-	              })())));
-	          };
-	          var handleError = function (e) {
-	              return Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
-	                  var _64 = {};
-	                  for (var _65 in _3.value0) {
-	                      if (_3.value0.hasOwnProperty(_65)) {
-	                          _64[_65] = _3.value0[_65];
-	                      };
-	                  };
-	                  _64.currentContent = new Data_Maybe.Just(Utils.toString(e));
-	                  return _64;
-	              })())));
-	          };
-	          var currentNode = findChildNodeByPath(_3.value0.currentPath)(Data.appDNA);
-	          var ds = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(currentNode);
-	          var proc = Prelude["<$>"](Data_Maybe.functorMaybe)(getProcessor)(currentNode);
-	          var applyProcessor = function (_14) {
-	              return function (_15) {
-	                  if (_14 instanceof Types.TextProcessor && _15 instanceof Types.StringSource) {
-	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(_15.value0);
-	                  };
-	                  if (_14 instanceof Types.TextProcessor && _15 instanceof Types.ArraySource) {
-	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Utils.unlines(_15.value0));
-	                  };
-	                  if (_14 instanceof Types.ImgListProcessor && _15 instanceof Types.StringSource) {
-	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(mdImg(_15.value0));
-	                  };
-	                  if (_14 instanceof Types.ImgListProcessor && _15 instanceof Types.ArraySource) {
-	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Utils.unlines(Prelude["<$>"](Prelude.functorArray)(mdImg)(_15.value0)));
-	                  };
-	                  if (_14 instanceof Types.GistProcessor && _15 instanceof Types.StringSource) {
-	                      return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
-	                          var _72 = {};
-	                          for (var _73 in _3.value0) {
-	                              if (_3.value0.hasOwnProperty(_73)) {
-	                                  _72[_73] = _3.value0[_73];
-	                              };
-	                          };
-	                          _72.currentContent = new Data_Maybe.Just("###### ![...](ajax-loader.gif) Loading from Github...");
-	                          return _72;
-	                      })())))))(function () {
-	                          return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist(_15.value0))(function (_0) {
-	                              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Utils.parseGistResponse(_0.response));
-	                          });
-	                      });
-	                  };
-	                  if (_14 instanceof Types.GithubProcessor && _15 instanceof Types.StringSource) {
-	                      return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
-	                          var _76 = {};
-	                          for (var _77 in _3.value0) {
-	                              if (_3.value0.hasOwnProperty(_77)) {
-	                                  _76[_77] = _3.value0[_77];
-	                              };
-	                          };
-	                          _76.currentContent = new Data_Maybe.Just("###### ![...](ajax-loader.gif) Loading from Github...");
-	                          return _76;
-	                      })())))))(function () {
-	                          return Prelude.bind(Control_Monad_Aff.bindAff)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(_15.value0))(function (_1) {
-	                              return Prelude.pure(Control_Monad_Aff.applicativeAff)(_1.response);
-	                          });
-	                      });
-	                  };
-	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)("Unsupported source and processor combination");
-	              };
-	          };
-	          var aff = Prelude["<*>"](Data_Maybe.applyMaybe)(Prelude["<$>"](Data_Maybe.functorMaybe)(applyProcessor)(proc))(ds);
-	          if (aff instanceof Data_Maybe.Nothing) {
-	              return Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
-	                  var _81 = {};
-	                  for (var _82 in _3.value0) {
-	                      if (_3.value0.hasOwnProperty(_82)) {
-	                          _81[_82] = _3.value0[_82];
-	                      };
-	                  };
-	                  _81.currentContent = Data_Maybe.Nothing.value;
-	                  return _81;
-	              })())));
-	          };
-	          if (aff instanceof Data_Maybe.Just) {
-	              return Control_Monad_Aff.runAff(handleError)(handleResult)(aff.value0);
-	          };
-	          throw new Error("Failed pattern match at Core line 22, column 1 - line 23, column 1: " + [ aff.constructor.name ]);
-	      };
+	  var hasProperty = function (dict) {
+	      return dict.hasProperty;
 	  };
-	  exports["getProcessor"] = getProcessor;
-	  exports["getDataSource"] = getDataSource;
-	  exports["getTitle"] = getTitle;
-	  exports["calcTitle"] = calcTitle;
-	  exports["getCurrentPath"] = getCurrentPath;
-	  exports["findChildNodeByPath"] = findChildNodeByPath;
-	  exports["getChildNodes"] = getChildNodes;
-	  exports["getCurrentNode"] = getCurrentNode;
-	  exports["appLogic"] = appLogic;
-	  exports["appEffectsLogic"] = appEffectsLogic;;
+	  var hasOwnPropertyImpl = function (p) {
+	      return function (value) {
+	          if (Data_Foreign.isNull(value)) {
+	              return false;
+	          };
+	          if (Data_Foreign.isUndefined(value)) {
+	              return false;
+	          };
+	          if (Prelude["=="](Prelude.eqString)(Data_Foreign.typeOf(value))("object") || Prelude["=="](Prelude.eqString)(Data_Foreign.typeOf(value))("function")) {
+	              return $foreign.unsafeHasOwnProperty(p, value);
+	          };
+	          return false;
+	      };
+	  };                                                                                                                   
+	  var indexString = new Index(Data_Foreign.ErrorAtProperty.create, hasOwnPropertyImpl, hasPropertyImpl, Prelude.flip(prop));
+	  var hasOwnProperty = function (dict) {
+	      return dict.hasOwnProperty;
+	  };
+	  var errorAt = function (dict) {
+	      return dict.errorAt;
+	  };
+	  exports["Index"] = Index;
+	  exports["errorAt"] = errorAt;
+	  exports["hasOwnProperty"] = hasOwnProperty;
+	  exports["hasProperty"] = hasProperty;
+	  exports["!"] = $bang;
+	  exports["ix"] = ix;
+	  exports["prop"] = prop;
+	  exports["indexString"] = indexString;;
 	 
-	})(PS["Core"] = PS["Core"] || {});
+	})(PS["Data.Foreign.Index"] = PS["Data.Foreign.Index"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Prelude = PS["Prelude"];
+	  var Data_Array = PS["Data.Array"];
+	  var Data_Either = PS["Data.Either"];
+	  var Data_Foreign = PS["Data.Foreign"];
+	  var Data_Foreign_Index = PS["Data.Foreign.Index"];
+	  var Data_Foreign_Null = PS["Data.Foreign.Null"];
+	  var Data_Foreign_NullOrUndefined = PS["Data.Foreign.NullOrUndefined"];
+	  var Data_Foreign_Undefined = PS["Data.Foreign.Undefined"];
+	  var Data_Int = PS["Data.Int"];
+	  var Data_Traversable = PS["Data.Traversable"];     
+	  var IsForeign = function (read) {
+	      this.read = read;
+	  };
+	  var stringIsForeign = new IsForeign(Data_Foreign.readString);
+	  var read = function (dict) {
+	      return dict.read;
+	  };
+	  var readJSON = function (__dict_IsForeign_0) {
+	      return function (json) {
+	          return Prelude[">>="](Data_Either.bindEither)(Data_Foreign.parseJSON(json))(read(__dict_IsForeign_0));
+	      };
+	  };
+	  var readWith = function (__dict_IsForeign_1) {
+	      return function (f) {
+	          return function (value) {
+	              return Data_Either.either(function (_0) {
+	                  return Data_Either.Left.create(f(_0));
+	              })(Data_Either.Right.create)(read(__dict_IsForeign_1)(value));
+	          };
+	      };
+	  };
+	  var readProp = function (__dict_IsForeign_2) {
+	      return function (__dict_Index_3) {
+	          return function (prop) {
+	              return function (value) {
+	                  return Prelude[">>="](Data_Either.bindEither)(Data_Foreign_Index["!"](__dict_Index_3)(value)(prop))(readWith(__dict_IsForeign_2)(Data_Foreign_Index.errorAt(__dict_Index_3)(prop)));
+	              };
+	          };
+	      };
+	  };
+	  var intIsForeign = new IsForeign(Data_Foreign.readInt);
+	  exports["IsForeign"] = IsForeign;
+	  exports["readProp"] = readProp;
+	  exports["readWith"] = readWith;
+	  exports["readJSON"] = readJSON;
+	  exports["read"] = read;
+	  exports["stringIsForeign"] = stringIsForeign;
+	  exports["intIsForeign"] = intIsForeign;;
+	 
+	})(PS["Data.Foreign.Class"] = PS["Data.Foreign.Class"] || {});
+	(function(exports) {
+	  /* global exports */
+	  "use strict";
+
+	  // module Data.Foreign.Keys
+
+	  exports.unsafeKeys = Object.keys || function (value) {
+	    var keys = [];
+	    for (var prop in value) {
+	      if (Object.prototype.hasOwnProperty.call(value, prop)) {
+	        keys.push(prop);
+	      }
+	    }
+	    return keys;
+	  };
+	 
+	})(PS["Data.Foreign.Keys"] = PS["Data.Foreign.Keys"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var $foreign = PS["Data.Foreign.Keys"];
+	  var Prelude = PS["Prelude"];
+	  var Data_Either = PS["Data.Either"];
+	  var Data_Foreign = PS["Data.Foreign"];     
+	  var keys = function (value) {
+	      if (Data_Foreign.isNull(value)) {
+	          return Data_Either.Left.create(new Data_Foreign.TypeMismatch("object", "null"));
+	      };
+	      if (Data_Foreign.isUndefined(value)) {
+	          return Data_Either.Left.create(new Data_Foreign.TypeMismatch("object", "undefined"));
+	      };
+	      if (Prelude["=="](Prelude.eqString)(Data_Foreign.typeOf(value))("object")) {
+	          return Data_Either.Right.create($foreign.unsafeKeys(value));
+	      };
+	      return Data_Either.Left.create(new Data_Foreign.TypeMismatch("object", Data_Foreign.typeOf(value)));
+	  };
+	  exports["keys"] = keys;;
+	 
+	})(PS["Data.Foreign.Keys"] = PS["Data.Foreign.Keys"] || {});
 	(function(exports) {
 	  /* global exports */
 	  "use strict";
@@ -3126,58 +3911,6 @@
 	  exports["runSTArray"] = $foreign.runSTArray;;
 	 
 	})(PS["Data.Array.ST"] = PS["Data.Array.ST"] || {});
-	(function(exports) {
-	  // Generated by psc version 0.7.6.1
-	  "use strict";
-	  var Prelude = PS["Prelude"];
-	  var Control_Comonad = PS["Control.Comonad"];
-	  var Control_Extend = PS["Control.Extend"];
-	  var Data_Foldable = PS["Data.Foldable"];
-	  var Data_Functor_Invariant = PS["Data.Functor.Invariant"];
-	  var Data_Monoid = PS["Data.Monoid"];
-	  var Data_Traversable = PS["Data.Traversable"];     
-	  var Identity = function (x) {
-	      return x;
-	  };
-	  var runIdentity = function (_0) {
-	      return _0;
-	  };
-	  var functorIdentity = new Prelude.Functor(function (f) {
-	      return function (_23) {
-	          return f(_23);
-	      };
-	  });
-	  var applyIdentity = new Prelude.Apply(function () {
-	      return functorIdentity;
-	  }, function (_24) {
-	      return function (_25) {
-	          return _24(_25);
-	      };
-	  });
-	  var bindIdentity = new Prelude.Bind(function () {
-	      return applyIdentity;
-	  }, function (_26) {
-	      return function (f) {
-	          return f(_26);
-	      };
-	  });
-	  var applicativeIdentity = new Prelude.Applicative(function () {
-	      return applyIdentity;
-	  }, Identity);
-	  var monadIdentity = new Prelude.Monad(function () {
-	      return applicativeIdentity;
-	  }, function () {
-	      return bindIdentity;
-	  });
-	  exports["Identity"] = Identity;
-	  exports["runIdentity"] = runIdentity;
-	  exports["functorIdentity"] = functorIdentity;
-	  exports["applyIdentity"] = applyIdentity;
-	  exports["applicativeIdentity"] = applicativeIdentity;
-	  exports["bindIdentity"] = bindIdentity;
-	  exports["monadIdentity"] = monadIdentity;;
-	 
-	})(PS["Data.Identity"] = PS["Data.Identity"] || {});
 	(function(exports) {
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
@@ -3699,497 +4432,54 @@
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
 	  var Prelude = PS["Prelude"];
+	  var Control_Comonad = PS["Control.Comonad"];
+	  var Control_Extend = PS["Control.Extend"];
 	  var Data_Foldable = PS["Data.Foldable"];
-	  var Data_List = PS["Data.List"];
-	  var Data_Maybe = PS["Data.Maybe"];
-	  var Data_Maybe_Unsafe = PS["Data.Maybe.Unsafe"];
+	  var Data_Functor_Invariant = PS["Data.Functor.Invariant"];
 	  var Data_Monoid = PS["Data.Monoid"];
-	  var Data_Traversable = PS["Data.Traversable"];
-	  var Data_Tuple = PS["Data.Tuple"];     
-	  var Leaf = (function () {
-	      function Leaf() {
-
-	      };
-	      Leaf.value = new Leaf();
-	      return Leaf;
-	  })();
-	  var Two = (function () {
-	      function Two(value0, value1, value2, value3) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	          this.value3 = value3;
-	      };
-	      Two.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return function (value3) {
-	                      return new Two(value0, value1, value2, value3);
-	                  };
-	              };
-	          };
-	      };
-	      return Two;
-	  })();
-	  var Three = (function () {
-	      function Three(value0, value1, value2, value3, value4, value5, value6) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	          this.value3 = value3;
-	          this.value4 = value4;
-	          this.value5 = value5;
-	          this.value6 = value6;
-	      };
-	      Three.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return function (value3) {
-	                      return function (value4) {
-	                          return function (value5) {
-	                              return function (value6) {
-	                                  return new Three(value0, value1, value2, value3, value4, value5, value6);
-	                              };
-	                          };
-	                      };
-	                  };
-	              };
-	          };
-	      };
-	      return Three;
-	  })();
-	  var TwoLeft = (function () {
-	      function TwoLeft(value0, value1, value2) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	      };
-	      TwoLeft.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return new TwoLeft(value0, value1, value2);
-	              };
-	          };
-	      };
-	      return TwoLeft;
-	  })();
-	  var TwoRight = (function () {
-	      function TwoRight(value0, value1, value2) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	      };
-	      TwoRight.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return new TwoRight(value0, value1, value2);
-	              };
-	          };
-	      };
-	      return TwoRight;
-	  })();
-	  var ThreeLeft = (function () {
-	      function ThreeLeft(value0, value1, value2, value3, value4, value5) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	          this.value3 = value3;
-	          this.value4 = value4;
-	          this.value5 = value5;
-	      };
-	      ThreeLeft.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return function (value3) {
-	                      return function (value4) {
-	                          return function (value5) {
-	                              return new ThreeLeft(value0, value1, value2, value3, value4, value5);
-	                          };
-	                      };
-	                  };
-	              };
-	          };
-	      };
-	      return ThreeLeft;
-	  })();
-	  var ThreeMiddle = (function () {
-	      function ThreeMiddle(value0, value1, value2, value3, value4, value5) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	          this.value3 = value3;
-	          this.value4 = value4;
-	          this.value5 = value5;
-	      };
-	      ThreeMiddle.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return function (value3) {
-	                      return function (value4) {
-	                          return function (value5) {
-	                              return new ThreeMiddle(value0, value1, value2, value3, value4, value5);
-	                          };
-	                      };
-	                  };
-	              };
-	          };
-	      };
-	      return ThreeMiddle;
-	  })();
-	  var ThreeRight = (function () {
-	      function ThreeRight(value0, value1, value2, value3, value4, value5) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	          this.value3 = value3;
-	          this.value4 = value4;
-	          this.value5 = value5;
-	      };
-	      ThreeRight.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return function (value3) {
-	                      return function (value4) {
-	                          return function (value5) {
-	                              return new ThreeRight(value0, value1, value2, value3, value4, value5);
-	                          };
-	                      };
-	                  };
-	              };
-	          };
-	      };
-	      return ThreeRight;
-	  })();
-	  var KickUp = (function () {
-	      function KickUp(value0, value1, value2, value3) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	          this.value3 = value3;
-	      };
-	      KickUp.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return function (value3) {
-	                      return new KickUp(value0, value1, value2, value3);
-	                  };
-	              };
-	          };
-	      };
-	      return KickUp;
-	  })();
-	  var toList = function (_7) {
-	      if (_7 instanceof Leaf) {
-	          return Data_List.Nil.value;
-	      };
-	      if (_7 instanceof Two) {
-	          return Prelude["++"](Data_List.semigroupList)(toList(_7.value0))(Prelude["++"](Data_List.semigroupList)(Prelude.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(_7.value1, _7.value2)))(toList(_7.value3)));
-	      };
-	      if (_7 instanceof Three) {
-	          return Prelude["++"](Data_List.semigroupList)(toList(_7.value0))(Prelude["++"](Data_List.semigroupList)(Prelude.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(_7.value1, _7.value2)))(Prelude["++"](Data_List.semigroupList)(toList(_7.value3))(Prelude["++"](Data_List.semigroupList)(Prelude.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(_7.value4, _7.value5)))(toList(_7.value6)))));
-	      };
-	      throw new Error("Failed pattern match: " + [ _7.constructor.name ]);
-	  }; 
-	  var fromZipper = function (__copy___dict_Ord_8) {
-	      return function (__copy__5) {
-	          return function (__copy__6) {
-	              var __dict_Ord_8 = __copy___dict_Ord_8;
-	              var _5 = __copy__5;
-	              var _6 = __copy__6;
-	              tco: while (true) {
-	                  if (_5 instanceof Data_List.Nil) {
-	                      return _6;
-	                  };
-	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof TwoLeft) {
-	                      var __tco___dict_Ord_8 = __dict_Ord_8;
-	                      var __tco__5 = _5.value1;
-	                      var __tco__6 = new Two(_6, _5.value0.value0, _5.value0.value1, _5.value0.value2);
-	                      __dict_Ord_8 = __tco___dict_Ord_8;
-	                      _5 = __tco__5;
-	                      _6 = __tco__6;
-	                      continue tco;
-	                  };
-	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof TwoRight) {
-	                      var __tco___dict_Ord_8 = __dict_Ord_8;
-	                      var __tco__5 = _5.value1;
-	                      var __tco__6 = new Two(_5.value0.value0, _5.value0.value1, _5.value0.value2, _6);
-	                      __dict_Ord_8 = __tco___dict_Ord_8;
-	                      _5 = __tco__5;
-	                      _6 = __tco__6;
-	                      continue tco;
-	                  };
-	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof ThreeLeft) {
-	                      var __tco___dict_Ord_8 = __dict_Ord_8;
-	                      var __tco__5 = _5.value1;
-	                      var __tco__6 = new Three(_6, _5.value0.value0, _5.value0.value1, _5.value0.value2, _5.value0.value3, _5.value0.value4, _5.value0.value5);
-	                      __dict_Ord_8 = __tco___dict_Ord_8;
-	                      _5 = __tco__5;
-	                      _6 = __tco__6;
-	                      continue tco;
-	                  };
-	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof ThreeMiddle) {
-	                      var __tco___dict_Ord_8 = __dict_Ord_8;
-	                      var __tco__5 = _5.value1;
-	                      var __tco__6 = new Three(_5.value0.value0, _5.value0.value1, _5.value0.value2, _6, _5.value0.value3, _5.value0.value4, _5.value0.value5);
-	                      __dict_Ord_8 = __tco___dict_Ord_8;
-	                      _5 = __tco__5;
-	                      _6 = __tco__6;
-	                      continue tco;
-	                  };
-	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof ThreeRight) {
-	                      var __tco___dict_Ord_8 = __dict_Ord_8;
-	                      var __tco__5 = _5.value1;
-	                      var __tco__6 = new Three(_5.value0.value0, _5.value0.value1, _5.value0.value2, _5.value0.value3, _5.value0.value4, _5.value0.value5, _6);
-	                      __dict_Ord_8 = __tco___dict_Ord_8;
-	                      _5 = __tco__5;
-	                      _6 = __tco__6;
-	                      continue tco;
-	                  };
-	                  throw new Error("Failed pattern match: " + [ _5.constructor.name, _6.constructor.name ]);
-	              };
-	          };
-	      };
+	  var Data_Traversable = PS["Data.Traversable"];     
+	  var Identity = function (x) {
+	      return x;
 	  };
-	  var insert = function (__dict_Ord_9) {
-	      var up = function (__copy__13) {
-	          return function (__copy__14) {
-	              var _13 = __copy__13;
-	              var _14 = __copy__14;
-	              tco: while (true) {
-	                  if (_13 instanceof Data_List.Nil) {
-	                      return new Two(_14.value0, _14.value1, _14.value2, _14.value3);
-	                  };
-	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof TwoLeft) {
-	                      return fromZipper(__dict_Ord_9)(_13.value1)(new Three(_14.value0, _14.value1, _14.value2, _14.value3, _13.value0.value0, _13.value0.value1, _13.value0.value2));
-	                  };
-	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof TwoRight) {
-	                      return fromZipper(__dict_Ord_9)(_13.value1)(new Three(_13.value0.value0, _13.value0.value1, _13.value0.value2, _14.value0, _14.value1, _14.value2, _14.value3));
-	                  };
-	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof ThreeLeft) {
-	                      var __tco__13 = _13.value1;
-	                      var __tco__14 = new KickUp(new Two(_14.value0, _14.value1, _14.value2, _14.value3), _13.value0.value0, _13.value0.value1, new Two(_13.value0.value2, _13.value0.value3, _13.value0.value4, _13.value0.value5));
-	                      _13 = __tco__13;
-	                      _14 = __tco__14;
-	                      continue tco;
-	                  };
-	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof ThreeMiddle) {
-	                      var __tco__13 = _13.value1;
-	                      var __tco__14 = new KickUp(new Two(_13.value0.value0, _13.value0.value1, _13.value0.value2, _14.value0), _14.value1, _14.value2, new Two(_14.value3, _13.value0.value3, _13.value0.value4, _13.value0.value5));
-	                      _13 = __tco__13;
-	                      _14 = __tco__14;
-	                      continue tco;
-	                  };
-	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof ThreeRight) {
-	                      var __tco__13 = _13.value1;
-	                      var __tco__14 = new KickUp(new Two(_13.value0.value0, _13.value0.value1, _13.value0.value2, _13.value0.value3), _13.value0.value4, _13.value0.value5, new Two(_14.value0, _14.value1, _14.value2, _14.value3));
-	                      _13 = __tco__13;
-	                      _14 = __tco__14;
-	                      continue tco;
-	                  };
-	                  throw new Error("Failed pattern match at Data.Map line 148, column 1 - line 149, column 1: " + [ _13.constructor.name, _14.constructor.name ]);
-	              };
-	          };
+	  var runIdentity = function (_0) {
+	      return _0;
+	  };
+	  var functorIdentity = new Prelude.Functor(function (f) {
+	      return function (_23) {
+	          return f(_23);
 	      };
-	      var down = function (__copy_ctx) {
-	          return function (__copy_k) {
-	              return function (__copy_v) {
-	                  return function (__copy__12) {
-	                      var ctx = __copy_ctx;
-	                      var k = __copy_k;
-	                      var v = __copy_v;
-	                      var _12 = __copy__12;
-	                      tco: while (true) {
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Leaf) {
-	                              return up(ctx_1)(new KickUp(Leaf.value, k_1, v_1, Leaf.value));
-	                          };
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Two && Prelude["=="](__dict_Ord_9["__superclass_Prelude.Eq_0"]())(k_1)(_12.value1)) {
-	                              return fromZipper(__dict_Ord_9)(ctx_1)(new Two(_12.value0, k_1, v_1, _12.value3));
-	                          };
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Two && Prelude["<"](__dict_Ord_9)(k_1)(_12.value1)) {
-	                              var __tco_ctx = new Data_List.Cons(new TwoLeft(_12.value1, _12.value2, _12.value3), ctx_1);
-	                              var __tco__12 = _12.value0;
-	                              ctx = __tco_ctx;
-	                              k = k_1;
-	                              v = v_1;
-	                              _12 = __tco__12;
-	                              continue tco;
-	                          };
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Two) {
-	                              var __tco_ctx = new Data_List.Cons(new TwoRight(_12.value0, _12.value1, _12.value2), ctx_1);
-	                              var __tco__12 = _12.value3;
-	                              ctx = __tco_ctx;
-	                              k = k_1;
-	                              v = v_1;
-	                              _12 = __tco__12;
-	                              continue tco;
-	                          };
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Three && Prelude["=="](__dict_Ord_9["__superclass_Prelude.Eq_0"]())(k_1)(_12.value1)) {
-	                              return fromZipper(__dict_Ord_9)(ctx_1)(new Three(_12.value0, k_1, v_1, _12.value3, _12.value4, _12.value5, _12.value6));
-	                          };
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Three && Prelude["=="](__dict_Ord_9["__superclass_Prelude.Eq_0"]())(k_1)(_12.value4)) {
-	                              return fromZipper(__dict_Ord_9)(ctx_1)(new Three(_12.value0, _12.value1, _12.value2, _12.value3, k_1, v_1, _12.value6));
-	                          };
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Three && Prelude["<"](__dict_Ord_9)(k_1)(_12.value1)) {
-	                              var __tco_ctx = new Data_List.Cons(new ThreeLeft(_12.value1, _12.value2, _12.value3, _12.value4, _12.value5, _12.value6), ctx_1);
-	                              var __tco__12 = _12.value0;
-	                              ctx = __tco_ctx;
-	                              k = k_1;
-	                              v = v_1;
-	                              _12 = __tco__12;
-	                              continue tco;
-	                          };
-	                          var ctx_1 = ctx;
-	                          var k_1 = k;
-	                          var v_1 = v;
-	                          if (_12 instanceof Three && (Prelude["<"](__dict_Ord_9)(_12.value1)(k_1) && Prelude["<="](__dict_Ord_9)(k_1)(_12.value4))) {
-	                              var __tco_ctx = new Data_List.Cons(new ThreeMiddle(_12.value0, _12.value1, _12.value2, _12.value4, _12.value5, _12.value6), ctx_1);
-	                              var __tco__12 = _12.value3;
-	                              ctx = __tco_ctx;
-	                              k = k_1;
-	                              v = v_1;
-	                              _12 = __tco__12;
-	                              continue tco;
-	                          };
-	                          if (_12 instanceof Three) {
-	                              var __tco_ctx = new Data_List.Cons(new ThreeRight(_12.value0, _12.value1, _12.value2, _12.value3, _12.value4, _12.value5), ctx);
-	                              var __tco_k = k;
-	                              var __tco_v = v;
-	                              var __tco__12 = _12.value6;
-	                              ctx = __tco_ctx;
-	                              k = __tco_k;
-	                              v = __tco_v;
-	                              _12 = __tco__12;
-	                              continue tco;
-	                          };
-	                          throw new Error("Failed pattern match at Data.Map line 148, column 1 - line 149, column 1: " + [ ctx.constructor.name, k.constructor.name, v.constructor.name, _12.constructor.name ]);
-	                      };
-	                  };
-	              };
-	          };
+	  });
+	  var applyIdentity = new Prelude.Apply(function () {
+	      return functorIdentity;
+	  }, function (_24) {
+	      return function (_25) {
+	          return _24(_25);
 	      };
-	      return down(Data_List.Nil.value);
-	  };
-	  var empty = Leaf.value;
-	  var fromList = function (__dict_Ord_13) {
-	      return Data_Foldable.foldl(Data_List.foldableList)(function (m) {
-	          return function (_0) {
-	              return insert(__dict_Ord_13)(_0.value0)(_0.value1)(m);
-	          };
-	      })(empty);
-	  };
-	  exports["fromList"] = fromList;
-	  exports["toList"] = toList;
-	  exports["insert"] = insert;
-	  exports["empty"] = empty;;
-	 
-	})(PS["Data.Map"] = PS["Data.Map"] || {});
-	(function(exports) {
-	  /* global exports */
-	  "use strict";
-
-	  exports["regex'"] = function (s1) {
-	    return function (s2) {
-	      return new RegExp(s1, s2);
-	    };
-	  };
-
-	  exports.test = function (r) {
-	    return function (s) {
-	      return r.test(s);
-	    };
-	  };
-	 
-	})(PS["Data.String.Regex"] = PS["Data.String.Regex"] || {});
-	(function(exports) {
-	  // Generated by psc version 0.7.6.1
-	  "use strict";
-	  var $foreign = PS["Data.String.Regex"];
-	  var Prelude = PS["Prelude"];
-	  var Data_Maybe = PS["Data.Maybe"];
-	  var Data_String = PS["Data.String"];                                            
-	  var renderFlags = function (f) {
-	      return (function () {
-	          if (f.global) {
-	              return "g";
-	          };
-	          if (!f.global) {
-	              return "";
-	          };
-	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.global.constructor.name ]);
-	      })() + ((function () {
-	          if (f.ignoreCase) {
-	              return "i";
-	          };
-	          if (!f.ignoreCase) {
-	              return "";
-	          };
-	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.ignoreCase.constructor.name ]);
-	      })() + ((function () {
-	          if (f.multiline) {
-	              return "m";
-	          };
-	          if (!f.multiline) {
-	              return "";
-	          };
-	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.multiline.constructor.name ]);
-	      })() + ((function () {
-	          if (f.sticky) {
-	              return "y";
-	          };
-	          if (!f.sticky) {
-	              return "";
-	          };
-	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.sticky.constructor.name ]);
-	      })() + (function () {
-	          if (f.unicode) {
-	              return "u";
-	          };
-	          if (!f.unicode) {
-	              return "";
-	          };
-	          throw new Error("Failed pattern match at Data.String.Regex line 63, column 1 - line 64, column 1: " + [ f.unicode.constructor.name ]);
-	      })())));
-	  };
-	  var regex = function (s) {
+	  });
+	  var bindIdentity = new Prelude.Bind(function () {
+	      return applyIdentity;
+	  }, function (_26) {
 	      return function (f) {
-	          return $foreign["regex'"](s)(renderFlags(f));
+	          return f(_26);
 	      };
-	  };
-	  exports["renderFlags"] = renderFlags;
-	  exports["regex"] = regex;
-	  exports["test"] = $foreign.test;;
+	  });
+	  var applicativeIdentity = new Prelude.Applicative(function () {
+	      return applyIdentity;
+	  }, Identity);
+	  var monadIdentity = new Prelude.Monad(function () {
+	      return applicativeIdentity;
+	  }, function () {
+	      return bindIdentity;
+	  });
+	  exports["Identity"] = Identity;
+	  exports["runIdentity"] = runIdentity;
+	  exports["functorIdentity"] = functorIdentity;
+	  exports["applyIdentity"] = applyIdentity;
+	  exports["applicativeIdentity"] = applicativeIdentity;
+	  exports["bindIdentity"] = bindIdentity;
+	  exports["monadIdentity"] = monadIdentity;;
 	 
-	})(PS["Data.String.Regex"] = PS["Data.String.Regex"] || {});
-	(function(exports) {
-	  // module UI.Console.Main
-
-	  exports.exportGlobal = function (fname) {return function(f) {return function() {
-	    window[fname] = function(a) { return f(a)() }; 
-	    return {};
-	  } } }
-	 
-	})(PS["UI.Console.Main"] = PS["UI.Console.Main"] || {});
+	})(PS["Data.Identity"] = PS["Data.Identity"] || {});
 	(function(exports) {
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
@@ -4648,253 +4938,6 @@
 	  exports["showTextBoxType"] = showTextBoxType;;
 	 
 	})(PS["Text.Markdown.SlamDown"] = PS["Text.Markdown.SlamDown"] || {});
-	(function(exports) {
-	  // Generated by psc version 0.7.6.1
-	  "use strict";
-	  var Prelude = PS["Prelude"];
-	  var Data_Foldable = PS["Data.Foldable"];
-	  var Data_List = PS["Data.List"];
-	  var Data_Maybe = PS["Data.Maybe"];
-	  var Data_Monoid = PS["Data.Monoid"];
-	  var Data_String = PS["Data.String"];
-	  var Text_Markdown_SlamDown = PS["Text.Markdown.SlamDown"];
-	  var Data_Unfoldable = PS["Data.Unfoldable"];     
-	  var unlines = function (lst) {
-	      return Data_String.joinWith("\n")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(lst));
-	  };
-	  var squares = function (s) {
-	      return "[" + (s + "]");
-	  };
-	  var replicateS = function (n) {
-	      return function (s) {
-	          return Data_Foldable.fold(Data_List.foldableList)(Data_Monoid.monoidString)(Prelude["<$>"](Data_List.functorList)(Prelude["const"](s))(Data_List[".."](1)(n)));
-	      };
-	  };
-	  var prettyPrintExpr = function (wrap) {
-	      return function (f) {
-	          return function (_5) {
-	              if (_5 instanceof Text_Markdown_SlamDown.Literal) {
-	                  return f(_5.value0);
-	              };
-	              if (_5 instanceof Text_Markdown_SlamDown.Unevaluated) {
-	                  return wrap("!`" + (_5.value0 + "`"));
-	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 107, column 1 - line 108, column 1: " + [ wrap.constructor.name, f.constructor.name, _5.constructor.name ]);
-	          };
-	      };
-	  };
-	  var parens = function (s) {
-	      return "(" + (s + ")");
-	  };
-	  var lines = function (_1) {
-	      if (_1 === "") {
-	          return Data_Monoid.mempty(Data_List.monoidList);
-	      };
-	      return Data_List.toList(Data_Foldable.foldableArray)(Data_String.split("\n")(_1));
-	  };
-	  var overLines = function (f) {
-	      return function (_75) {
-	          return Prelude.map(Data_List.functorList)(f)(Data_List.concatMap(lines)(_75));
-	      };
-	  };
-	  var indent = function (n) {
-	      return function (s) {
-	          return replicateS(n)(" ") + s;
-	      };
-	  };
-	  var braces = function (s) {
-	      return "{" + (s + "}");
-	  };
-	  var prettyPrintFormElement = function (_4) {
-	      if (_4 instanceof Text_Markdown_SlamDown.TextBox) {
-	          var intro = function (_9) {
-	              if (_9 instanceof Text_Markdown_SlamDown.PlainText) {
-	                  return "______";
-	              };
-	              if (_9 instanceof Text_Markdown_SlamDown.Numeric) {
-	                  return "#______";
-	              };
-	              if (_9 instanceof Text_Markdown_SlamDown["Date"]) {
-	                  return "__ - __ - ____";
-	              };
-	              if (_9 instanceof Text_Markdown_SlamDown.Time) {
-	                  return "__ : __";
-	              };
-	              if (_9 instanceof Text_Markdown_SlamDown.DateTime) {
-	                  return "__ - __ - ____ __ : __";
-	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 88, column 3 - line 89, column 3: " + [ _9.constructor.name ]);
-	          };
-	          return intro(_4.value0) + Data_Maybe.maybe("")(function (v) {
-	              return " (" + (prettyPrintExpr(Prelude.id(Prelude.categoryFn))(Prelude.id(Prelude.categoryFn))(v) + ")");
-	          })(_4.value1);
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.RadioButtons) {
-	          return prettyPrintExpr(parens)(Prelude["<>"](Prelude.semigroupString)("(x) "))(_4.value0) + (" " + prettyPrintExpr(Prelude.id(Prelude.categoryFn))(function (_76) {
-	              return Data_String.joinWith(" ")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(Prelude.map(Data_List.functorList)(Prelude["<>"](Prelude.semigroupString)("() "))(_76)));
-	          })(_4.value1));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.CheckBoxes && (_4.value0 instanceof Text_Markdown_SlamDown.Literal && _4.value1 instanceof Text_Markdown_SlamDown.Literal)) {
-	          var checkBox = function (b) {
-	              return function (l) {
-	                  return (function () {
-	                      if (b) {
-	                          return "[x] ";
-	                      };
-	                      if (!b) {
-	                          return "[] ";
-	                      };
-	                      throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 99, column 3 - line 100, column 1: " + [ b.constructor.name ]);
-	                  })() + l;
-	              };
-	          };
-	          return Data_String.joinWith(" ")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(Data_List.zipWith(checkBox)(_4.value0.value0)(_4.value1.value0)));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.CheckBoxes && (_4.value0 instanceof Text_Markdown_SlamDown.Unevaluated && _4.value1 instanceof Text_Markdown_SlamDown.Unevaluated)) {
-	          return "[!`" + (_4.value0.value0 + ("`] !`" + (_4.value1.value0 + "`")));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.DropDown) {
-	          return braces(prettyPrintExpr(Prelude.id(Prelude.categoryFn))(Prelude[">>>"](Prelude.semigroupoidFn)(Data_List.fromList(Data_Unfoldable.unfoldableArray))(Data_String.joinWith(", ")))(_4.value0)) + Data_Maybe.maybe("")(function (s) {
-	              return parens(prettyPrintExpr(Prelude.id(Prelude.categoryFn))(Prelude.id(Prelude.categoryFn))(s));
-	          })(_4.value1);
-	      };
-	      return "Unsupported form element";
-	  };
-	  var prettyPrintInlines = function (is) {
-	      return Data_String.joinWith("")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(Prelude.map(Data_List.functorList)(prettyPrintInline)(is)));
-	  };
-	  var prettyPrintInline = function (_3) {
-	      if (_3 instanceof Text_Markdown_SlamDown.Str) {
-	          return _3.value0;
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.Entity) {
-	          return _3.value0;
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.Space) {
-	          return " ";
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.SoftBreak) {
-	          return "\n";
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.LineBreak) {
-	          return "  \n";
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.Emph) {
-	          return "*" + (prettyPrintInlines(_3.value0) + "*");
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.Strong) {
-	          return "**" + (prettyPrintInlines(_3.value0) + "**");
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.Code) {
-	          var bang = (function () {
-	              if (_3.value0) {
-	                  return "!";
-	              };
-	              if (!_3.value0) {
-	                  return "";
-	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 73, column 9 - line 74, column 1: " + [ _3.value0.constructor.name ]);
-	          })();
-	          return bang + ("`" + (_3.value1 + "`"));
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.Link) {
-	          var printTarget = function (_8) {
-	              if (_8 instanceof Text_Markdown_SlamDown.InlineLink) {
-	                  return parens(_8.value0);
-	              };
-	              if (_8 instanceof Text_Markdown_SlamDown.ReferenceLink) {
-	                  return squares(Data_Maybe.fromMaybe("")(_8.value0));
-	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 76, column 3 - line 77, column 3: " + [ _8.constructor.name ]);
-	          };
-	          return "[" + (prettyPrintInlines(_3.value0) + ("]" + printTarget(_3.value1)));
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.Image) {
-	          return "![" + (prettyPrintInlines(_3.value0) + ("](" + (_3.value1 + ")")));
-	      };
-	      if (_3 instanceof Text_Markdown_SlamDown.FormField) {
-	          var star = (function () {
-	              if (_3.value1) {
-	                  return "*";
-	              };
-	              if (!_3.value1) {
-	                  return " ";
-	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 82, column 3 - line 84, column 1: " + [ _3.value1.constructor.name ]);
-	          })();
-	          var esc = function (s) {
-	              return Data_Maybe.maybe(s)(Prelude["const"]("[" + (s + "]")))(Data_String.indexOf(" ")(s));
-	          };
-	          return esc(_3.value0) + (star + (" = " + prettyPrintFormElement(_3.value2)));
-	      };
-	      throw new Error("Failed pattern match: " + [ _3.constructor.name ]);
-	  };
-	  var prettyPrintBlock = function (_2) {
-	      if (_2 instanceof Text_Markdown_SlamDown.Paragraph) {
-	          return new Data_List.Cons(prettyPrintInlines(_2.value0), new Data_List.Cons("", Data_List.Nil.value));
-	      };
-	      if (_2 instanceof Text_Markdown_SlamDown.Header) {
-	          return Data_List.singleton(replicateS(_2.value0)("#") + (" " + prettyPrintInlines(_2.value1)));
-	      };
-	      if (_2 instanceof Text_Markdown_SlamDown.Blockquote) {
-	          return overLines(Prelude["<>"](Prelude.semigroupString)("> "))(Data_List.concatMap(prettyPrintBlock)(_2.value0));
-	      };
-	      if (_2 instanceof Text_Markdown_SlamDown.Lst) {
-	          var prettyPrintMarker = function (_7) {
-	              if (_7 instanceof Text_Markdown_SlamDown.Bullet) {
-	                  return _7.value0;
-	              };
-	              if (_7 instanceof Text_Markdown_SlamDown.Ordered) {
-	                  return "1" + _7.value0;
-	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 38, column 3 - line 39, column 3: " + [ _7.constructor.name ]);
-	          };
-	          var addMarker = function (_6) {
-	              if (_6 instanceof Data_List.Nil) {
-	                  return Data_List.Nil.value;
-	              };
-	              if (_6 instanceof Data_List.Cons) {
-	                  var m = prettyPrintMarker(_2.value0);
-	                  var len = Data_String.length(m);
-	                  return Data_List.Cons.create(m + (" " + _6.value0))(overLines(indent(len + 1 | 0))(_6.value1));
-	              };
-	              throw new Error("Failed pattern match: " + [ _6.constructor.name ]);
-	          };
-	          var listItem = function (bs) {
-	              var ss = Data_List.concatMap(prettyPrintBlock)(bs);
-	              return addMarker(Data_List.concatMap(lines)(ss));
-	          };
-	          return Data_List.concatMap(listItem)(_2.value1);
-	      };
-	      if (_2 instanceof Text_Markdown_SlamDown.CodeBlock && _2.value0 instanceof Text_Markdown_SlamDown.Indented) {
-	          return Prelude.map(Data_List.functorList)(indent(4))(_2.value1);
-	      };
-	      if (_2 instanceof Text_Markdown_SlamDown.CodeBlock && _2.value0 instanceof Text_Markdown_SlamDown.Fenced) {
-	          var bang = (function () {
-	              if (_2.value0.value0) {
-	                  return "!";
-	              };
-	              if (Prelude.otherwise) {
-	                  return "";
-	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 56, column 3 - line 58, column 1: " + [  ]);
-	          })();
-	          return Prelude["<>"](Data_List.semigroupList)(Data_List.singleton(bang + ("```" + _2.value0.value1)))(Prelude["<>"](Data_List.semigroupList)(_2.value1)(Data_List.singleton("```")));
-	      };
-	      if (_2 instanceof Text_Markdown_SlamDown.LinkReference) {
-	          return Data_List.singleton(squares(_2.value0) + (": " + _2.value1));
-	      };
-	      if (_2 instanceof Text_Markdown_SlamDown.Rule) {
-	          return Data_List.singleton("***");
-	      };
-	      throw new Error("Failed pattern match: " + [ _2.constructor.name ]);
-	  };
-	  var prettyPrintMd = function (_0) {
-	      return unlines(Data_List.concatMap(prettyPrintBlock)(_0.value0));
-	  };
-	  exports["prettyPrintMd"] = prettyPrintMd;;
-	 
-	})(PS["Text.Markdown.SlamDown.Pretty"] = PS["Text.Markdown.SlamDown.Pretty"] || {});
 	(function(exports) {
 	  // module Text.Markdown.SlamDown.Parser.Inline
 
@@ -6352,6 +6395,1342 @@
 	(function(exports) {
 	  // Generated by psc version 0.7.6.1
 	  "use strict";
+	  var Prelude = PS["Prelude"];
+	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];
+	  var ul = Text_Smolder_Markup.parent("ul");      
+	  var strong = Text_Smolder_Markup.parent("strong");
+	  var span = Text_Smolder_Markup.parent("span");        
+	  var pre = Text_Smolder_Markup.parent("pre");  
+	  var p = Text_Smolder_Markup.parent("p");              
+	  var ol = Text_Smolder_Markup.parent("ol");  
+	  var li = Text_Smolder_Markup.parent("li");    
+	  var img = Text_Smolder_Markup.leaf("img");    
+	  var hr = Text_Smolder_Markup.leaf("hr");      
+	  var h6 = Text_Smolder_Markup.parent("h6");
+	  var h5 = Text_Smolder_Markup.parent("h5");
+	  var h4 = Text_Smolder_Markup.parent("h4");
+	  var h3 = Text_Smolder_Markup.parent("h3");
+	  var h2 = Text_Smolder_Markup.parent("h2");
+	  var h1 = Text_Smolder_Markup.parent("h1");    
+	  var em = Text_Smolder_Markup.parent("em");
+	  var div = Text_Smolder_Markup.parent("div");      
+	  var br = Text_Smolder_Markup.leaf("br");      
+	  var blockquote = Text_Smolder_Markup.parent("blockquote");
+	  var a = Text_Smolder_Markup.parent("a");
+	  exports["img"] = img;
+	  exports["hr"] = hr;
+	  exports["br"] = br;
+	  exports["ul"] = ul;
+	  exports["strong"] = strong;
+	  exports["span"] = span;
+	  exports["pre"] = pre;
+	  exports["p"] = p;
+	  exports["ol"] = ol;
+	  exports["li"] = li;
+	  exports["h6"] = h6;
+	  exports["h5"] = h5;
+	  exports["h4"] = h4;
+	  exports["h3"] = h3;
+	  exports["h2"] = h2;
+	  exports["h1"] = h1;
+	  exports["em"] = em;
+	  exports["div"] = div;
+	  exports["blockquote"] = blockquote;
+	  exports["a"] = a;;
+	 
+	})(PS["Text.Smolder.HTML"] = PS["Text.Smolder.HTML"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Prelude = PS["Prelude"];
+	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];   
+	  var title = Text_Smolder_Markup.attribute("title");  
+	  var src = Text_Smolder_Markup.attribute("src");          
+	  var href = Text_Smolder_Markup.attribute("href");
+	  var className = Text_Smolder_Markup.attribute("class");
+	  exports["title"] = title;
+	  exports["src"] = src;
+	  exports["href"] = href;
+	  exports["className"] = className;;
+	 
+	})(PS["Text.Smolder.HTML.Attributes"] = PS["Text.Smolder.HTML.Attributes"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Prelude = PS["Prelude"];
+	  var Control_Monad_Eff_Console = PS["Control.Monad.Eff.Console"];
+	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+	  var Data_Foldable = PS["Data.Foldable"];
+	  var Data_List = PS["Data.List"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_String = PS["Data.String"];
+	  var Text_Markdown_SlamDown = PS["Text.Markdown.SlamDown"];
+	  var Text_Smolder_HTML = PS["Text.Smolder.HTML"];
+	  var Text_Smolder_HTML_Attributes = PS["Text.Smolder.HTML.Attributes"];
+	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];
+	  var VirtualDOM_VTree = PS["VirtualDOM.VTree"];
+	  var Types = PS["Types"];
+	  var Utils = PS["Utils"];     
+	  var ToHtml = function (toHtml) {
+	      this.toHtml = toHtml;
+	  };
+	  var toHtml = function (dict) {
+	      return dict.toHtml;
+	  };
+	  var toHtmlInline = new ToHtml(function (_2) {
+	      if (_2 instanceof Text_Markdown_SlamDown.Str) {
+	          return Text_Smolder_Markup.text(_2.value0);
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Entity) {
+	          return Text_Smolder_Markup.text(_2.value0);
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Space) {
+	          return Text_Smolder_Markup.text(" ");
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.SoftBreak) {
+	          return Text_Smolder_Markup.text(" ");
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.LineBreak) {
+	          return Text_Smolder_HTML.br;
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Emph) {
+	          return Text_Smolder_HTML.em(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Strong) {
+	          return Text_Smolder_HTML.strong(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Code) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("inline-code"))(Text_Smolder_Markup.text(_2.value1));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Link && _2.value1 instanceof Text_Markdown_SlamDown.InlineLink) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_2.value1.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Link && (_2.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _2.value1.value0 instanceof Data_Maybe.Nothing)) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Link && (_2.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _2.value1.value0 instanceof Data_Maybe.Just)) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_2.value1.value0.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Image) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.img)(Text_Smolder_HTML_Attributes.src(_2.value1));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.FormField) {
+	          return Text_Smolder_Markup.text("[form-field " + (Prelude.show(Prelude.showString)(_2.value0) + (" " + (Prelude.show(Prelude.showBoolean)(_2.value1) + (" " + (Prelude.show(Text_Markdown_SlamDown.showFormField)(_2.value2) + "]"))))));
+	      };
+	      throw new Error("Failed pattern match: " + [ _2.constructor.name ]);
+	  });
+	  var toHtmlBlock = new ToHtml(function (_1) {
+	      if (_1 instanceof Text_Markdown_SlamDown.Paragraph) {
+	          return Text_Smolder_HTML.p(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value0)(toHtml(toHtmlInline)));
+	      };
+	      if (_1 instanceof Text_Markdown_SlamDown.Header) {
+	          if (_1.value0 === 1) {
+	              return Text_Smolder_HTML.h1(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(toHtml(toHtmlInline)));
+	          };
+	          if (_1.value0 === 2) {
+	              return Text_Smolder_HTML.h2(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(toHtml(toHtmlInline)));
+	          };
+	          if (_1.value0 === 3) {
+	              return Text_Smolder_HTML.h3(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(toHtml(toHtmlInline)));
+	          };
+	          if (_1.value0 === 4) {
+	              return Text_Smolder_HTML.h4(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(toHtml(toHtmlInline)));
+	          };
+	          if (_1.value0 === 5) {
+	              return Text_Smolder_HTML.h5(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(toHtml(toHtmlInline)));
+	          };
+	          if (_1.value0 === 6) {
+	              return Text_Smolder_HTML.h6(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(toHtml(toHtmlInline)));
+	          };
+	      };
+	      if (_1 instanceof Text_Markdown_SlamDown.Blockquote) {
+	          return Text_Smolder_HTML.blockquote(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value0)(toHtml(toHtmlBlock)));
+	      };
+	      if (_1 instanceof Text_Markdown_SlamDown.Lst && _1.value0 instanceof Text_Markdown_SlamDown.Bullet) {
+	          return Text_Smolder_HTML.ul(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(function (bs) {
+	              return Text_Smolder_HTML.li(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(bs)(toHtml(toHtmlBlock)));
+	          }));
+	      };
+	      if (_1 instanceof Text_Markdown_SlamDown.Lst && _1.value0 instanceof Text_Markdown_SlamDown.Ordered) {
+	          return Text_Smolder_HTML.ol(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(function (bs) {
+	              return Text_Smolder_HTML.li(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(bs)(toHtml(toHtmlBlock)));
+	          }));
+	      };
+	      if (_1 instanceof Text_Markdown_SlamDown.CodeBlock) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("code"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(function (s) {
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.pre)(Text_Smolder_HTML_Attributes.className("code-line"))(Text_Smolder_Markup.text(s));
+	          }));
+	      };
+	      if (_1 instanceof Text_Markdown_SlamDown.LinkReference) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_1.value1))(Text_Smolder_Markup.text(_1.value0));
+	      };
+	      if (_1 instanceof Text_Markdown_SlamDown.Rule) {
+	          return Text_Smolder_HTML.hr;
+	      };
+	      throw new Error("Failed pattern match: " + [ _1.constructor.name ]);
+	  });
+	  var toHtmlListBlock = new ToHtml(function (as) {
+	      return Text_Smolder_HTML.span(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(as)(toHtml(toHtmlBlock)));
+	  });
+	  var toHtmlSlamDown = new ToHtml(function (_0) {
+	      return toHtml(toHtmlListBlock)(_0.value0);
+	  });
+	  exports["ToHtml"] = ToHtml;
+	  exports["toHtml"] = toHtml;
+	  exports["toHtmlSlamDown"] = toHtmlSlamDown;
+	  exports["toHtmlListBlock"] = toHtmlListBlock;
+	  exports["toHtmlBlock"] = toHtmlBlock;
+	  exports["toHtmlInline"] = toHtmlInline;;
+	 
+	})(PS["Internal"] = PS["Internal"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+	  var Control_Monad_Aff_Par = PS["Control.Monad.Aff.Par"];
+	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+	  var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
+	  var Control_Alt = PS["Control.Alt"];
+	  var Control_Monad_Eff_Exception = PS["Control.Monad.Eff.Exception"];
+	  var Control_Monad_Error_Class = PS["Control.Monad.Error.Class"];
+	  var Data_Array = PS["Data.Array"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_String = PS["Data.String"];
+	  var Data_String_Regex = PS["Data.String.Regex"];
+	  var Data_Traversable = PS["Data.Traversable"];
+	  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
+	  var Network_HTTP_ResponseHeader = PS["Network.HTTP.ResponseHeader"];
+	  var Network_HTTP_StatusCode = PS["Network.HTTP.StatusCode"];
+	  var Data_Foreign = PS["Data.Foreign"];
+	  var Data_Foreign_Class = PS["Data.Foreign.Class"];
+	  var Data_Foreign_Keys = PS["Data.Foreign.Keys"];
+	  var Data_Either = PS["Data.Either"];
+	  var Prelude = PS["Prelude"];
+	  var Signal_Channel = PS["Signal.Channel"];
+	  var Text_Markdown_SlamDown_Parser = PS["Text.Markdown.SlamDown.Parser"];
+	  var Text_Smolder_HTML = PS["Text.Smolder.HTML"];
+	  var Text_Smolder_HTML_Attributes = PS["Text.Smolder.HTML.Attributes"];
+	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];
+	  var Data_Foldable = PS["Data.Foldable"];
+	  var Types = PS["Types"];
+	  var Utils = PS["Utils"];
+	  var Internal = PS["Internal"];
+	  var Network_HTTP_Affjax_Response = PS["Network.HTTP.Affjax.Response"];
+	  var Data_Foreign_Index = PS["Data.Foreign.Index"];     
+	  var Plaintext = (function () {
+	      function Plaintext() {
+
+	      };
+	      Plaintext.value = new Plaintext();
+	      return Plaintext;
+	  })();
+	  var UnknownMimetype = (function () {
+	      function UnknownMimetype(value0) {
+	          this.value0 = value0;
+	      };
+	      UnknownMimetype.create = function (value0) {
+	          return new UnknownMimetype(value0);
+	      };
+	      return UnknownMimetype;
+	  })();
+	  var File = (function () {
+	      function File(value0) {
+	          this.value0 = value0;
+	      };
+	      File.create = function (value0) {
+	          return new File(value0);
+	      };
+	      return File;
+	  })();
+	  var Files = (function () {
+	      function Files(value0) {
+	          this.value0 = value0;
+	      };
+	      Files.create = function (value0) {
+	          return new Files(value0);
+	      };
+	      return Files;
+	  })();
+	  var Article = (function () {
+	      function Article(value0) {
+	          this.value0 = value0;
+	      };
+	      Article.create = function (value0) {
+	          return new Article(value0);
+	      };
+	      return Article;
+	  })();
+	  var loadGist$prime = function (gid) {
+	      return Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)("https://api.github.com/gists/" + gid);
+	  };
+	  var isForeignMymetype = new Data_Foreign_Class.IsForeign(function (raw) {
+	      return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.read(Data_Foreign_Class.stringIsForeign)(raw))(function (_0) {
+	          return Prelude.pure(Data_Either.applicativeEither)((function () {
+	              if (_0 === "text/plain") {
+	                  return Plaintext.value;
+	              };
+	              return new UnknownMimetype(_0);
+	          })());
+	      });
+	  });
+	  var isForeignFile = new Data_Foreign_Class.IsForeign(function (raw) {
+	      return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(Data_Foreign_Index.indexString)("content")(raw))(function (_8) {
+	          return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(Data_Foreign_Index.indexString)("filename")(raw))(function (_7) {
+	              return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(Data_Foreign_Index.indexString)("language")(raw))(function (_6) {
+	                  return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(Data_Foreign_Class.intIsForeign)(Data_Foreign_Index.indexString)("size")(raw))(function (_5) {
+	                      return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(isForeignMymetype)(Data_Foreign_Index.indexString)("type")(raw))(function (_4) {
+	                          return Prelude.pure(Data_Either.applicativeEither)(new File({
+	                              content: _8, 
+	                              name: _7, 
+	                              lang: _6, 
+	                              size: _5, 
+	                              mimetype: _4
+	                          }));
+	                      });
+	                  });
+	              });
+	          });
+	      });
+	  });
+	  var isForeignFiles = new Data_Foreign_Class.IsForeign(function (raw) {
+	      return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Keys.keys(raw))(function (_3) {
+	          return Prelude.bind(Data_Either.bindEither)(Data_Traversable["for"](Data_Either.applicativeEither)(Data_Traversable.traversableArray)(_3)(function (k) {
+	              return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(isForeignFile)(Data_Foreign_Index.indexString)(k)(raw))(function (_1) {
+	                  return Prelude.pure(Data_Either.applicativeEither)(_1);
+	              });
+	          }))(function (_2) {
+	              return Prelude.pure(Data_Either.applicativeEither)(new Files(_2));
+	          });
+	      });
+	  });
+	  var isForeignArticle = new Data_Foreign_Class.IsForeign(function (raw) {
+	      return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(Data_Foreign_Index.indexString)("updated_at")(raw))(function (_12) {
+	          return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(Data_Foreign_Index.indexString)("id")(raw))(function (_11) {
+	              return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(Data_Foreign_Index.indexString)("description")(raw))(function (_10) {
+	                  return Prelude.bind(Data_Either.bindEither)(Data_Foreign_Class.readProp(isForeignFiles)(Data_Foreign_Index.indexString)("files")(raw))(function (_9) {
+	                      return Prelude.pure(Data_Either.applicativeEither)(new Article({
+	                          updatedAt: _12, 
+	                          id: _11, 
+	                          description: _10, 
+	                          files: _9
+	                      }));
+	                  });
+	              });
+	          });
+	      });
+	  });
+	  var parseJsonGistResponse = function (respJson) {
+	      return Data_Foreign_Class.readJSON(isForeignArticle)(respJson);
+	  };
+	  var loadNparseGist = function (gid) {
+	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_14) {
+	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(parseJsonGistResponse(_14.response));
+	      });
+	  };
+	  var getBlogPostsIds = function (toc) {
+	      var regexFlags = (function () {
+	          var _35 = {};
+	          for (var _36 in Data_String_Regex.noFlags) {
+	              if (Data_String_Regex.noFlags.hasOwnProperty(_36)) {
+	                  _35[_36] = Data_String_Regex.noFlags[_36];
+	              };
+	          };
+	          _35.global = true;
+	          _35.ignoreCase = true;
+	          _35.multiline = true;
+	          return _35;
+	      })();
+	      var idRegex = Data_String_Regex.regex("\\([a-f0-9]{20}\\)")(regexFlags);
+	      var rawIds = Data_String_Regex.match(idRegex)(toc);
+	      var justIds = Data_Maybe.fromMaybe([  ])(Prelude["<$>"](Data_Maybe.functorMaybe)(Data_Array.catMaybes)(rawIds));
+	      var cleanIds = Prelude["<$>"](Prelude.functorArray)(Prelude[">>>"](Prelude.semigroupoidFn)(Data_String.drop(1))(Data_String.take(20)))(justIds);
+	      return cleanIds;
+	  };
+	  var formatBlogPosts = function (ps) {
+	      var renderFileH = function (_19) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(Data_String.take(500)(_19.value0.content)))));
+	      };
+	      var renderFilesH = function (_18) {
+	          return Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(_18.value0)(renderFileH);
+	      };
+	      var renderArticleH = function (_17) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text("Entry ")))(function () {
+	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("https://eugenen.github.io/C.MD/#!" + (_17.value0.id + ";p")))(Text_Smolder_Markup.text(_17.value0.id)))(function () {
+	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text(": ")))(function () {
+	                      return Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_17.value0.description));
+	                  });
+	              });
+	          })));
+	      };
+	      var renderEitherH = function (_16) {
+	          if (_16 instanceof Data_Either.Left) {
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("error"))(Text_Smolder_Markup.text(Prelude.show(Data_Foreign.showForeignError)(_16.value0)));
+	          };
+	          if (_16 instanceof Data_Either.Right) {
+	              return renderArticleH(_16.value0);
+	          };
+	          throw new Error("Failed pattern match at Processors.Blog.Main line 107, column 1 - line 108, column 1: " + [ _16.constructor.name ]);
+	      };
+	      var renderListH = function (ps_1) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(renderEitherH));
+	      };
+	      return Data_Maybe.Just.create(Types.HTML.create(renderListH(ps)));
+	  };
+	  var blogProcessor = function (_15) {
+	      if (_15 instanceof Types.StringInput) {
+	          var gids = getBlogPostsIds(_15.value0);
+	          return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Aff_Par.runPar(Data_Traversable.traverse(Data_Traversable.traversableArray)(Control_Monad_Aff_Par.applicativePar)(Prelude["<$>"](Prelude.functorFn)(Control_Monad_Aff_Par.Par)(loadNparseGist))(gids)))(function (_13) {
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(formatBlogPosts(_13));
+	          });
+	      };
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 100, column 1 - line 101, column 1: " + [ _15.constructor.name ]);
+	  };
+	  exports["blogProcessor"] = blogProcessor;;
+	 
+	})(PS["Processors.Blog.Main"] = PS["Processors.Blog.Main"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+	  var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Prelude = PS["Prelude"];
+	  var Types = PS["Types"];
+	  var Utils = PS["Utils"];     
+	  var mdImg = function (s) {
+	      return "# ![" + (s + ("](" + (s + ")")));
+	  };
+	  var imgListProcessor = function (_0) {
+	      if (_0 instanceof Types.StringInput) {
+	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(mdImg(_0.value0))));
+	      };
+	      if (_0 instanceof Types.ArrayInput) {
+	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(Utils.unlines(Prelude["<$>"](Prelude.functorArray)(mdImg)(_0.value0)))));
+	      };
+	      throw new Error("Failed pattern match at Processors.ImgList.Main line 18, column 1 - line 19, column 1: " + [ _0.constructor.name ]);
+	  };
+	  exports["imgListProcessor"] = imgListProcessor;;
+	 
+	})(PS["Processors.ImgList.Main"] = PS["Processors.ImgList.Main"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+	  var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Prelude = PS["Prelude"];
+	  var Types = PS["Types"];
+	  var Utils = PS["Utils"];     
+	  var textProcessor = function (_0) {
+	      if (_0 instanceof Types.StringInput) {
+	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.Md(_0.value0)));
+	      };
+	      throw new Error("Failed pattern match at Processors.PlainText.Main line 18, column 1 - line 19, column 1: " + [ _0.constructor.name ]);
+	  };
+	  exports["textProcessor"] = textProcessor;;
+	 
+	})(PS["Processors.PlainText.Main"] = PS["Processors.PlainText.Main"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+	  var Control_Monad_Aff_Par = PS["Control.Monad.Aff.Par"];
+	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+	  var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
+	  var Control_Alt = PS["Control.Alt"];
+	  var Control_Monad_Eff_Exception = PS["Control.Monad.Eff.Exception"];
+	  var Control_Monad_Error_Class = PS["Control.Monad.Error.Class"];
+	  var Data_Array = PS["Data.Array"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_String = PS["Data.String"];
+	  var Data_String_Regex = PS["Data.String.Regex"];
+	  var Data_Traversable = PS["Data.Traversable"];
+	  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
+	  var Prelude = PS["Prelude"];
+	  var Signal_Channel = PS["Signal.Channel"];
+	  var Types = PS["Types"];
+	  var Data = PS["Data"];
+	  var Utils = PS["Utils"];
+	  var Processors_Blog_Main = PS["Processors.Blog.Main"];
+	  var Processors_ImgList_Main = PS["Processors.ImgList.Main"];
+	  var Processors_PlainText_Main = PS["Processors.PlainText.Main"];
+	  var Network_HTTP_Affjax_Response = PS["Network.HTTP.Affjax.Response"];     
+	  var getTitle = function (_11) {
+	      return _11.value0.title;
+	  };
+	  var getProcessor = function (_14) {
+	      return _14.value0.processor;
+	  };
+	  var getDataSource = function (_13) {
+	      return _13.value0.dataSource;
+	  };
+	  var getCurrentPath = function (_10) {
+	      return _10.value0.currentPath;
+	  };
+	  var getChildNodes = function (_8) {
+	      return Prelude["<#>"](Prelude.functorArray)(_8.value0.children)(function (_4) {
+	          return _4.value0.path;
+	      });
+	  };
+	  var findChildNodeByPath = function (__copy_pathElements) {
+	      return function (__copy__9) {
+	          var pathElements = __copy_pathElements;
+	          var _9 = __copy__9;
+	          tco: while (true) {
+	              var match = function (p) {
+	                  return function (_20) {
+	                      return Prelude["=="](Prelude.eqString)(_20.value0.path)(p);
+	                  };
+	              };
+	              var find = function (path_) {
+	                  return function (nodes) {
+	                      return Data_Array.head(Data_Array.filter(match(path_))(nodes));
+	                  };
+	              };
+	              var _40 = Data_Array.uncons(pathElements);
+	              if (_40 instanceof Data_Maybe.Nothing) {
+	                  return Data_Maybe.Nothing.value;
+	              };
+	              if (_40 instanceof Data_Maybe.Just && _40.value0.tail.length === 0) {
+	                  return find(_40.value0.head)(_9.value0.children);
+	              };
+	              if (_40 instanceof Data_Maybe.Just) {
+	                  var _44 = find(_40.value0.head)(_9.value0.children);
+	                  if (_44 instanceof Data_Maybe.Nothing) {
+	                      return Data_Maybe.Nothing.value;
+	                  };
+	                  if (_44 instanceof Data_Maybe.Just) {
+	                      pathElements = _40.value0.tail;
+	                      _9 = _44.value0;
+	                      continue tco;
+	                  };
+	                  throw new Error("Failed pattern match: " + [ _44.constructor.name ]);
+	              };
+	              throw new Error("Failed pattern match: " + [ _40.constructor.name ]);
+	          };
+	      };
+	  };
+	  var getCurrentNode = function (appState) {
+	      return findChildNodeByPath(getCurrentPath(appState))(Data.appDNA);
+	  };
+	  var calcTitle = function (appState) {
+	      return Data_String.joinWith(" <*> ")([ Data_Maybe.fromMaybe("404")(Prelude["<$>"](Data_Maybe.functorMaybe)(getTitle)(getCurrentNode(appState))), getTitle(Data.appDNA) ]);
+	  };
+	  var appLogic = function (_6) {
+	      return function (_7) {
+	          if (_6 instanceof Types.Navigate) {
+	              var mbNode = findChildNodeByPath(_6.value0)(Data.appDNA);
+	              var mbSource = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(mbNode);
+	              var newPath = (function () {
+	                  if (mbSource instanceof Data_Maybe.Just && mbSource.value0 instanceof Types.ChildSource) {
+	                      return Prelude["<>"](Prelude.semigroupArray)(_6.value0)([ mbSource.value0.value0 ]);
+	                  };
+	                  return _6.value0;
+	              })();
+	              return new Types.AppState((function () {
+	                  var _55 = {};
+	                  for (var _56 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_56)) {
+	                          _55[_56] = _7.value0[_56];
+	                      };
+	                  };
+	                  _55.actionsCount = _7.value0.actionsCount + 1 | 0;
+	                  _55.currentPath = newPath;
+	                  return _55;
+	              })());
+	          };
+	          if (_6 instanceof Types.Noop) {
+	              return new Types.AppState((function () {
+	                  var _59 = {};
+	                  for (var _60 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_60)) {
+	                          _59[_60] = _7.value0[_60];
+	                      };
+	                  };
+	                  _59.actionsCount = _7.value0.actionsCount + 1 | 0;
+	                  return _59;
+	              })());
+	          };
+	          throw new Error("Failed pattern match at Core line 87, column 1 - line 88, column 1: " + [ _6.constructor.name, _7.constructor.name ]);
+	      };
+	  };
+	  var appEffectsLogic = function (uiChannel) {
+	      return function (_5) {
+	          var setContent = function (x) {
+	              return Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
+	                  var _64 = {};
+	                  for (var _65 in _5.value0) {
+	                      if (_5.value0.hasOwnProperty(_65)) {
+	                          _64[_65] = _5.value0[_65];
+	                      };
+	                  };
+	                  _64.currentContent = x;
+	                  return _64;
+	              })())));
+	          };
+	          var setBusy = Signal_Channel.send(uiChannel)(Types.RenderState.create(new Types.AppState((function () {
+	              var _66 = {};
+	              for (var _67 in _5.value0) {
+	                  if (_5.value0.hasOwnProperty(_67)) {
+	                      _66[_67] = _5.value0[_67];
+	                  };
+	              };
+	              _66.currentContent = new Data_Maybe.Just(new Types.Md("###### ![...](ajax-loader.gif) Loading..."));
+	              return _66;
+	          })())));
+	          var loadGist = function (gid) {
+	              return Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)("https://api.github.com/gists/" + gid);
+	          };
+	          var readSource = function (_19) {
+	              if (_19 instanceof Types.StringSource) {
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_19.value0)));
+	              };
+	              if (_19 instanceof Types.ArraySource) {
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.ArrayInput(_19.value0)));
+	              };
+	              if (_19 instanceof Types.GistSource) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist(_19.value0))(function (_0) {
+	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.StringInput.create(Utils.parseGistResponse(_0.response))));
+	                  });
+	              };
+	              if (_19 instanceof Types.GithubSource) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(_19.value0))(function (_1) {
+	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_1.response)));
+	                  });
+	              };
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
+	          };
+	          var handleResult = function (x) {
+	              return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
+	          };
+	          var handleError = function (e) {
+	              return setContent(Data_Maybe.Just.create(Types.Md.create(Utils.toString(e))));
+	          };
+	          var currentNode = findChildNodeByPath(_5.value0.currentPath)(Data.appDNA);
+	          var ds = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(currentNode);
+	          var mbReadSource = function (_15) {
+	              if (_15 instanceof Data_Maybe.Just) {
+	                  return readSource(_15.value0);
+	              };
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
+	          };
+	          var proc = Prelude["<$>"](Data_Maybe.functorMaybe)(getProcessor)(currentNode);
+	          var callProcessor = function (_18) {
+	              return function (i) {
+	                  if (_18 instanceof Types.MdProcessor) {
+	                      return Processors_PlainText_Main.textProcessor(i);
+	                  };
+	                  if (_18 instanceof Types.TextProcessor) {
+	                      return Processors_PlainText_Main.textProcessor(i);
+	                  };
+	                  if (_18 instanceof Types.ImgListProcessor) {
+	                      return Processors_ImgList_Main.imgListProcessor(i);
+	                  };
+	                  if (_18 instanceof Types.BlogProcessor) {
+	                      return Processors_Blog_Main.blogProcessor(i);
+	                  };
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
+	              };
+	          };
+	          var mbCallProcessor = function (_16) {
+	              return function (_17) {
+	                  if (_16 instanceof Data_Maybe.Just && _17 instanceof Data_Maybe.Just) {
+	                      return callProcessor(_16.value0)(_17.value0);
+	                  };
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
+	              };
+	          };
+	          return Control_Monad_Aff.runAff(handleError)(handleResult)(Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(setBusy))(function () {
+	              return Prelude.bind(Control_Monad_Aff.bindAff)(mbReadSource(ds))(function (_3) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(mbCallProcessor(proc)(_3))(function (_2) {
+	                      return Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(setContent(_2));
+	                  });
+	              });
+	          }));
+	      };
+	  };
+	  exports["getProcessor"] = getProcessor;
+	  exports["getDataSource"] = getDataSource;
+	  exports["getTitle"] = getTitle;
+	  exports["calcTitle"] = calcTitle;
+	  exports["getCurrentPath"] = getCurrentPath;
+	  exports["findChildNodeByPath"] = findChildNodeByPath;
+	  exports["getChildNodes"] = getChildNodes;
+	  exports["getCurrentNode"] = getCurrentNode;
+	  exports["appLogic"] = appLogic;
+	  exports["appEffectsLogic"] = appEffectsLogic;;
+	 
+	})(PS["Core"] = PS["Core"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Prelude = PS["Prelude"];
+	  var Data_Foldable = PS["Data.Foldable"];
+	  var Data_List = PS["Data.List"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_Maybe_Unsafe = PS["Data.Maybe.Unsafe"];
+	  var Data_Monoid = PS["Data.Monoid"];
+	  var Data_Traversable = PS["Data.Traversable"];
+	  var Data_Tuple = PS["Data.Tuple"];     
+	  var Leaf = (function () {
+	      function Leaf() {
+
+	      };
+	      Leaf.value = new Leaf();
+	      return Leaf;
+	  })();
+	  var Two = (function () {
+	      function Two(value0, value1, value2, value3) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	          this.value3 = value3;
+	      };
+	      Two.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return function (value3) {
+	                      return new Two(value0, value1, value2, value3);
+	                  };
+	              };
+	          };
+	      };
+	      return Two;
+	  })();
+	  var Three = (function () {
+	      function Three(value0, value1, value2, value3, value4, value5, value6) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	          this.value3 = value3;
+	          this.value4 = value4;
+	          this.value5 = value5;
+	          this.value6 = value6;
+	      };
+	      Three.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return function (value3) {
+	                      return function (value4) {
+	                          return function (value5) {
+	                              return function (value6) {
+	                                  return new Three(value0, value1, value2, value3, value4, value5, value6);
+	                              };
+	                          };
+	                      };
+	                  };
+	              };
+	          };
+	      };
+	      return Three;
+	  })();
+	  var TwoLeft = (function () {
+	      function TwoLeft(value0, value1, value2) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	      };
+	      TwoLeft.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return new TwoLeft(value0, value1, value2);
+	              };
+	          };
+	      };
+	      return TwoLeft;
+	  })();
+	  var TwoRight = (function () {
+	      function TwoRight(value0, value1, value2) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	      };
+	      TwoRight.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return new TwoRight(value0, value1, value2);
+	              };
+	          };
+	      };
+	      return TwoRight;
+	  })();
+	  var ThreeLeft = (function () {
+	      function ThreeLeft(value0, value1, value2, value3, value4, value5) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	          this.value3 = value3;
+	          this.value4 = value4;
+	          this.value5 = value5;
+	      };
+	      ThreeLeft.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return function (value3) {
+	                      return function (value4) {
+	                          return function (value5) {
+	                              return new ThreeLeft(value0, value1, value2, value3, value4, value5);
+	                          };
+	                      };
+	                  };
+	              };
+	          };
+	      };
+	      return ThreeLeft;
+	  })();
+	  var ThreeMiddle = (function () {
+	      function ThreeMiddle(value0, value1, value2, value3, value4, value5) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	          this.value3 = value3;
+	          this.value4 = value4;
+	          this.value5 = value5;
+	      };
+	      ThreeMiddle.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return function (value3) {
+	                      return function (value4) {
+	                          return function (value5) {
+	                              return new ThreeMiddle(value0, value1, value2, value3, value4, value5);
+	                          };
+	                      };
+	                  };
+	              };
+	          };
+	      };
+	      return ThreeMiddle;
+	  })();
+	  var ThreeRight = (function () {
+	      function ThreeRight(value0, value1, value2, value3, value4, value5) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	          this.value3 = value3;
+	          this.value4 = value4;
+	          this.value5 = value5;
+	      };
+	      ThreeRight.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return function (value3) {
+	                      return function (value4) {
+	                          return function (value5) {
+	                              return new ThreeRight(value0, value1, value2, value3, value4, value5);
+	                          };
+	                      };
+	                  };
+	              };
+	          };
+	      };
+	      return ThreeRight;
+	  })();
+	  var KickUp = (function () {
+	      function KickUp(value0, value1, value2, value3) {
+	          this.value0 = value0;
+	          this.value1 = value1;
+	          this.value2 = value2;
+	          this.value3 = value3;
+	      };
+	      KickUp.create = function (value0) {
+	          return function (value1) {
+	              return function (value2) {
+	                  return function (value3) {
+	                      return new KickUp(value0, value1, value2, value3);
+	                  };
+	              };
+	          };
+	      };
+	      return KickUp;
+	  })();
+	  var toList = function (_7) {
+	      if (_7 instanceof Leaf) {
+	          return Data_List.Nil.value;
+	      };
+	      if (_7 instanceof Two) {
+	          return Prelude["++"](Data_List.semigroupList)(toList(_7.value0))(Prelude["++"](Data_List.semigroupList)(Prelude.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(_7.value1, _7.value2)))(toList(_7.value3)));
+	      };
+	      if (_7 instanceof Three) {
+	          return Prelude["++"](Data_List.semigroupList)(toList(_7.value0))(Prelude["++"](Data_List.semigroupList)(Prelude.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(_7.value1, _7.value2)))(Prelude["++"](Data_List.semigroupList)(toList(_7.value3))(Prelude["++"](Data_List.semigroupList)(Prelude.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(_7.value4, _7.value5)))(toList(_7.value6)))));
+	      };
+	      throw new Error("Failed pattern match: " + [ _7.constructor.name ]);
+	  }; 
+	  var fromZipper = function (__copy___dict_Ord_8) {
+	      return function (__copy__5) {
+	          return function (__copy__6) {
+	              var __dict_Ord_8 = __copy___dict_Ord_8;
+	              var _5 = __copy__5;
+	              var _6 = __copy__6;
+	              tco: while (true) {
+	                  if (_5 instanceof Data_List.Nil) {
+	                      return _6;
+	                  };
+	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof TwoLeft) {
+	                      var __tco___dict_Ord_8 = __dict_Ord_8;
+	                      var __tco__5 = _5.value1;
+	                      var __tco__6 = new Two(_6, _5.value0.value0, _5.value0.value1, _5.value0.value2);
+	                      __dict_Ord_8 = __tco___dict_Ord_8;
+	                      _5 = __tco__5;
+	                      _6 = __tco__6;
+	                      continue tco;
+	                  };
+	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof TwoRight) {
+	                      var __tco___dict_Ord_8 = __dict_Ord_8;
+	                      var __tco__5 = _5.value1;
+	                      var __tco__6 = new Two(_5.value0.value0, _5.value0.value1, _5.value0.value2, _6);
+	                      __dict_Ord_8 = __tco___dict_Ord_8;
+	                      _5 = __tco__5;
+	                      _6 = __tco__6;
+	                      continue tco;
+	                  };
+	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof ThreeLeft) {
+	                      var __tco___dict_Ord_8 = __dict_Ord_8;
+	                      var __tco__5 = _5.value1;
+	                      var __tco__6 = new Three(_6, _5.value0.value0, _5.value0.value1, _5.value0.value2, _5.value0.value3, _5.value0.value4, _5.value0.value5);
+	                      __dict_Ord_8 = __tco___dict_Ord_8;
+	                      _5 = __tco__5;
+	                      _6 = __tco__6;
+	                      continue tco;
+	                  };
+	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof ThreeMiddle) {
+	                      var __tco___dict_Ord_8 = __dict_Ord_8;
+	                      var __tco__5 = _5.value1;
+	                      var __tco__6 = new Three(_5.value0.value0, _5.value0.value1, _5.value0.value2, _6, _5.value0.value3, _5.value0.value4, _5.value0.value5);
+	                      __dict_Ord_8 = __tco___dict_Ord_8;
+	                      _5 = __tco__5;
+	                      _6 = __tco__6;
+	                      continue tco;
+	                  };
+	                  if (_5 instanceof Data_List.Cons && _5.value0 instanceof ThreeRight) {
+	                      var __tco___dict_Ord_8 = __dict_Ord_8;
+	                      var __tco__5 = _5.value1;
+	                      var __tco__6 = new Three(_5.value0.value0, _5.value0.value1, _5.value0.value2, _5.value0.value3, _5.value0.value4, _5.value0.value5, _6);
+	                      __dict_Ord_8 = __tco___dict_Ord_8;
+	                      _5 = __tco__5;
+	                      _6 = __tco__6;
+	                      continue tco;
+	                  };
+	                  throw new Error("Failed pattern match: " + [ _5.constructor.name, _6.constructor.name ]);
+	              };
+	          };
+	      };
+	  };
+	  var insert = function (__dict_Ord_9) {
+	      var up = function (__copy__13) {
+	          return function (__copy__14) {
+	              var _13 = __copy__13;
+	              var _14 = __copy__14;
+	              tco: while (true) {
+	                  if (_13 instanceof Data_List.Nil) {
+	                      return new Two(_14.value0, _14.value1, _14.value2, _14.value3);
+	                  };
+	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof TwoLeft) {
+	                      return fromZipper(__dict_Ord_9)(_13.value1)(new Three(_14.value0, _14.value1, _14.value2, _14.value3, _13.value0.value0, _13.value0.value1, _13.value0.value2));
+	                  };
+	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof TwoRight) {
+	                      return fromZipper(__dict_Ord_9)(_13.value1)(new Three(_13.value0.value0, _13.value0.value1, _13.value0.value2, _14.value0, _14.value1, _14.value2, _14.value3));
+	                  };
+	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof ThreeLeft) {
+	                      var __tco__13 = _13.value1;
+	                      var __tco__14 = new KickUp(new Two(_14.value0, _14.value1, _14.value2, _14.value3), _13.value0.value0, _13.value0.value1, new Two(_13.value0.value2, _13.value0.value3, _13.value0.value4, _13.value0.value5));
+	                      _13 = __tco__13;
+	                      _14 = __tco__14;
+	                      continue tco;
+	                  };
+	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof ThreeMiddle) {
+	                      var __tco__13 = _13.value1;
+	                      var __tco__14 = new KickUp(new Two(_13.value0.value0, _13.value0.value1, _13.value0.value2, _14.value0), _14.value1, _14.value2, new Two(_14.value3, _13.value0.value3, _13.value0.value4, _13.value0.value5));
+	                      _13 = __tco__13;
+	                      _14 = __tco__14;
+	                      continue tco;
+	                  };
+	                  if (_13 instanceof Data_List.Cons && _13.value0 instanceof ThreeRight) {
+	                      var __tco__13 = _13.value1;
+	                      var __tco__14 = new KickUp(new Two(_13.value0.value0, _13.value0.value1, _13.value0.value2, _13.value0.value3), _13.value0.value4, _13.value0.value5, new Two(_14.value0, _14.value1, _14.value2, _14.value3));
+	                      _13 = __tco__13;
+	                      _14 = __tco__14;
+	                      continue tco;
+	                  };
+	                  throw new Error("Failed pattern match at Data.Map line 148, column 1 - line 149, column 1: " + [ _13.constructor.name, _14.constructor.name ]);
+	              };
+	          };
+	      };
+	      var down = function (__copy_ctx) {
+	          return function (__copy_k) {
+	              return function (__copy_v) {
+	                  return function (__copy__12) {
+	                      var ctx = __copy_ctx;
+	                      var k = __copy_k;
+	                      var v = __copy_v;
+	                      var _12 = __copy__12;
+	                      tco: while (true) {
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Leaf) {
+	                              return up(ctx_1)(new KickUp(Leaf.value, k_1, v_1, Leaf.value));
+	                          };
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Two && Prelude["=="](__dict_Ord_9["__superclass_Prelude.Eq_0"]())(k_1)(_12.value1)) {
+	                              return fromZipper(__dict_Ord_9)(ctx_1)(new Two(_12.value0, k_1, v_1, _12.value3));
+	                          };
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Two && Prelude["<"](__dict_Ord_9)(k_1)(_12.value1)) {
+	                              var __tco_ctx = new Data_List.Cons(new TwoLeft(_12.value1, _12.value2, _12.value3), ctx_1);
+	                              var __tco__12 = _12.value0;
+	                              ctx = __tco_ctx;
+	                              k = k_1;
+	                              v = v_1;
+	                              _12 = __tco__12;
+	                              continue tco;
+	                          };
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Two) {
+	                              var __tco_ctx = new Data_List.Cons(new TwoRight(_12.value0, _12.value1, _12.value2), ctx_1);
+	                              var __tco__12 = _12.value3;
+	                              ctx = __tco_ctx;
+	                              k = k_1;
+	                              v = v_1;
+	                              _12 = __tco__12;
+	                              continue tco;
+	                          };
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Three && Prelude["=="](__dict_Ord_9["__superclass_Prelude.Eq_0"]())(k_1)(_12.value1)) {
+	                              return fromZipper(__dict_Ord_9)(ctx_1)(new Three(_12.value0, k_1, v_1, _12.value3, _12.value4, _12.value5, _12.value6));
+	                          };
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Three && Prelude["=="](__dict_Ord_9["__superclass_Prelude.Eq_0"]())(k_1)(_12.value4)) {
+	                              return fromZipper(__dict_Ord_9)(ctx_1)(new Three(_12.value0, _12.value1, _12.value2, _12.value3, k_1, v_1, _12.value6));
+	                          };
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Three && Prelude["<"](__dict_Ord_9)(k_1)(_12.value1)) {
+	                              var __tco_ctx = new Data_List.Cons(new ThreeLeft(_12.value1, _12.value2, _12.value3, _12.value4, _12.value5, _12.value6), ctx_1);
+	                              var __tco__12 = _12.value0;
+	                              ctx = __tco_ctx;
+	                              k = k_1;
+	                              v = v_1;
+	                              _12 = __tco__12;
+	                              continue tco;
+	                          };
+	                          var ctx_1 = ctx;
+	                          var k_1 = k;
+	                          var v_1 = v;
+	                          if (_12 instanceof Three && (Prelude["<"](__dict_Ord_9)(_12.value1)(k_1) && Prelude["<="](__dict_Ord_9)(k_1)(_12.value4))) {
+	                              var __tco_ctx = new Data_List.Cons(new ThreeMiddle(_12.value0, _12.value1, _12.value2, _12.value4, _12.value5, _12.value6), ctx_1);
+	                              var __tco__12 = _12.value3;
+	                              ctx = __tco_ctx;
+	                              k = k_1;
+	                              v = v_1;
+	                              _12 = __tco__12;
+	                              continue tco;
+	                          };
+	                          if (_12 instanceof Three) {
+	                              var __tco_ctx = new Data_List.Cons(new ThreeRight(_12.value0, _12.value1, _12.value2, _12.value3, _12.value4, _12.value5), ctx);
+	                              var __tco_k = k;
+	                              var __tco_v = v;
+	                              var __tco__12 = _12.value6;
+	                              ctx = __tco_ctx;
+	                              k = __tco_k;
+	                              v = __tco_v;
+	                              _12 = __tco__12;
+	                              continue tco;
+	                          };
+	                          throw new Error("Failed pattern match at Data.Map line 148, column 1 - line 149, column 1: " + [ ctx.constructor.name, k.constructor.name, v.constructor.name, _12.constructor.name ]);
+	                      };
+	                  };
+	              };
+	          };
+	      };
+	      return down(Data_List.Nil.value);
+	  };
+	  var empty = Leaf.value;
+	  var fromList = function (__dict_Ord_13) {
+	      return Data_Foldable.foldl(Data_List.foldableList)(function (m) {
+	          return function (_0) {
+	              return insert(__dict_Ord_13)(_0.value0)(_0.value1)(m);
+	          };
+	      })(empty);
+	  };
+	  exports["fromList"] = fromList;
+	  exports["toList"] = toList;
+	  exports["insert"] = insert;
+	  exports["empty"] = empty;;
+	 
+	})(PS["Data.Map"] = PS["Data.Map"] || {});
+	(function(exports) {
+	  // module UI.Console.Main
+
+	  exports.exportGlobal = function (fname) {return function(f) {return function() {
+	    window[fname] = function(a) { return f(a)() }; 
+	    return {};
+	  } } }
+	 
+	})(PS["UI.Console.Main"] = PS["UI.Console.Main"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
+	  var Prelude = PS["Prelude"];
+	  var Data_Foldable = PS["Data.Foldable"];
+	  var Data_List = PS["Data.List"];
+	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_Monoid = PS["Data.Monoid"];
+	  var Data_String = PS["Data.String"];
+	  var Text_Markdown_SlamDown = PS["Text.Markdown.SlamDown"];
+	  var Data_Unfoldable = PS["Data.Unfoldable"];     
+	  var unlines = function (lst) {
+	      return Data_String.joinWith("\n")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(lst));
+	  };
+	  var squares = function (s) {
+	      return "[" + (s + "]");
+	  };
+	  var replicateS = function (n) {
+	      return function (s) {
+	          return Data_Foldable.fold(Data_List.foldableList)(Data_Monoid.monoidString)(Prelude["<$>"](Data_List.functorList)(Prelude["const"](s))(Data_List[".."](1)(n)));
+	      };
+	  };
+	  var prettyPrintExpr = function (wrap) {
+	      return function (f) {
+	          return function (_5) {
+	              if (_5 instanceof Text_Markdown_SlamDown.Literal) {
+	                  return f(_5.value0);
+	              };
+	              if (_5 instanceof Text_Markdown_SlamDown.Unevaluated) {
+	                  return wrap("!`" + (_5.value0 + "`"));
+	              };
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 107, column 1 - line 108, column 1: " + [ wrap.constructor.name, f.constructor.name, _5.constructor.name ]);
+	          };
+	      };
+	  };
+	  var parens = function (s) {
+	      return "(" + (s + ")");
+	  };
+	  var lines = function (_1) {
+	      if (_1 === "") {
+	          return Data_Monoid.mempty(Data_List.monoidList);
+	      };
+	      return Data_List.toList(Data_Foldable.foldableArray)(Data_String.split("\n")(_1));
+	  };
+	  var overLines = function (f) {
+	      return function (_75) {
+	          return Prelude.map(Data_List.functorList)(f)(Data_List.concatMap(lines)(_75));
+	      };
+	  };
+	  var indent = function (n) {
+	      return function (s) {
+	          return replicateS(n)(" ") + s;
+	      };
+	  };
+	  var braces = function (s) {
+	      return "{" + (s + "}");
+	  };
+	  var prettyPrintFormElement = function (_4) {
+	      if (_4 instanceof Text_Markdown_SlamDown.TextBox) {
+	          var intro = function (_9) {
+	              if (_9 instanceof Text_Markdown_SlamDown.PlainText) {
+	                  return "______";
+	              };
+	              if (_9 instanceof Text_Markdown_SlamDown.Numeric) {
+	                  return "#______";
+	              };
+	              if (_9 instanceof Text_Markdown_SlamDown["Date"]) {
+	                  return "__ - __ - ____";
+	              };
+	              if (_9 instanceof Text_Markdown_SlamDown.Time) {
+	                  return "__ : __";
+	              };
+	              if (_9 instanceof Text_Markdown_SlamDown.DateTime) {
+	                  return "__ - __ - ____ __ : __";
+	              };
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 88, column 3 - line 89, column 3: " + [ _9.constructor.name ]);
+	          };
+	          return intro(_4.value0) + Data_Maybe.maybe("")(function (v) {
+	              return " (" + (prettyPrintExpr(Prelude.id(Prelude.categoryFn))(Prelude.id(Prelude.categoryFn))(v) + ")");
+	          })(_4.value1);
+	      };
+	      if (_4 instanceof Text_Markdown_SlamDown.RadioButtons) {
+	          return prettyPrintExpr(parens)(Prelude["<>"](Prelude.semigroupString)("(x) "))(_4.value0) + (" " + prettyPrintExpr(Prelude.id(Prelude.categoryFn))(function (_76) {
+	              return Data_String.joinWith(" ")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(Prelude.map(Data_List.functorList)(Prelude["<>"](Prelude.semigroupString)("() "))(_76)));
+	          })(_4.value1));
+	      };
+	      if (_4 instanceof Text_Markdown_SlamDown.CheckBoxes && (_4.value0 instanceof Text_Markdown_SlamDown.Literal && _4.value1 instanceof Text_Markdown_SlamDown.Literal)) {
+	          var checkBox = function (b) {
+	              return function (l) {
+	                  return (function () {
+	                      if (b) {
+	                          return "[x] ";
+	                      };
+	                      if (!b) {
+	                          return "[] ";
+	                      };
+	                      throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 99, column 3 - line 100, column 1: " + [ b.constructor.name ]);
+	                  })() + l;
+	              };
+	          };
+	          return Data_String.joinWith(" ")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(Data_List.zipWith(checkBox)(_4.value0.value0)(_4.value1.value0)));
+	      };
+	      if (_4 instanceof Text_Markdown_SlamDown.CheckBoxes && (_4.value0 instanceof Text_Markdown_SlamDown.Unevaluated && _4.value1 instanceof Text_Markdown_SlamDown.Unevaluated)) {
+	          return "[!`" + (_4.value0.value0 + ("`] !`" + (_4.value1.value0 + "`")));
+	      };
+	      if (_4 instanceof Text_Markdown_SlamDown.DropDown) {
+	          return braces(prettyPrintExpr(Prelude.id(Prelude.categoryFn))(Prelude[">>>"](Prelude.semigroupoidFn)(Data_List.fromList(Data_Unfoldable.unfoldableArray))(Data_String.joinWith(", ")))(_4.value0)) + Data_Maybe.maybe("")(function (s) {
+	              return parens(prettyPrintExpr(Prelude.id(Prelude.categoryFn))(Prelude.id(Prelude.categoryFn))(s));
+	          })(_4.value1);
+	      };
+	      return "Unsupported form element";
+	  };
+	  var prettyPrintInlines = function (is) {
+	      return Data_String.joinWith("")(Data_List.fromList(Data_Unfoldable.unfoldableArray)(Prelude.map(Data_List.functorList)(prettyPrintInline)(is)));
+	  };
+	  var prettyPrintInline = function (_3) {
+	      if (_3 instanceof Text_Markdown_SlamDown.Str) {
+	          return _3.value0;
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.Entity) {
+	          return _3.value0;
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.Space) {
+	          return " ";
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.SoftBreak) {
+	          return "\n";
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.LineBreak) {
+	          return "  \n";
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.Emph) {
+	          return "*" + (prettyPrintInlines(_3.value0) + "*");
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.Strong) {
+	          return "**" + (prettyPrintInlines(_3.value0) + "**");
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.Code) {
+	          var bang = (function () {
+	              if (_3.value0) {
+	                  return "!";
+	              };
+	              if (!_3.value0) {
+	                  return "";
+	              };
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 73, column 9 - line 74, column 1: " + [ _3.value0.constructor.name ]);
+	          })();
+	          return bang + ("`" + (_3.value1 + "`"));
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.Link) {
+	          var printTarget = function (_8) {
+	              if (_8 instanceof Text_Markdown_SlamDown.InlineLink) {
+	                  return parens(_8.value0);
+	              };
+	              if (_8 instanceof Text_Markdown_SlamDown.ReferenceLink) {
+	                  return squares(Data_Maybe.fromMaybe("")(_8.value0));
+	              };
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 76, column 3 - line 77, column 3: " + [ _8.constructor.name ]);
+	          };
+	          return "[" + (prettyPrintInlines(_3.value0) + ("]" + printTarget(_3.value1)));
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.Image) {
+	          return "![" + (prettyPrintInlines(_3.value0) + ("](" + (_3.value1 + ")")));
+	      };
+	      if (_3 instanceof Text_Markdown_SlamDown.FormField) {
+	          var star = (function () {
+	              if (_3.value1) {
+	                  return "*";
+	              };
+	              if (!_3.value1) {
+	                  return " ";
+	              };
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 82, column 3 - line 84, column 1: " + [ _3.value1.constructor.name ]);
+	          })();
+	          var esc = function (s) {
+	              return Data_Maybe.maybe(s)(Prelude["const"]("[" + (s + "]")))(Data_String.indexOf(" ")(s));
+	          };
+	          return esc(_3.value0) + (star + (" = " + prettyPrintFormElement(_3.value2)));
+	      };
+	      throw new Error("Failed pattern match: " + [ _3.constructor.name ]);
+	  };
+	  var prettyPrintBlock = function (_2) {
+	      if (_2 instanceof Text_Markdown_SlamDown.Paragraph) {
+	          return new Data_List.Cons(prettyPrintInlines(_2.value0), new Data_List.Cons("", Data_List.Nil.value));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Header) {
+	          return Data_List.singleton(replicateS(_2.value0)("#") + (" " + prettyPrintInlines(_2.value1)));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Blockquote) {
+	          return overLines(Prelude["<>"](Prelude.semigroupString)("> "))(Data_List.concatMap(prettyPrintBlock)(_2.value0));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Lst) {
+	          var prettyPrintMarker = function (_7) {
+	              if (_7 instanceof Text_Markdown_SlamDown.Bullet) {
+	                  return _7.value0;
+	              };
+	              if (_7 instanceof Text_Markdown_SlamDown.Ordered) {
+	                  return "1" + _7.value0;
+	              };
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 38, column 3 - line 39, column 3: " + [ _7.constructor.name ]);
+	          };
+	          var addMarker = function (_6) {
+	              if (_6 instanceof Data_List.Nil) {
+	                  return Data_List.Nil.value;
+	              };
+	              if (_6 instanceof Data_List.Cons) {
+	                  var m = prettyPrintMarker(_2.value0);
+	                  var len = Data_String.length(m);
+	                  return Data_List.Cons.create(m + (" " + _6.value0))(overLines(indent(len + 1 | 0))(_6.value1));
+	              };
+	              throw new Error("Failed pattern match: " + [ _6.constructor.name ]);
+	          };
+	          var listItem = function (bs) {
+	              var ss = Data_List.concatMap(prettyPrintBlock)(bs);
+	              return addMarker(Data_List.concatMap(lines)(ss));
+	          };
+	          return Data_List.concatMap(listItem)(_2.value1);
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.CodeBlock && _2.value0 instanceof Text_Markdown_SlamDown.Indented) {
+	          return Prelude.map(Data_List.functorList)(indent(4))(_2.value1);
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.CodeBlock && _2.value0 instanceof Text_Markdown_SlamDown.Fenced) {
+	          var bang = (function () {
+	              if (_2.value0.value0) {
+	                  return "!";
+	              };
+	              if (Prelude.otherwise) {
+	                  return "";
+	              };
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Pretty line 56, column 3 - line 58, column 1: " + [  ]);
+	          })();
+	          return Prelude["<>"](Data_List.semigroupList)(Data_List.singleton(bang + ("```" + _2.value0.value1)))(Prelude["<>"](Data_List.semigroupList)(_2.value1)(Data_List.singleton("```")));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.LinkReference) {
+	          return Data_List.singleton(squares(_2.value0) + (": " + _2.value1));
+	      };
+	      if (_2 instanceof Text_Markdown_SlamDown.Rule) {
+	          return Data_List.singleton("***");
+	      };
+	      throw new Error("Failed pattern match: " + [ _2.constructor.name ]);
+	  };
+	  var prettyPrintMd = function (_0) {
+	      return unlines(Data_List.concatMap(prettyPrintBlock)(_0.value0));
+	  };
+	  exports["prettyPrintMd"] = prettyPrintMd;;
+	 
+	})(PS["Text.Markdown.SlamDown.Pretty"] = PS["Text.Markdown.SlamDown.Pretty"] || {});
+	(function(exports) {
+	  // Generated by psc version 0.7.6.1
+	  "use strict";
 	  var $foreign = PS["UI.Console.Main"];
 	  var Prelude = PS["Prelude"];
 	  var Control_Monad_Eff_Console = PS["Control.Monad.Eff.Console"];
@@ -6485,245 +7864,6 @@
 	  exports["hashChanged"] = $foreign.hashChanged;;
 	 
 	})(PS["Routing"] = PS["Routing"] || {});
-	(function(exports) {
-	  // Generated by psc version 0.7.6.1
-	  "use strict";
-	  var Prelude = PS["Prelude"];
-	  var Data_Maybe = PS["Data.Maybe"];
-	  var Data_Monoid = PS["Data.Monoid"];
-	  var Control_Apply = PS["Control.Apply"];     
-	  var Attr = (function () {
-	      function Attr(value0, value1) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	      };
-	      Attr.create = function (value0) {
-	          return function (value1) {
-	              return new Attr(value0, value1);
-	          };
-	      };
-	      return Attr;
-	  })();
-	  var Attribute = (function () {
-	      function Attribute(value0) {
-	          this.value0 = value0;
-	      };
-	      Attribute.create = function (value0) {
-	          return new Attribute(value0);
-	      };
-	      return Attribute;
-	  })();
-	  var Element = (function () {
-	      function Element(value0, value1, value2, value3) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	          this.value2 = value2;
-	          this.value3 = value3;
-	      };
-	      Element.create = function (value0) {
-	          return function (value1) {
-	              return function (value2) {
-	                  return function (value3) {
-	                      return new Element(value0, value1, value2, value3);
-	                  };
-	              };
-	          };
-	      };
-	      return Element;
-	  })();
-	  var Content = (function () {
-	      function Content(value0, value1) {
-	          this.value0 = value0;
-	          this.value1 = value1;
-	      };
-	      Content.create = function (value0) {
-	          return function (value1) {
-	              return new Content(value0, value1);
-	          };
-	      };
-	      return Content;
-	  })();
-	  var Return = (function () {
-	      function Return(value0) {
-	          this.value0 = value0;
-	      };
-	      Return.create = function (value0) {
-	          return new Return(value0);
-	      };
-	      return Return;
-	  })();
-	  var Attributable = function ($$with) {
-	      this["with"] = $$with;
-	  };
-	  var $$with = function (dict) {
-	      return dict["with"];
-	  };
-	  var $bang = function (__dict_Attributable_0) {
-	      return $$with(__dict_Attributable_0);
-	  };
-	  var text = function (s) {
-	      return new Content(s, new Return(Prelude.unit));
-	  }; 
-	  var parent = function (el) {
-	      return function (kids) {
-	          return new Element(el, new Data_Maybe.Just(kids), [  ], new Return(Prelude.unit));
-	      };
-	  };                                                             
-	  var leaf = function (el) {
-	      return new Element(el, Data_Maybe.Nothing.value, [  ], new Return(Prelude.unit));
-	  };
-	  var functorMarkupM = new Prelude.Functor(function (f) {
-	      return function (_0) {
-	          if (_0 instanceof Element) {
-	              return new Element(_0.value0, _0.value1, _0.value2, Prelude.map(functorMarkupM)(f)(_0.value3));
-	          };
-	          if (_0 instanceof Content) {
-	              return new Content(_0.value0, Prelude.map(functorMarkupM)(f)(_0.value1));
-	          };
-	          if (_0 instanceof Return) {
-	              return new Return(f(_0.value0));
-	          };
-	          throw new Error("Failed pattern match: " + [ f.constructor.name, _0.constructor.name ]);
-	      };
-	  });
-	  var attribute = function (key) {
-	      return function (value) {
-	          return new Attribute([ new Attr(key, value) ]);
-	      };
-	  };
-	  var attributableMarkupM = new Attributable(function (_4) {
-	      return function (_5) {
-	          if (_4 instanceof Element) {
-	              return new Element(_4.value0, _4.value1, Prelude["<>"](Prelude.semigroupArray)(_4.value2)(_5.value0), _4.value3);
-	          };
-	          throw new Error("Failed pattern match at Text.Smolder.Markup line 79, column 1 - line 82, column 1: " + [ _4.constructor.name, _5.constructor.name ]);
-	      };
-	  });
-	  var attributableMarkupMF = new Attributable(function (k) {
-	      return function (xs) {
-	          return function (m) {
-	              return $$with(attributableMarkupM)(k(m))(xs);
-	          };
-	      };
-	  });
-	  var monadMarkupM = new Prelude.Monad(function () {
-	      return applicativeMarkupM;
-	  }, function () {
-	      return bindMarkupM;
-	  });
-	  var bindMarkupM = new Prelude.Bind(function () {
-	      return applyMarkupM;
-	  }, function (_1) {
-	      return function (f) {
-	          if (_1 instanceof Element) {
-	              return new Element(_1.value0, _1.value1, _1.value2, Prelude.bind(bindMarkupM)(_1.value3)(f));
-	          };
-	          if (_1 instanceof Content) {
-	              return new Content(_1.value0, Prelude.bind(bindMarkupM)(_1.value1)(f));
-	          };
-	          if (_1 instanceof Return) {
-	              return f(_1.value0);
-	          };
-	          throw new Error("Failed pattern match: " + [ _1.constructor.name, f.constructor.name ]);
-	      };
-	  });
-	  var applyMarkupM = new Prelude.Apply(function () {
-	      return functorMarkupM;
-	  }, Prelude.ap(monadMarkupM));
-	  var applicativeMarkupM = new Prelude.Applicative(function () {
-	      return applyMarkupM;
-	  }, Return.create);
-	  var semigroupMarkupM = new Prelude.Semigroup(function (x) {
-	      return function (y) {
-	          return Control_Apply["*>"](applyMarkupM)(x)(y);
-	      };
-	  });
-	  var monoidMarkup = new Data_Monoid.Monoid(function () {
-	      return semigroupMarkupM;
-	  }, new Return(Prelude.unit));
-	  exports["Attr"] = Attr;
-	  exports["Element"] = Element;
-	  exports["Content"] = Content;
-	  exports["Return"] = Return;
-	  exports["Attributable"] = Attributable;
-	  exports["!"] = $bang;
-	  exports["attribute"] = attribute;
-	  exports["text"] = text;
-	  exports["leaf"] = leaf;
-	  exports["parent"] = parent;
-	  exports["semigroupMarkupM"] = semigroupMarkupM;
-	  exports["monoidMarkup"] = monoidMarkup;
-	  exports["functorMarkupM"] = functorMarkupM;
-	  exports["applyMarkupM"] = applyMarkupM;
-	  exports["applicativeMarkupM"] = applicativeMarkupM;
-	  exports["bindMarkupM"] = bindMarkupM;
-	  exports["monadMarkupM"] = monadMarkupM;
-	  exports["attributableMarkupM"] = attributableMarkupM;
-	  exports["attributableMarkupMF"] = attributableMarkupMF;;
-	 
-	})(PS["Text.Smolder.Markup"] = PS["Text.Smolder.Markup"] || {});
-	(function(exports) {
-	  // Generated by psc version 0.7.6.1
-	  "use strict";
-	  var Prelude = PS["Prelude"];
-	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];
-	  var ul = Text_Smolder_Markup.parent("ul");      
-	  var strong = Text_Smolder_Markup.parent("strong");
-	  var span = Text_Smolder_Markup.parent("span");        
-	  var pre = Text_Smolder_Markup.parent("pre");  
-	  var p = Text_Smolder_Markup.parent("p");              
-	  var ol = Text_Smolder_Markup.parent("ol");  
-	  var li = Text_Smolder_Markup.parent("li");    
-	  var img = Text_Smolder_Markup.leaf("img");    
-	  var hr = Text_Smolder_Markup.leaf("hr");      
-	  var h6 = Text_Smolder_Markup.parent("h6");
-	  var h5 = Text_Smolder_Markup.parent("h5");
-	  var h4 = Text_Smolder_Markup.parent("h4");
-	  var h3 = Text_Smolder_Markup.parent("h3");
-	  var h2 = Text_Smolder_Markup.parent("h2");
-	  var h1 = Text_Smolder_Markup.parent("h1");    
-	  var em = Text_Smolder_Markup.parent("em");
-	  var div = Text_Smolder_Markup.parent("div");      
-	  var br = Text_Smolder_Markup.leaf("br");      
-	  var blockquote = Text_Smolder_Markup.parent("blockquote");
-	  var a = Text_Smolder_Markup.parent("a");
-	  exports["img"] = img;
-	  exports["hr"] = hr;
-	  exports["br"] = br;
-	  exports["ul"] = ul;
-	  exports["strong"] = strong;
-	  exports["span"] = span;
-	  exports["pre"] = pre;
-	  exports["p"] = p;
-	  exports["ol"] = ol;
-	  exports["li"] = li;
-	  exports["h6"] = h6;
-	  exports["h5"] = h5;
-	  exports["h4"] = h4;
-	  exports["h3"] = h3;
-	  exports["h2"] = h2;
-	  exports["h1"] = h1;
-	  exports["em"] = em;
-	  exports["div"] = div;
-	  exports["blockquote"] = blockquote;
-	  exports["a"] = a;;
-	 
-	})(PS["Text.Smolder.HTML"] = PS["Text.Smolder.HTML"] || {});
-	(function(exports) {
-	  // Generated by psc version 0.7.6.1
-	  "use strict";
-	  var Prelude = PS["Prelude"];
-	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];   
-	  var title = Text_Smolder_Markup.attribute("title");  
-	  var src = Text_Smolder_Markup.attribute("src");          
-	  var href = Text_Smolder_Markup.attribute("href");
-	  var className = Text_Smolder_Markup.attribute("class");
-	  exports["title"] = title;
-	  exports["src"] = src;
-	  exports["href"] = href;
-	  exports["className"] = className;;
-	 
-	})(PS["Text.Smolder.HTML.Attributes"] = PS["Text.Smolder.HTML.Attributes"] || {});
 	(function(exports) {
 	                                               
 
@@ -6899,23 +8039,14 @@
 	  var Prelude = PS["Prelude"];
 	  var Control_Monad_Eff_Console = PS["Control.Monad.Eff.Console"];
 	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
-	  var Data_Foldable = PS["Data.Foldable"];
-	  var Data_List = PS["Data.List"];
-	  var Data_Maybe = PS["Data.Maybe"];
-	  var Data_String = PS["Data.String"];
 	  var DOM_Node_Types = PS["DOM.Node.Types"];
-	  var Text_Markdown_SlamDown_Pretty = PS["Text.Markdown.SlamDown.Pretty"];
 	  var Text_Markdown_SlamDown_Parser = PS["Text.Markdown.SlamDown.Parser"];
-	  var Text_Markdown_SlamDown = PS["Text.Markdown.SlamDown"];
-	  var Text_Smolder_HTML = PS["Text.Smolder.HTML"];
-	  var Text_Smolder_HTML_Attributes = PS["Text.Smolder.HTML.Attributes"];
 	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];
-	  var Text_Smolder_Renderer_String = PS["Text.Smolder.Renderer.String"];
-	  var VirtualDOM = PS["VirtualDOM"];
 	  var VirtualDOM_VTree = PS["VirtualDOM.VTree"];
 	  var Types = PS["Types"];
 	  var Utils = PS["Utils"];
 	  var Core = PS["Core"];
+	  var Internal = PS["Internal"];
 	  var UI_HTML_VDom = PS["UI.HTML.VDom"];     
 	  var MenuItem = (function () {
 	      function MenuItem(value0, value1) {
@@ -6929,125 +8060,23 @@
 	      };
 	      return MenuItem;
 	  })();
-	  var ToHtml = function (toHtml) {
-	      this.toHtml = toHtml;
+	  var parseContent = function (_1) {
+	      if (_1 instanceof Types.Md) {
+	          return Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_1.value0));
+	      };
+	      if (_1 instanceof Types.HTML) {
+	          return _1.value0;
+	      };
+	      throw new Error("Failed pattern match at UI.HTML.Utils line 21, column 1 - line 22, column 1: " + [ _1.constructor.name ]);
 	  };
-	  var toHtml = function (dict) {
-	      return dict.toHtml;
-	  };
-	  var toHtmlInline = new ToHtml(function (_5) {
-	      if (_5 instanceof Text_Markdown_SlamDown.Str) {
-	          return Text_Smolder_Markup.text(_5.value0);
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Entity) {
-	          return Text_Smolder_Markup.text(_5.value0);
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Space) {
-	          return Text_Smolder_Markup.text(" ");
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.SoftBreak) {
-	          return Text_Smolder_Markup.text(" ");
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.LineBreak) {
-	          return Text_Smolder_HTML.br;
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Emph) {
-	          return Text_Smolder_HTML.em(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_5.value0)(toHtml(toHtmlInline)));
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Strong) {
-	          return Text_Smolder_HTML.strong(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_5.value0)(toHtml(toHtmlInline)));
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Code) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("inline-code"))(Text_Smolder_Markup.text(_5.value1));
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Link && _5.value1 instanceof Text_Markdown_SlamDown.InlineLink) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_5.value1.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_5.value0)(toHtml(toHtmlInline)));
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Link && (_5.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _5.value1.value0 instanceof Data_Maybe.Nothing)) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_5.value0)(toHtml(toHtmlInline)));
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Link && (_5.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _5.value1.value0 instanceof Data_Maybe.Just)) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_5.value1.value0.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_5.value0)(toHtml(toHtmlInline)));
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.Image) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.img)(Text_Smolder_HTML_Attributes.src(_5.value1));
-	      };
-	      if (_5 instanceof Text_Markdown_SlamDown.FormField) {
-	          return Text_Smolder_Markup.text("[form-field " + (Prelude.show(Prelude.showString)(_5.value0) + (" " + (Prelude.show(Prelude.showBoolean)(_5.value1) + (" " + (Prelude.show(Text_Markdown_SlamDown.showFormField)(_5.value2) + "]"))))));
-	      };
-	      throw new Error("Failed pattern match: " + [ _5.constructor.name ]);
-	  });
-	  var toHtmlBlock = new ToHtml(function (_4) {
-	      if (_4 instanceof Text_Markdown_SlamDown.Paragraph) {
-	          return Text_Smolder_HTML.p(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value0)(toHtml(toHtmlInline)));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.Header) {
-	          if (_4.value0 === 1) {
-	              return Text_Smolder_HTML.h1(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(toHtml(toHtmlInline)));
-	          };
-	          if (_4.value0 === 2) {
-	              return Text_Smolder_HTML.h2(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(toHtml(toHtmlInline)));
-	          };
-	          if (_4.value0 === 3) {
-	              return Text_Smolder_HTML.h3(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(toHtml(toHtmlInline)));
-	          };
-	          if (_4.value0 === 4) {
-	              return Text_Smolder_HTML.h4(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(toHtml(toHtmlInline)));
-	          };
-	          if (_4.value0 === 5) {
-	              return Text_Smolder_HTML.h5(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(toHtml(toHtmlInline)));
-	          };
-	          if (_4.value0 === 6) {
-	              return Text_Smolder_HTML.h6(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(toHtml(toHtmlInline)));
-	          };
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.Blockquote) {
-	          return Text_Smolder_HTML.blockquote(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value0)(toHtml(toHtmlBlock)));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.Lst && _4.value0 instanceof Text_Markdown_SlamDown.Bullet) {
-	          return Text_Smolder_HTML.ul(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(function (bs) {
-	              return Text_Smolder_HTML.li(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(bs)(toHtml(toHtmlBlock)));
-	          }));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.Lst && _4.value0 instanceof Text_Markdown_SlamDown.Ordered) {
-	          return Text_Smolder_HTML.ol(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(function (bs) {
-	              return Text_Smolder_HTML.li(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(bs)(toHtml(toHtmlBlock)));
-	          }));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.CodeBlock) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("code"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_4.value1)(function (s) {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.pre)(Text_Smolder_HTML_Attributes.className("code-line"))(Text_Smolder_Markup.text(s));
-	          }));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.LinkReference) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_4.value1))(Text_Smolder_Markup.text(_4.value0));
-	      };
-	      if (_4 instanceof Text_Markdown_SlamDown.Rule) {
-	          return Text_Smolder_HTML.hr;
-	      };
-	      throw new Error("Failed pattern match: " + [ _4.constructor.name ]);
-	  });
-	  var toHtmlListBlock = new ToHtml(function (as) {
-	      return Text_Smolder_HTML.span(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(as)(toHtml(toHtmlBlock)));
-	  });
-	  var toHtmlSlamDown = new ToHtml(function (_3) {
-	      return toHtml(toHtmlListBlock)(_3.value0);
-	  });
-	  var parseContent = Text_Markdown_SlamDown_Parser.parseMd;
 	  var getMenuItems = function (_2) {
 	      return Prelude["<#>"](Prelude.functorArray)(_2.value0.children)(function (_0) {
 	          return new MenuItem(_0.value0.path, _0.value0.title);
 	      });
 	  };
 	  exports["MenuItem"] = MenuItem;
-	  exports["ToHtml"] = ToHtml;
-	  exports["toHtml"] = toHtml;
 	  exports["getMenuItems"] = getMenuItems;
 	  exports["parseContent"] = parseContent;
-	  exports["toHtmlSlamDown"] = toHtmlSlamDown;
-	  exports["toHtmlListBlock"] = toHtmlListBlock;
-	  exports["toHtmlBlock"] = toHtmlBlock;
-	  exports["toHtmlInline"] = toHtmlInline;
 	  exports["appendToBody"] = $foreign.appendToBody;
 	  exports["vNode2vTree"] = $foreign.vNode2vTree;;
 	 
@@ -7082,6 +8111,7 @@
 	  var Data = PS["Data"];
 	  var Types = PS["Types"];
 	  var Utils = PS["Utils"];
+	  var Internal = PS["Internal"];
 	  var UI_HTML_Utils = PS["UI.HTML.Utils"];
 	  var UI_HTML_VDom = PS["UI.HTML.VDom"];     
 	  var UIState = (function () {
@@ -7174,17 +8204,16 @@
 	          return Prelude.unit;
 	      };
 	  };
-	  var page404 = Text_Markdown_SlamDown_Parser.parseMd("> ## 404 Not found");
+	  var page404 = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd("> ## 404 Not found"));
 	  var renderHTML = function (_7) {
-	      var markdownAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_7.value0.currentContent));
-	      var payloadHtml = UI_HTML_Utils.toHtml(UI_HTML_Utils.toHtmlSlamDown)(markdownAST);
+	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_7.value0.currentContent));
 	      var fullPath = Core.getCurrentPath(_7);
 	      var currentNode = Core.getCurrentNode(_7);
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
 	      })))(function () {
 	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(renderMenu(fullPath)(new Data_Maybe.Just(Data.appDNA))([  ])(0)))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(payloadHtml));
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })));
 	  };
@@ -7209,10 +8238,10 @@
 	          if (_3 instanceof Types.RenderNoop) {
 	              return _4;
 	          };
-	          throw new Error("Failed pattern match at UI.HTML.Main line 55, column 1 - line 63, column 1: " + [ _3.constructor.name, _4.constructor.name ]);
+	          throw new Error("Failed pattern match at UI.HTML.Main line 56, column 1 - line 64, column 1: " + [ _3.constructor.name, _4.constructor.name ]);
 	      };
 	  };
-	  var initialVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(Text_Smolder_HTML.div(Text_Smolder_Markup.text("initial vdom"))));
+	  var initialVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(Text_Smolder_HTML.div(Text_Smolder_Markup.text("One moment please"))));
 	  var defaultTitle = "Eugene Naumenko";
 	  var setupHtmlUi = function (inputChannel) {
 	      var rootNode = VirtualDOM.createElement(initialVDom);
@@ -7505,39 +8534,39 @@
 	  var UI_Console_Main = PS["UI.Console.Main"];
 	  var UI_HTML_Main = PS["UI.HTML.Main"];
 	  var UI_Telnet_Main = PS["UI.Telnet.Main"];     
-	  var HTML = (function () {
-	      function HTML() {
+	  var HtmlUI = (function () {
+	      function HtmlUI() {
 
 	      };
-	      HTML.value = new HTML();
-	      return HTML;
+	      HtmlUI.value = new HtmlUI();
+	      return HtmlUI;
 	  })();
-	  var Console = (function () {
-	      function Console() {
+	  var ConsoleUI = (function () {
+	      function ConsoleUI() {
 
 	      };
-	      Console.value = new Console();
-	      return Console;
+	      ConsoleUI.value = new ConsoleUI();
+	      return ConsoleUI;
 	  })();
-	  var Telnet = (function () {
-	      function Telnet() {
+	  var TelnetUI = (function () {
+	      function TelnetUI() {
 
 	      };
-	      Telnet.value = new Telnet();
-	      return Telnet;
+	      TelnetUI.value = new TelnetUI();
+	      return TelnetUI;
 	  })();
 	  var setupUI = function (appSignal) {
 	      return function (actionsChannel) {
 	          return function (uiParam) {
 	              return function __do() {
 	                  var _1 = (function () {
-	                      if (uiParam instanceof HTML) {
+	                      if (uiParam instanceof HtmlUI) {
 	                          return UI_HTML_Main.setupHtmlUi(actionsChannel);
 	                      };
-	                      if (uiParam instanceof Console) {
+	                      if (uiParam instanceof ConsoleUI) {
 	                          return UI_Console_Main.setupCliUi(actionsChannel);
 	                      };
-	                      if (uiParam instanceof Telnet) {
+	                      if (uiParam instanceof TelnetUI) {
 	                          return UI_Telnet_Main.setupTelnetUi(actionsChannel);
 	                      };
 	                      throw new Error("Failed pattern match at Main line 32, column 1 - line 40, column 1: " + [ uiParam.constructor.name ]);
@@ -7550,13 +8579,13 @@
 	  var parseUiParam = function __do() {
 	      var _0 = Utils["getParameterByName'"]("ui")();
 	      if (_0 instanceof Data_Maybe.Just && _0.value0 === "html") {
-	          return new Data_Maybe.Just(HTML.value);
+	          return new Data_Maybe.Just(HtmlUI.value);
 	      };
 	      if (_0 instanceof Data_Maybe.Just && _0.value0 === "console") {
-	          return new Data_Maybe.Just(Console.value);
+	          return new Data_Maybe.Just(ConsoleUI.value);
 	      };
 	      if (_0 instanceof Data_Maybe.Just && _0.value0 === "telnet") {
-	          return new Data_Maybe.Just(Telnet.value);
+	          return new Data_Maybe.Just(TelnetUI.value);
 	      };
 	      return Data_Maybe.Nothing.value;
 	  };
@@ -7567,11 +8596,11 @@
 	          if (_5 instanceof Types.Browser) {
 	              return function __do() {
 	                  var _2 = parseUiParam();
-	                  return Data_Maybe.Just.create(Data_Maybe.fromMaybe(Console.value)(_2));
+	                  return Data_Maybe.Just.create(Data_Maybe.fromMaybe(ConsoleUI.value)(_2));
 	              };
 	          };
 	          if (_5 instanceof Types.Nodejs) {
-	              return Prelude.pure(Control_Monad_Eff.applicativeEff)(new Data_Maybe.Just(Telnet.value));
+	              return Prelude.pure(Control_Monad_Eff.applicativeEff)(new Data_Maybe.Just(TelnetUI.value));
 	          };
 	          return Prelude.pure(Control_Monad_Eff.applicativeEff)(Data_Maybe.Nothing.value);
 	      })()();
@@ -7588,9 +8617,9 @@
 	          throw new Error("Failed pattern match at Main line 40, column 1 - line 59, column 23: " + [ _4.constructor.name ]);
 	      })()();
 	  };
-	  exports["HTML"] = HTML;
-	  exports["Console"] = Console;
-	  exports["Telnet"] = Telnet;
+	  exports["HtmlUI"] = HtmlUI;
+	  exports["ConsoleUI"] = ConsoleUI;
+	  exports["TelnetUI"] = TelnetUI;
 	  exports["main"] = main;
 	  exports["setupUI"] = setupUI;
 	  exports["parseUiParam"] = parseUiParam;;

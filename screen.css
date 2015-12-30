@@ -248,6 +248,14 @@ h1 img {
   box-shadow: 0px 1px 10px #ccc;
 }
 
+h2 img {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  /*border: 1px solid #ccc;*/
+  /*box-shadow: 0px 1px 10px #ccc;*/
+}
+
 blockquote h2 {
   text-align: center;
 }
@@ -279,4 +287,32 @@ blockquote ul li {
   text-align: left;
   width: 800px;
   margin: auto;
+}
+
+
+.articles-list {
+
+}
+
+.article-file {
+  padding-top: 25px;
+  padding-bottom: 25px;
+}
+
+.article-title {
+  font-size: 8px;
+}
+
+.article-file-name {
+  font-size: 28px;
+}
+
+.article {
+  padding-top: 25px;
+  padding-bottom: 25px;
+  margin-bottom: 50px;
+  border-bottom: 0px solid #ccc;
+}
+.entry {
+  text-decoration: underline;
 }
