@@ -99,6 +99,18 @@
 	    };
 	  };
 
+	  exports.eqArrayImpl = function (f) {
+	    return function (xs) {
+	      return function (ys) {
+	        if (xs.length !== ys.length) return false;
+	        for (var i = 0; i < xs.length; i++) {
+	          if (!f(xs[i])(ys[i])) return false;
+	        }
+	        return true;
+	      };
+	    };
+	  };
+
 	  //- Ord ------------------------------------------------------------------------
 
 	  exports.unsafeCompareImpl = function (lt) {
@@ -306,6 +318,9 @@
 	  var $eq$eq = function (__dict_Eq_7) {
 	      return eq(__dict_Eq_7);
 	  };
+	  var eqArray = function (__dict_Eq_8) {
+	      return new Eq($foreign.eqArrayImpl($eq$eq(__dict_Eq_8)));
+	  };
 	  var disj = function (dict) {
 	      return dict.disj;
 	  };
@@ -508,6 +523,7 @@
 	  exports["eqInt"] = eqInt;
 	  exports["eqChar"] = eqChar;
 	  exports["eqString"] = eqString;
+	  exports["eqArray"] = eqArray;
 	  exports["ordInt"] = ordInt;
 	  exports["ordString"] = ordString;
 	  exports["boundedBoolean"] = boundedBoolean;
@@ -999,12 +1015,44 @@
 	  var fromMaybe = function (a) {
 	      return maybe(a)(Prelude.id(Prelude.categoryFn));
 	  };
+	  var applyMaybe = new Prelude.Apply(function () {
+	      return functorMaybe;
+	  }, function (_3) {
+	      return function (x) {
+	          if (_3 instanceof Just) {
+	              return Prelude["<$>"](functorMaybe)(_3.value0)(x);
+	          };
+	          if (_3 instanceof Nothing) {
+	              return Nothing.value;
+	          };
+	          throw new Error("Failed pattern match at Data.Maybe line 121, column 1 - line 145, column 1: " + [ _3.constructor.name, x.constructor.name ]);
+	      };
+	  });
+	  var bindMaybe = new Prelude.Bind(function () {
+	      return applyMaybe;
+	  }, function (_5) {
+	      return function (k) {
+	          if (_5 instanceof Just) {
+	              return k(_5.value0);
+	          };
+	          if (_5 instanceof Nothing) {
+	              return Nothing.value;
+	          };
+	          throw new Error("Failed pattern match at Data.Maybe line 180, column 1 - line 199, column 1: " + [ _5.constructor.name, k.constructor.name ]);
+	      };
+	  });
+	  var applicativeMaybe = new Prelude.Applicative(function () {
+	      return applyMaybe;
+	  }, Just.create);
 	  exports["Nothing"] = Nothing;
 	  exports["Just"] = Just;
 	  exports["isJust"] = isJust;
 	  exports["fromMaybe"] = fromMaybe;
 	  exports["maybe"] = maybe;
 	  exports["functorMaybe"] = functorMaybe;
+	  exports["applyMaybe"] = applyMaybe;
+	  exports["applicativeMaybe"] = applicativeMaybe;
+	  exports["bindMaybe"] = bindMaybe;
 	  exports["showMaybe"] = showMaybe;;
 	 
 	})(PS["Data.Maybe"] = PS["Data.Maybe"] || {});
@@ -1787,6 +1835,19 @@
 	    };
 	  };
 
+	  exports.findIndexImpl = function (just) {
+	    return function (nothing) {
+	      return function (f) {
+	        return function (xs) {
+	          for (var i = 0, l = xs.length; i < l; i++) {
+	            if (f(xs[i])) return just(i);
+	          }
+	          return nothing;
+	        };
+	      };
+	    };
+	  };
+
 	  exports.filter = function (f) {
 	    return function (xs) {
 	      return xs.filter(f);
@@ -1914,6 +1975,14 @@
 	          return new Data_Maybe.Just(x);
 	      };
 	  });
+	  var findIndex = $foreign.findIndexImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
+	  var elemIndex = function (__dict_Eq_15) {
+	      return function (x) {
+	          return findIndex(function (_1) {
+	              return Prelude["=="](__dict_Eq_15)(_1)(x);
+	          });
+	      };
+	  };
 	  var concatMap = Prelude.flip(Prelude.bind(Prelude.bindArray));
 	  var mapMaybe = function (f) {
 	      return concatMap(function (_48) {
@@ -1924,6 +1993,8 @@
 	  exports["catMaybes"] = catMaybes;
 	  exports["mapMaybe"] = mapMaybe;
 	  exports["concatMap"] = concatMap;
+	  exports["findIndex"] = findIndex;
+	  exports["elemIndex"] = elemIndex;
 	  exports["uncons"] = uncons;
 	  exports["tail"] = tail;
 	  exports["head"] = head;
@@ -3265,6 +3336,9 @@
 	  var Data_Maybe = PS["Data.Maybe"];
 	  var Signal_Channel = PS["Signal.Channel"];
 	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+	  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+	  var Control_Monad_Aff_AVar = PS["Control.Monad.Aff.AVar"];
+	  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
 	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];     
 	  var MdProcessor = (function () {
 	      function MdProcessor() {
@@ -3322,12 +3396,12 @@
 	      GlobalPP.value = new GlobalPP();
 	      return GlobalPP;
 	  })();
-	  var ProcessorInternalPP = (function () {
-	      function ProcessorInternalPP() {
+	  var ChildPP = (function () {
+	      function ChildPP() {
 
 	      };
-	      ProcessorInternalPP.value = new ProcessorInternalPP();
-	      return ProcessorInternalPP;
+	      ChildPP.value = new ChildPP();
+	      return ChildPP;
 	  })();
 	  var Md = (function () {
 	      function Md(value0) {
@@ -3460,17 +3534,17 @@
 	      RenderNoop.value = new RenderNoop();
 	      return RenderNoop;
 	  })();
-	  var showPlatform = new Prelude.Show(function (_0) {
-	      if (_0 instanceof Browser) {
+	  var showPlatform = new Prelude.Show(function (_4) {
+	      if (_4 instanceof Browser) {
 	          return "Browser";
 	      };
-	      if (_0 instanceof Nodejs) {
+	      if (_4 instanceof Nodejs) {
 	          return "Nodejs";
 	      };
-	      if (_0 instanceof Unknown) {
+	      if (_4 instanceof Unknown) {
 	          return "Unknown";
 	      };
-	      throw new Error("Failed pattern match at Types line 55, column 1 - line 58, column 18: " + [ _0.constructor.name ]);
+	      throw new Error("Failed pattern match at Types line 88, column 1 - line 91, column 18: " + [ _4.constructor.name ]);
 	  });
 	  exports["Browser"] = Browser;
 	  exports["Nodejs"] = Nodejs;
@@ -3485,7 +3559,7 @@
 	  exports["GistSource"] = GistSource;
 	  exports["GithubSource"] = GithubSource;
 	  exports["GlobalPP"] = GlobalPP;
-	  exports["ProcessorInternalPP"] = ProcessorInternalPP;
+	  exports["ChildPP"] = ChildPP;
 	  exports["MdProcessor"] = MdProcessor;
 	  exports["ImgListProcessor"] = ImgListProcessor;
 	  exports["TextProcessor"] = TextProcessor;
@@ -3584,6 +3658,8 @@
 	  var initialState = new Types.AppState({
 	      actionsCount: 0, 
 	      currentPath: [ "about" ], 
+	      menuPath: [ "about" ], 
+	      currentNode: Data_Maybe.Nothing.value, 
 	      currentContent: Data_Maybe.Nothing.value
 	  });
 	  var appDNA = new Types.Node({
@@ -3617,7 +3693,7 @@
 	          title: "Blog", 
 	          path: "blog", 
 	          processor: Types.BlogProcessor.value, 
-	          pathProcessor: Types.ProcessorInternalPP.value, 
+	          pathProcessor: Types.ChildPP.value, 
 	          children: [  ], 
 	          dataSource: new Types.GistSource("ff3d182ce385cebb1774")
 	      }), new Types.Node({
@@ -3675,7 +3751,7 @@
 	          processor: Types.MdProcessor.value, 
 	          pathProcessor: Types.GlobalPP.value, 
 	          children: [  ], 
-	          dataSource: new Types.StringSource(Utils.unlines([ "This \xabweb site\xbb is a concept *application* aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage. Github link: [https://github.com/EugeneN/meta.repl](https://github.com/EugeneN/meta.repl) ", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- [conventional HTML-based](?ui=html#about), rendered using virtual dom;", "- [REPL-based](?ui=console#about) using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without a browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]))
+	          dataSource: new Types.StringSource(Utils.unlines([ "This \xabweb site\xbb is a *concept application* aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage. Github link: [https://github.com/EugeneN/meta.repl](https://github.com/EugeneN/meta.repl) ", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- [conventional HTML-based](?ui=html#about), rendered using virtual dom;", "- [REPL-based](?ui=console#about) using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without a browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]))
 	      }) ]
 	  });
 	  exports["appDNA"] = appDNA;
@@ -6651,6 +6727,15 @@
 	      };
 	      return Files;
 	  })();
+	  var $$Error = (function () {
+	      function Error(value0) {
+	          this.value0 = value0;
+	      };
+	      Error.create = function (value0) {
+	          return new Error(value0);
+	      };
+	      return Error;
+	  })();
 	  var Article = (function () {
 	      function Article(value0) {
 	          this.value0 = value0;
@@ -6660,6 +6745,31 @@
 	      };
 	      return Article;
 	  })();
+	  var showError = new Prelude.Show(function (_22) {
+	      return _22.value0;
+	  });
+	  var renderFileH = function (_21) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_21.value0.content))));
+	  };
+	  var renderFilesH = function (_20) {
+	      return Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(_20.value0)(renderFileH);
+	  };
+	  var renderFullArticle = function (_18) {
+	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_18.value0.description)))(function () {
+	              return renderFilesH(_18.value0.files);
+	          })));
+	      });
+	  };
+	  var renderArticleH = function (_19) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text("Entry ")))(function () {
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#blog/" + _19.value0.id))(Text_Smolder_Markup.text(_19.value0.id)))(function () {
+	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text(": ")))(function () {
+	                  return Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_19.value0.description));
+	              });
+	          });
+	      })));
+	  };
 	  var loadGist$prime = function (gid) {
 	      return Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)("https://api.github.com/gists/" + gid);
 	  };
@@ -6720,25 +6830,35 @@
 	      });
 	  });
 	  var parseJsonGistResponse = function (respJson) {
-	      return Data_Foreign_Class.readJSON(isForeignArticle)(respJson);
+	      var _47 = Data_Foreign_Class.readJSON(isForeignArticle)(respJson);
+	      if (_47 instanceof Data_Either.Left) {
+	          return Data_Either.Left.create($$Error.create(Prelude.show(Data_Foreign.showForeignError)(_47.value0)));
+	      };
+	      if (_47 instanceof Data_Either.Right) {
+	          return new Data_Either.Right(_47.value0);
+	      };
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 198, column 1 - line 199, column 1: " + [ _47.constructor.name ]);
 	  };
 	  var loadNparseGist = function (gid) {
-	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_14) {
-	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(parseJsonGistResponse(_14.response));
+	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_15) {
+	          if (_15.status === 200) {
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(parseJsonGistResponse(_15.response));
+	          };
+	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Either.Left.create($$Error.create("Bad response: " + Prelude.show(Prelude.showInt)(_15.status))));
 	      });
 	  };
 	  var getBlogPostsIds = function (toc) {
 	      var regexFlags = (function () {
-	          var _35 = {};
-	          for (var _36 in Data_String_Regex.noFlags) {
-	              if (Data_String_Regex.noFlags.hasOwnProperty(_36)) {
-	                  _35[_36] = Data_String_Regex.noFlags[_36];
+	          var _52 = {};
+	          for (var _53 in Data_String_Regex.noFlags) {
+	              if (Data_String_Regex.noFlags.hasOwnProperty(_53)) {
+	                  _52[_53] = Data_String_Regex.noFlags[_53];
 	              };
 	          };
-	          _35.global = true;
-	          _35.ignoreCase = true;
-	          _35.multiline = true;
-	          return _35;
+	          _52.global = true;
+	          _52.ignoreCase = true;
+	          _52.multiline = true;
+	          return _52;
 	      })();
 	      var idRegex = Data_String_Regex.regex("\\([a-f0-9]{20}\\)")(regexFlags);
 	      var rawIds = Data_String_Regex.match(idRegex)(toc);
@@ -6746,49 +6866,49 @@
 	      var cleanIds = Prelude["<$>"](Prelude.functorArray)(Prelude[">>>"](Prelude.semigroupoidFn)(Data_String.drop(1))(Data_String.take(20)))(justIds);
 	      return cleanIds;
 	  };
+	  var errorMsg = function (m) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("error"))(Text_Smolder_Markup.text("Error: " + m));
+	  };
 	  var formatBlogPosts = function (ps) {
-	      var renderFileH = function (_19) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(Data_String.take(500)(_19.value0.content)))));
-	      };
-	      var renderFilesH = function (_18) {
-	          return Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(_18.value0)(renderFileH);
-	      };
-	      var renderArticleH = function (_17) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text("Entry ")))(function () {
-	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("https://eugenen.github.io/C.MD/#!" + (_17.value0.id + ";p")))(Text_Smolder_Markup.text(_17.value0.id)))(function () {
-	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text(": ")))(function () {
-	                      return Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_17.value0.description));
+	      return function (apst) {
+	          var blogNote = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(Utils.unlines([ "*NB*: Posts for this blog are written in [C.MD gist editor](http://eugenen.github.io/C.MD) ", "and persisted in [Github Gists](https://gist.github.com/). ", "", "", "Thus, the blog is a symbiosis between 2 *pure clientside* ", "applications and 3rd-party API/service via CORS. There is no \xabclassical\xbb backend, ", "and no databases were harmed while making this blog :-)" ])));
+	          var renderListH = function (ps_1) {
+	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("blog-note"))(blogNote))(function () {
+	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.hr)(function () {
+	                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(Data_Either.either(function (_64) {
+	                          return errorMsg(Prelude.show(showError)(_64));
+	                      })(renderArticleH)));
 	                  });
 	              });
-	          })));
-	      };
-	      var renderEitherH = function (_16) {
-	          if (_16 instanceof Data_Either.Left) {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("error"))(Text_Smolder_Markup.text(Prelude.show(Data_Foreign.showForeignError)(_16.value0)));
 	          };
-	          if (_16 instanceof Data_Either.Right) {
-	              return renderArticleH(_16.value0);
-	          };
-	          throw new Error("Failed pattern match at Processors.Blog.Main line 107, column 1 - line 108, column 1: " + [ _16.constructor.name ]);
+	          return Data_Maybe.Just.create(Types.HTML.create(renderListH(ps)));
 	      };
-	      var blogNote = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(Utils.unlines([ "*NB*: Posts for this blog are written and persisted in Github's Gists. ", "Individual entries will open in C.MD gist viewer. Here is just an index.", "", "", "Thus, the blog is a symbiosis between 2 *pure clientside* ", "applications and 3rd-party API/service via CORS. There is no backend, ", "and no databases were harmed in making this blog :-)" ])));
-	      var renderListH = function (ps_1) {
-	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("blog-note"))(blogNote))(function () {
-	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.hr)(function () {
-	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(renderEitherH));
-	              });
-	          });
-	      };
-	      return Data_Maybe.Just.create(Types.HTML.create(renderListH(ps)));
 	  };
-	  var blogProcessor = function (_15) {
-	      if (_15 instanceof Types.StringInput) {
-	          var gids = getBlogPostsIds(_15.value0);
-	          return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Aff_Par.runPar(Data_Traversable.traverse(Data_Traversable.traversableArray)(Control_Monad_Aff_Par.applicativePar)(Prelude["<$>"](Prelude.functorFn)(Control_Monad_Aff_Par.Par)(loadNparseGist))(gids)))(function (_13) {
-	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(formatBlogPosts(_13));
-	          });
+	  var blogProcessor = function (_16) {
+	      return function (_17) {
+	          if (_16 instanceof Types.StringInput) {
+	              if (_17.value0.currentPath.length === 0) {
+	                  var gids = getBlogPostsIds(_16.value0);
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Aff_Par.runPar(Data_Traversable.traverse(Data_Traversable.traversableArray)(Control_Monad_Aff_Par.applicativePar)(Prelude["<$>"](Prelude.functorFn)(Control_Monad_Aff_Par.Par)(loadNparseGist))(gids)))(function (_13) {
+	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(formatBlogPosts(_13)(_17));
+	                  });
+	              };
+	              if (_17.value0.currentPath.length === 1) {
+	                  var gids = getBlogPostsIds(_16.value0);
+	                  var _58 = Data_Array.elemIndex(Prelude.eqString)(_17.value0.currentPath[0])(gids);
+	                  if (_58 instanceof Data_Maybe.Just) {
+	                      return Prelude.bind(Control_Monad_Aff.bindAff)(loadNparseGist(_17.value0.currentPath[0]))(function (_14) {
+	                          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(Data_Either.either(function (_65) {
+	                              return errorMsg(Prelude.show(showError)(_65));
+	                          })(renderFullArticle)(_14))));
+	                      });
+	                  };
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(errorMsg("access denied for id: " + Prelude.show(Prelude.showString)(_17.value0.currentPath[0])))));
+	              };
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(errorMsg("unknown request: " + Prelude.show(Prelude.showArray(Prelude.showString))(_17.value0.currentPath)))));
+	          };
+	          throw new Error("Failed pattern match at Processors.Blog.Main line 105, column 1 - line 106, column 1: " + [ _16.constructor.name, _17.constructor.name ]);
 	      };
-	      throw new Error("Failed pattern match at Processors.Blog.Main line 100, column 1 - line 101, column 1: " + [ _15.constructor.name ]);
 	  };
 	  exports["blogProcessor"] = blogProcessor;;
 	 
@@ -6807,13 +6927,15 @@
 	      return "# ![" + (s + ("](" + (s + ")")));
 	  };
 	  var imgListProcessor = function (_0) {
-	      if (_0 instanceof Types.StringInput) {
-	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(mdImg(_0.value0))));
+	      return function (_1) {
+	          if (_0 instanceof Types.StringInput) {
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(mdImg(_0.value0))));
+	          };
+	          if (_0 instanceof Types.ArrayInput) {
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(Utils.unlines(Prelude["<$>"](Prelude.functorArray)(mdImg)(_0.value0)))));
+	          };
+	          throw new Error("Failed pattern match at Processors.ImgList.Main line 18, column 1 - line 19, column 1: " + [ _0.constructor.name, _1.constructor.name ]);
 	      };
-	      if (_0 instanceof Types.ArrayInput) {
-	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(Utils.unlines(Prelude["<$>"](Prelude.functorArray)(mdImg)(_0.value0)))));
-	      };
-	      throw new Error("Failed pattern match at Processors.ImgList.Main line 18, column 1 - line 19, column 1: " + [ _0.constructor.name ]);
 	  };
 	  exports["imgListProcessor"] = imgListProcessor;;
 	 
@@ -6829,10 +6951,12 @@
 	  var Types = PS["Types"];
 	  var Utils = PS["Utils"];     
 	  var textProcessor = function (_0) {
-	      if (_0 instanceof Types.StringInput) {
-	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.Md(_0.value0)));
+	      return function (_1) {
+	          if (_0 instanceof Types.StringInput) {
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.Md(_0.value0)));
+	          };
+	          throw new Error("Failed pattern match at Processors.PlainText.Main line 18, column 1 - line 19, column 1: " + [ _0.constructor.name, _1.constructor.name ]);
 	      };
-	      throw new Error("Failed pattern match at Processors.PlainText.Main line 18, column 1 - line 19, column 1: " + [ _0.constructor.name ]);
 	  };
 	  exports["textProcessor"] = textProcessor;;
 	 
@@ -6852,6 +6976,7 @@
 	  var Data_String = PS["Data.String"];
 	  var Data_String_Regex = PS["Data.String.Regex"];
 	  var Data_Traversable = PS["Data.Traversable"];
+	  var Data_Tuple = PS["Data.Tuple"];
 	  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
 	  var Prelude = PS["Prelude"];
 	  var Signal_Channel = PS["Signal.Channel"];
@@ -6862,31 +6987,37 @@
 	  var Processors_ImgList_Main = PS["Processors.ImgList.Main"];
 	  var Processors_PlainText_Main = PS["Processors.PlainText.Main"];
 	  var Network_HTTP_Affjax_Response = PS["Network.HTTP.Affjax.Response"];     
-	  var getTitle = function (_11) {
-	      return _11.value0.title;
+	  var getTitle = function (_14) {
+	      return _14.value0.title;
 	  };
-	  var getProcessor = function (_14) {
-	      return _14.value0.processor;
+	  var getProcessor = function (_17) {
+	      return _17.value0.processor;
 	  };
-	  var getDataSource = function (_13) {
-	      return _13.value0.dataSource;
+	  var getPathProcessor = function (_18) {
+	      return _18.value0.pathProcessor;
 	  };
-	  var getCurrentPath = function (_10) {
-	      return _10.value0.currentPath;
+	  var getMenuPath = function (_13) {
+	      return _13.value0.menuPath;
 	  };
-	  var getChildNodes = function (_8) {
-	      return Prelude["<#>"](Prelude.functorArray)(_8.value0.children)(function (_4) {
-	          return _4.value0.path;
+	  var getDataSource = function (_16) {
+	      return _16.value0.dataSource;
+	  };
+	  var getCurrentPath = function (_12) {
+	      return _12.value0.currentPath;
+	  };
+	  var getChildNodes = function (_10) {
+	      return Prelude["<#>"](Prelude.functorArray)(_10.value0.children)(function (_6) {
+	          return _6.value0.path;
 	      });
 	  };
 	  var findChildNodeByPath = function (__copy_pathElements) {
-	      return function (__copy__9) {
+	      return function (__copy__11) {
 	          var pathElements = __copy_pathElements;
-	          var _9 = __copy__9;
+	          var _11 = __copy__11;
 	          tco: while (true) {
 	              var match = function (p) {
-	                  return function (_20) {
-	                      return Prelude["=="](Prelude.eqString)(_20.value0.path)(p);
+	                  return function (_24) {
+	                      return Prelude["=="](Prelude.eqString)(_24.value0.path)(p);
 	                  };
 	              };
 	              var find = function (path_) {
@@ -6894,27 +7025,50 @@
 	                      return Data_Array.head(Data_Array.filter(match(path_))(nodes));
 	                  };
 	              };
-	              var _40 = Data_Array.uncons(pathElements);
-	              if (_40 instanceof Data_Maybe.Nothing) {
+	              var _48 = Data_Array.uncons(pathElements);
+	              if (_48 instanceof Data_Maybe.Nothing) {
 	                  return Data_Maybe.Nothing.value;
 	              };
-	              if (_40 instanceof Data_Maybe.Just && _40.value0.tail.length === 0) {
-	                  return find(_40.value0.head)(_9.value0.children);
+	              if (_48 instanceof Data_Maybe.Just && _48.value0.tail.length === 0) {
+	                  return find(_48.value0.head)(_11.value0.children);
 	              };
-	              if (_40 instanceof Data_Maybe.Just) {
-	                  var _44 = find(_40.value0.head)(_9.value0.children);
-	                  if (_44 instanceof Data_Maybe.Nothing) {
+	              if (_48 instanceof Data_Maybe.Just) {
+	                  var _52 = find(_48.value0.head)(_11.value0.children);
+	                  if (_52 instanceof Data_Maybe.Nothing) {
 	                      return Data_Maybe.Nothing.value;
 	                  };
-	                  if (_44 instanceof Data_Maybe.Just) {
-	                      pathElements = _40.value0.tail;
-	                      _9 = _44.value0;
+	                  if (_52 instanceof Data_Maybe.Just) {
+	                      pathElements = _48.value0.tail;
+	                      _11 = _52.value0;
 	                      continue tco;
 	                  };
-	                  throw new Error("Failed pattern match: " + [ _44.constructor.name ]);
+	                  throw new Error("Failed pattern match: " + [ _52.constructor.name ]);
 	              };
-	              throw new Error("Failed pattern match: " + [ _40.constructor.name ]);
+	              throw new Error("Failed pattern match: " + [ _48.constructor.name ]);
 	          };
+	      };
+	  };
+	  var findTargetNode = function (path) {
+	      return function (parent) {
+	          return Prelude.bind(Data_Maybe.bindMaybe)(Data_Array.uncons(path))(function (_5) {
+	              return Prelude.bind(Data_Maybe.bindMaybe)(findChildNodeByPath([ _5.head ])(parent))(function (_4) {
+	                  var _60 = getPathProcessor(_4);
+	                  if (_60 instanceof Types.ChildPP) {
+	                      return Prelude.pure(Data_Maybe.applicativeMaybe)(new Data_Tuple.Tuple(_4, _5.tail));
+	                  };
+	                  if (_60 instanceof Types.GlobalPP) {
+	                      var _61 = Prelude["=="](Prelude.eqArray(Prelude.eqString))(_5.tail)([  ]);
+	                      if (_61) {
+	                          return Prelude.pure(Data_Maybe.applicativeMaybe)(new Data_Tuple.Tuple(_4, [  ]));
+	                      };
+	                      if (!_61) {
+	                          return findTargetNode(_5.tail)(_4);
+	                      };
+	                      throw new Error("Failed pattern match: " + [ _61.constructor.name ]);
+	                  };
+	                  throw new Error("Failed pattern match: " + [ _60.constructor.name ]);
+	              });
+	          });
 	      };
 	  };
 	  var getCurrentNode = function (appState) {
@@ -6923,85 +7077,119 @@
 	  var calcTitle = function (appState) {
 	      return Data_String.joinWith(" <*> ")([ Data_Maybe.fromMaybe("404")(Prelude["<$>"](Data_Maybe.functorMaybe)(getTitle)(getCurrentNode(appState))), getTitle(Data.appDNA) ]);
 	  };
-	  var appLogic = function (_6) {
-	      return function (_7) {
-	          if (_6 instanceof Types.Navigate) {
-	              var mbNode = findChildNodeByPath(_6.value0)(Data.appDNA);
-	              var mbSource = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(mbNode);
-	              var newPath = (function () {
-	                  if (mbSource instanceof Data_Maybe.Just && mbSource.value0 instanceof Types.ChildSource) {
-	                      return Prelude["<>"](Prelude.semigroupArray)(_6.value0)([ mbSource.value0.value0 ]);
-	                  };
-	                  return _6.value0;
-	              })();
+	  var appLogic = function (_8) {
+	      return function (_9) {
+	          if (_8 instanceof Types.Navigate) {
+	              var _66 = findTargetNode(_8.value0)(Data.appDNA);
+	              if (_66 instanceof Data_Maybe.Nothing) {
+	                  return new Types.AppState((function () {
+	                      var _67 = {};
+	                      for (var _68 in _9.value0) {
+	                          if (_9.value0.hasOwnProperty(_68)) {
+	                              _67[_68] = _9.value0[_68];
+	                          };
+	                      };
+	                      _67.actionsCount = _9.value0.actionsCount + 1 | 0;
+	                      _67.currentPath = _8.value0;
+	                      _67.menuPath = _8.value0;
+	                      _67.currentNode = Data_Maybe.Nothing.value;
+	                      return _67;
+	                  })());
+	              };
+	              if (_66 instanceof Data_Maybe.Just) {
+	                  var newTargetNode = (function () {
+	                      var _69 = getDataSource(_66.value0.value0);
+	                      if (_69 instanceof Types.ChildSource) {
+	                          return findChildNodeByPath([ _69.value0 ])(_66.value0.value0);
+	                      };
+	                      return new Data_Maybe.Just(_66.value0.value0);
+	                  })();
+	                  var newPath = (function () {
+	                      var _71 = getDataSource(_66.value0.value0);
+	                      if (_71 instanceof Types.ChildSource) {
+	                          return Prelude["<>"](Prelude.semigroupArray)(_8.value0)([ _71.value0 ]);
+	                      };
+	                      return _66.value0.value1;
+	                  })();
+	                  var menuPath = (function () {
+	                      var _73 = getDataSource(_66.value0.value0);
+	                      if (_73 instanceof Types.ChildSource) {
+	                          return Prelude["<>"](Prelude.semigroupArray)(_8.value0)([ _73.value0 ]);
+	                      };
+	                      return _8.value0;
+	                  })();
+	                  return new Types.AppState((function () {
+	                      var _75 = {};
+	                      for (var _76 in _9.value0) {
+	                          if (_9.value0.hasOwnProperty(_76)) {
+	                              _75[_76] = _9.value0[_76];
+	                          };
+	                      };
+	                      _75.actionsCount = _9.value0.actionsCount + 1 | 0;
+	                      _75.currentPath = newPath;
+	                      _75.menuPath = menuPath;
+	                      _75.currentNode = newTargetNode;
+	                      return _75;
+	                  })());
+	              };
+	              throw new Error("Failed pattern match at Core line 95, column 1 - line 96, column 1: " + [ _66.constructor.name ]);
+	          };
+	          if (_8 instanceof Types.Noop) {
 	              return new Types.AppState((function () {
-	                  var _55 = {};
-	                  for (var _56 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_56)) {
-	                          _55[_56] = _7.value0[_56];
+	                  var _82 = {};
+	                  for (var _83 in _9.value0) {
+	                      if (_9.value0.hasOwnProperty(_83)) {
+	                          _82[_83] = _9.value0[_83];
 	                      };
 	                  };
-	                  _55.actionsCount = _7.value0.actionsCount + 1 | 0;
-	                  _55.currentPath = newPath;
-	                  return _55;
+	                  _82.actionsCount = _9.value0.actionsCount + 1 | 0;
+	                  return _82;
 	              })());
 	          };
-	          if (_6 instanceof Types.Noop) {
-	              return new Types.AppState((function () {
-	                  var _59 = {};
-	                  for (var _60 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_60)) {
-	                          _59[_60] = _7.value0[_60];
-	                      };
-	                  };
-	                  _59.actionsCount = _7.value0.actionsCount + 1 | 0;
-	                  return _59;
-	              })());
-	          };
-	          throw new Error("Failed pattern match at Core line 87, column 1 - line 88, column 1: " + [ _6.constructor.name, _7.constructor.name ]);
+	          throw new Error("Failed pattern match at Core line 95, column 1 - line 96, column 1: " + [ _8.constructor.name, _9.constructor.name ]);
 	      };
 	  };
 	  var appEffectsLogic = function (uiChannel) {
-	      return function (_5) {
+	      return function (_7) {
 	          var setContent = function (x) {
 	              return Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
-	                  var _64 = {};
-	                  for (var _65 in _5.value0) {
-	                      if (_5.value0.hasOwnProperty(_65)) {
-	                          _64[_65] = _5.value0[_65];
+	                  var _87 = {};
+	                  for (var _88 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_88)) {
+	                          _87[_88] = _7.value0[_88];
 	                      };
 	                  };
-	                  _64.currentContent = x;
-	                  return _64;
+	                  _87.currentContent = x;
+	                  return _87;
 	              })())));
 	          };
 	          var setBusy = Signal_Channel.send(uiChannel)(Types.RenderState.create(new Types.AppState((function () {
-	              var _66 = {};
-	              for (var _67 in _5.value0) {
-	                  if (_5.value0.hasOwnProperty(_67)) {
-	                      _66[_67] = _5.value0[_67];
+	              var _89 = {};
+	              for (var _90 in _7.value0) {
+	                  if (_7.value0.hasOwnProperty(_90)) {
+	                      _89[_90] = _7.value0[_90];
 	                  };
 	              };
-	              _66.currentContent = new Data_Maybe.Just(new Types.Md("###### ![...](ajax-loader.gif) Loading..."));
-	              return _66;
+	              _89.currentContent = new Data_Maybe.Just(new Types.Md("###### ![...](ajax-loader.gif) Loading..."));
+	              return _89;
 	          })())));
 	          var loadGist = function (gid) {
 	              return Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)("https://api.github.com/gists/" + gid);
 	          };
-	          var readSource = function (_19) {
-	              if (_19 instanceof Types.StringSource) {
-	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_19.value0)));
+	          var readSource = function (_23) {
+	              if (_23 instanceof Types.StringSource) {
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_23.value0)));
 	              };
-	              if (_19 instanceof Types.ArraySource) {
-	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.ArrayInput(_19.value0)));
+	              if (_23 instanceof Types.ArraySource) {
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.ArrayInput(_23.value0)));
 	              };
-	              if (_19 instanceof Types.GistSource) {
-	                  return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist(_19.value0))(function (_0) {
+	              if (_23 instanceof Types.GistSource) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist(_23.value0))(function (_0) {
 	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.StringInput.create(Utils.parseGistResponse(_0.response))));
 	                  });
 	              };
-	              if (_19 instanceof Types.GithubSource) {
-	                  return Prelude.bind(Control_Monad_Aff.bindAff)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(_19.value0))(function (_1) {
+	              if (_23 instanceof Types.GithubSource) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(_23.value0))(function (_1) {
 	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_1.response)));
 	                  });
 	              };
@@ -7013,58 +7201,64 @@
 	          var handleError = function (e) {
 	              return setContent(Data_Maybe.Just.create(Types.Md.create(Utils.toString(e))));
 	          };
-	          var currentNode = findChildNodeByPath(_5.value0.currentPath)(Data.appDNA);
-	          var ds = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(currentNode);
-	          var mbReadSource = function (_15) {
-	              if (_15 instanceof Data_Maybe.Just) {
-	                  return readSource(_15.value0);
+	          var ds = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(_7.value0.currentNode);
+	          var mbReadSource = function (_19) {
+	              if (_19 instanceof Data_Maybe.Just) {
+	                  return readSource(_19.value0);
 	              };
 	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
 	          };
-	          var proc = Prelude["<$>"](Data_Maybe.functorMaybe)(getProcessor)(currentNode);
-	          var callProcessor = function (_18) {
+	          var proc = Prelude["<$>"](Data_Maybe.functorMaybe)(getProcessor)(_7.value0.currentNode);
+	          var callProcessor = function (_22) {
 	              return function (i) {
-	                  if (_18 instanceof Types.MdProcessor) {
-	                      return Processors_PlainText_Main.textProcessor(i);
+	                  return function (apst_1) {
+	                      if (_22 instanceof Types.MdProcessor) {
+	                          return Processors_PlainText_Main.textProcessor(i)(apst_1);
+	                      };
+	                      if (_22 instanceof Types.TextProcessor) {
+	                          return Processors_PlainText_Main.textProcessor(i)(apst_1);
+	                      };
+	                      if (_22 instanceof Types.ImgListProcessor) {
+	                          return Processors_ImgList_Main.imgListProcessor(i)(apst_1);
+	                      };
+	                      if (_22 instanceof Types.BlogProcessor) {
+	                          return Processors_Blog_Main.blogProcessor(i)(apst_1);
+	                      };
+	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
 	                  };
-	                  if (_18 instanceof Types.TextProcessor) {
-	                      return Processors_PlainText_Main.textProcessor(i);
-	                  };
-	                  if (_18 instanceof Types.ImgListProcessor) {
-	                      return Processors_ImgList_Main.imgListProcessor(i);
-	                  };
-	                  if (_18 instanceof Types.BlogProcessor) {
-	                      return Processors_Blog_Main.blogProcessor(i);
-	                  };
-	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
 	              };
 	          };
-	          var mbCallProcessor = function (_16) {
-	              return function (_17) {
-	                  if (_16 instanceof Data_Maybe.Just && _17 instanceof Data_Maybe.Just) {
-	                      return callProcessor(_16.value0)(_17.value0);
+	          var mbCallProcessor = function (_20) {
+	              return function (_21) {
+	                  return function (apst_1) {
+	                      if (_20 instanceof Data_Maybe.Just && _21 instanceof Data_Maybe.Just) {
+	                          return callProcessor(_20.value0)(_21.value0)(apst_1);
+	                      };
+	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
 	                  };
-	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
 	              };
 	          };
 	          return Control_Monad_Aff.runAff(handleError)(handleResult)(Prelude.bind(Control_Monad_Aff.bindAff)(Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(setBusy))(function () {
 	              return Prelude.bind(Control_Monad_Aff.bindAff)(mbReadSource(ds))(function (_3) {
-	                  return Prelude.bind(Control_Monad_Aff.bindAff)(mbCallProcessor(proc)(_3))(function (_2) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(mbCallProcessor(proc)(_3)(_7))(function (_2) {
 	                      return Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(setContent(_2));
 	                  });
 	              });
 	          }));
 	      };
 	  };
+	  exports["getPathProcessor"] = getPathProcessor;
 	  exports["getProcessor"] = getProcessor;
 	  exports["getDataSource"] = getDataSource;
 	  exports["getTitle"] = getTitle;
 	  exports["calcTitle"] = calcTitle;
+	  exports["getMenuPath"] = getMenuPath;
 	  exports["getCurrentPath"] = getCurrentPath;
 	  exports["findChildNodeByPath"] = findChildNodeByPath;
 	  exports["getChildNodes"] = getChildNodes;
 	  exports["getCurrentNode"] = getCurrentNode;
 	  exports["appLogic"] = appLogic;
+	  exports["findTargetNode"] = findTargetNode;
 	  exports["appEffectsLogic"] = appEffectsLogic;;
 	 
 	})(PS["Core"] = PS["Core"] || {});
@@ -8211,13 +8405,13 @@
 	  };
 	  var page404 = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd("> ## 404 Not found"));
 	  var renderHTML = function (_7) {
+	      var menuPath = Core.getMenuPath(_7);
 	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_7.value0.currentContent));
-	      var fullPath = Core.getCurrentPath(_7);
 	      var currentNode = Core.getCurrentNode(_7);
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
 	      })))(function () {
-	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(renderMenu(fullPath)(new Data_Maybe.Just(Data.appDNA))([  ])(0)))(function () {
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(renderMenu(menuPath)(new Data_Maybe.Just(Data.appDNA))([  ])(0)))(function () {
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })));
