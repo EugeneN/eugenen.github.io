@@ -6837,7 +6837,7 @@
 	      if (_47 instanceof Data_Either.Right) {
 	          return new Data_Either.Right(_47.value0);
 	      };
-	      throw new Error("Failed pattern match at Processors.Blog.Main line 198, column 1 - line 199, column 1: " + [ _47.constructor.name ]);
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 186, column 1 - line 187, column 1: " + [ _47.constructor.name ]);
 	  };
 	  var loadNparseGist = function (gid) {
 	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_15) {
@@ -6871,15 +6871,10 @@
 	  };
 	  var formatBlogPosts = function (ps) {
 	      return function (apst) {
-	          var blogNote = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(Utils.unlines([ "*NB*: Posts for this blog are written in [C.MD gist editor](http://eugenen.github.io/C.MD) ", "and persisted in [Github Gists](https://gist.github.com/). ", "", "", "Thus, the blog is a symbiosis between 2 *pure clientside* ", "applications and 3rd-party API/service via CORS. There is no \xabclassical\xbb backend, ", "and no databases were harmed while making this blog :-)" ])));
 	          var renderListH = function (ps_1) {
-	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("blog-note"))(blogNote))(function () {
-	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.hr)(function () {
-	                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(Data_Either.either(function (_64) {
-	                          return errorMsg(Prelude.show(showError)(_64));
-	                      })(renderArticleH)));
-	                  });
-	              });
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(Data_Either.either(function (_64) {
+	                  return errorMsg(Prelude.show(showError)(_64));
+	              })(renderArticleH)));
 	          };
 	          return Data_Maybe.Just.create(Types.HTML.create(renderListH(ps)));
 	      };
