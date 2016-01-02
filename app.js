@@ -1807,6 +1807,24 @@
 	  /* global exports */
 	  "use strict";
 
+	  // module Data.Array
+
+	  //------------------------------------------------------------------------------
+	  // Array creation --------------------------------------------------------------
+	  //------------------------------------------------------------------------------
+
+	  exports.range = function (start) {
+	    return function (end) {
+	      var step = start > end ? -1 : 1;
+	      var result = [];
+	      for (var i = start, n = 0; i !== end; i += step) {
+	        result[n++] = i;
+	      }
+	      result[n] = i;
+	      return result;
+	    };
+	  };
+
 	  //------------------------------------------------------------------------------
 	  // Array size ------------------------------------------------------------------
 	  //------------------------------------------------------------------------------
@@ -1831,6 +1849,20 @@
 	    return function (next) {
 	      return function (xs) {
 	        return xs.length === 0 ? empty({}) : next(xs[0])(xs.slice(1));
+	      };
+	    };
+	  };
+
+	  //------------------------------------------------------------------------------
+	  // Indexed operations ----------------------------------------------------------
+	  //------------------------------------------------------------------------------
+
+	  exports.indexImpl = function (just) {
+	    return function (nothing) {
+	      return function (xs) {
+	        return function (i) {
+	          return i < 0 || i >= xs.length ? nothing :  just(xs[i]);
+	        };
 	      };
 	    };
 	  };
@@ -1862,6 +1894,23 @@
 	    return function (e) {
 	      return function (l) {
 	        return l.slice(s, e);
+	      };
+	    };
+	  };
+
+	  //------------------------------------------------------------------------------
+	  // Zipping ---------------------------------------------------------------------
+	  //------------------------------------------------------------------------------
+
+	  exports.zipWith = function (f) {
+	    return function (xs) {
+	      return function (ys) {
+	        var l = xs.length < ys.length ? xs.length : ys.length;
+	        var result = new Array(l);
+	        for (var i = 0; i < l; i++) {
+	          result[i] = f(xs[i])(ys[i]);
+	        }
+	        return result;
 	      };
 	    };
 	  };
@@ -1954,6 +2003,7 @@
 	  var Data_Traversable = PS["Data.Traversable"];
 	  var Data_Tuple = PS["Data.Tuple"];
 	  var Data_Maybe_Unsafe = PS["Data.Maybe.Unsafe"];
+	  var zip = $foreign.zipWith(Data_Tuple.Tuple.create);
 	  var uncons = $foreign["uncons'"](Prelude["const"](Data_Maybe.Nothing.value))(function (x) {
 	      return function (xs) {
 	          return new Data_Maybe.Just({
@@ -1970,6 +2020,8 @@
 	  var singleton = function (a) {
 	      return [ a ];
 	  };
+	  var index = $foreign.indexImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
+	  var $bang$bang = index;
 	  var head = $foreign["uncons'"](Prelude["const"](Data_Maybe.Nothing.value))(function (x) {
 	      return function (_6) {
 	          return new Data_Maybe.Just(x);
@@ -1990,17 +2042,22 @@
 	      });
 	  };
 	  var catMaybes = mapMaybe(Prelude.id(Prelude.categoryFn));
+	  exports["zip"] = zip;
 	  exports["catMaybes"] = catMaybes;
 	  exports["mapMaybe"] = mapMaybe;
 	  exports["concatMap"] = concatMap;
 	  exports["findIndex"] = findIndex;
 	  exports["elemIndex"] = elemIndex;
+	  exports["index"] = index;
+	  exports["!!"] = $bang$bang;
 	  exports["uncons"] = uncons;
 	  exports["tail"] = tail;
 	  exports["head"] = head;
 	  exports["singleton"] = singleton;
 	  exports["filter"] = $foreign.filter;
-	  exports["snoc"] = $foreign.snoc;;
+	  exports["snoc"] = $foreign.snoc;
+	  exports["length"] = $foreign.length;
+	  exports["range"] = $foreign.range;;
 	 
 	})(PS["Data.Array"] = PS["Data.Array"] || {});
 	(function(exports) {
@@ -2380,6 +2437,16 @@
 	      };
 	    };
 	  };
+
+	  exports.fromStringImpl = function (just) {
+	    return function (nothing) {
+	      return function (s) {
+	        /* jshint bitwise: false */
+	        var i = parseFloat(s);
+	        return (i | 0) === i ? just(i) : nothing;
+	      };
+	    };
+	  };
 	 
 	})(PS["Data.Int"] = PS["Data.Int"] || {});
 	(function(exports) {
@@ -2390,8 +2457,10 @@
 	  var Data_Int_Bits = PS["Data.Int.Bits"];
 	  var Data_Maybe = PS["Data.Maybe"];
 	  var Data_Maybe_Unsafe = PS["Data.Maybe.Unsafe"];
-	  var $$Math = PS["Math"];                                                                   
+	  var $$Math = PS["Math"];
+	  var fromString = $foreign.fromStringImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
 	  var fromNumber = $foreign.fromNumberImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
+	  exports["fromString"] = fromString;
 	  exports["fromNumber"] = fromNumber;;
 	 
 	})(PS["Data.Int"] = PS["Data.Int"] || {});
@@ -3679,7 +3748,7 @@
 	          title: "Photos", 
 	          path: "photos", 
 	          processor: Types.ImgListProcessor.value, 
-	          pathProcessor: Types.GlobalPP.value, 
+	          pathProcessor: Types.ChildPP.value, 
 	          children: [  ], 
 	          dataSource: new Types.ArraySource([ "https://lh3.googleusercontent.com/eWwR1tPCh42kvp3g5cd2ajogkUhGp9ol0_N08gsJf8DvIAK8AI_0zRW0WaWUxnQ0eGhUlerXo_psMw=w1084-h610-no", "https://lh3.googleusercontent.com/-kkUBuYKmHSBTj5ad8yHfC5uRgH1V2edL9nnSgBY2GqFaDegNV02fCEQogrogXf60J0wmOW1PjrffQ=w1474-h1105-no", "https://lh3.googleusercontent.com/mR9FX06r0JlFByYSku73j9XBAAg-z8YC9jv3ack1kgRchM9XM0pdgNbTPHQhGsc4JGSGB_soVRJwLw=w1280-h853-no", "https://lh3.googleusercontent.com/waE6y-kWoGdJ_MuZWIx-8bH2ZVCno06xyu0ahwWELVqf2SS2Rcpd30-3sKH33oMNgwrQjCToRFcEQznAvl0TLl28OnW-HPJPPe_XHhLh00nZoXUjekl4ACAYiBT63DVyKDmQGaUlw7xqztbNl3cth8cOUIqM80f-fNhxyct2HeZWWB0da9UrPuTwjDW0fohPam-3BLRpOhc0zwRxVi4RYLbyivh1MLmPsxAu0OxChtX4ecRbHmYjzj7cm7M1ccPKvL2LfI9wqfWu23Z_mbSVy04D25ah0lVAD6XtOoMqRB8vAwAg8L4y3YWQMmdB6PA4gcG7sAxxDiCwahSDzsbA3cuwo2l_ENEm3mqzQCbwXNn0Qu5Rpa7DhicEtgQW67mdN5wQHjb5YIls5MnEusDTjCnSBSgf7EtSfKsu6uHMSJQD-qFmymAsqr4oRxPqw4PCwL4TrbnAQViNc96tveLFu41AI9Pfbb3SA6OVLaA671Y9U5FVGaFWf9UWB8_cCTuW-Dz_XYK6Mye3QJlaoZhzGKo0c2uq3Zhq6Sxpd13wnEk=w800-h600-no", "https://lh3.googleusercontent.com/C-kMUvnWjLxt1xrMPHPSK9n6BAbjznxA_1wD3xaItuiGf0-t2p1sjNGzDA3nih1mMTlZJBk1lROS7pCzT-0i-vTU2SUTGHHOF3X0HY-0dJasZJ_DYcM8mHU2_dXnFsVtkMWg2pi14aCfBW8OoodUmA3Yr0AirbxhEqEqSPaOXap6XN5jqQploGBzgiaiB1wtKDjD1XiVn7hqfs_wDQSarIhr8K51l4Xd1dnI1eyrrRCYTqxshME9vphC5Hk39903hCIhRKaOkz7KxpL2u4QeGWTNJcjrAsrgVhyR3BfvmHpMfAR9-4WxnHBqyUxGMrUfikdMg2FCWn9Itr8zk-xpjBVL2ryA9kcHfXp1hxu7Zx9nbp41vR0u2-R_6SPVbhcPsmY1DIPTRRv7xvNCIIY8jxcdvlkUIKdRR3aZrAsZfTo3GCRLLln-JgvgUJuYXTSnwJ2lqnMfOuDZGi4zm4Ix3CKH3Gn2wpWh6BLPv5dtMQ2YqjUZd21ybnBfqe29ItNdL9JxhGBzaPcqVTvL4Q8toqJIGvyjO89FQD_9YngNekg=w600-h800-no", "https://lh3.googleusercontent.com/Emg8T6PyLUioQrB2SbIJ2V58eLQ71PrsQDBPgpdvtgJsM4kQ3TWI5Gpb425FFV5rwu6rjkBXH2emutL-e0N5C3y-aQ7zfjvm2Nof9SiKEYSAGzb9qAqPILBVOoZbcEGbVemKGBqSnlpH-sgT1Yn1Qewhn3wFZoTFR9aBKROu2GLXNiqdUkwhmMsa6cB04sgE-5rxWV6YGJvPGnsZESqo0sjsTXWcG3H-irmNw1NQOeiTIrJfUjW8Er6BHbp20-kMh-adw_AFB9dAnKIWsznXszOTE6K-bLlBRJR2E45naH4DlRlVFdVCfbCFejKreZzi95PkEzteY__8m44L920IP_A46MOyWGxLsglmWGoQvxgzBr5PiEAYnKEdFaxy7PELhOR5vPubP-TNRgqTJZ0J25XbJvOIske-Na5VLXWHLShgrPCv1V5tsMQXHm6LnklEbMwpQlc7M1Gn2Y8wvMGNBjujZOnRMIinFO10zVdakPc2qRby4d2OOo7fOSV7qWRUCk6W33C-AAxdBCDIWLJl2WBLLb4yj7fxL3ILh3lquBtcJURmoA-garnKaeOj0_b-6jap=w600-h800-no", "https://lh3.googleusercontent.com/-yxRMkF93Hh21waoSUO5iMpgj4CRSV0Z8s_ht8gsPYBYobWbZ3BTttR6vnUwF5-tF9MqSg_ToyC7zMsjH_uAi3avFT5MjalPyeWxrXLKTzzqKQtyCWHzavafVUWvwy60p2mVrR63zvS9VRE7jxI6zoSlgJWayrZ-0T-4y52mhwXdN37-DjKKMbp7p6OQ_vbp_8LdN8QzEM6S2TkSko_PLKko4inzyLO45qoC6p5hgm4ZJaNWDxAZH5zxhf7RkKKYcd-5Le-CoGOLUfNG2dX7t5MBSfkhYFvO-nTg9Vlkhn5W4l5x-ZIn3nrukUyjQUsjuDfLz5iY_Hn6X0WiOwCkuqt44-lyj2WWUMPv6tvLzkqxmGK3tq4yZrMA80mxZfONXUh_ErgzBf_szFatRYmHX6N_sDzCMvElhJf0EjSU5Eqv95eJ4FJOLAlIid8X5rmI_Q-tyFw40h6_5CcKUrv7Td-4eAaUOWhPCu6-C9FrJb-q4s40allLKd9EIT3clNGWE4tlq5KWXcOCwDDLE7o8vtDsMnHqSBW9pacyCdZiH6zdFU07XrrGn8jZxRDw56c_YeFd=w540-h720-no", "https://lh3.googleusercontent.com/b92cOfZh56TqNKtBoTaQZeVRq_qE1NRDKZz6G_jvtF4HfRdPeLsXazrR8nhlMtzUeiSyHdrzl09k75MPl7GaW4Th5PyAYkB8N97q1PCydhiSn79r3EWe4er3DDwDL7g0PENL8J7bEfFpFD3EVG5CiiZi0gN6Vog9mhZLrb4TSDXxLHraepmneJ2XftY-DI-J_qrsjSv7tFH6XLMDDU5TNFeF-IlQOfjVO52u3TlZKCWUXn8s_CzmSLB3xeRJgh8iq71swiozi2sRFD1wCLRgcBRgUhbsJnLdk_aVSA1YyLy28jP9QhQhPVfLSwYDk8pRL8o4LrT2SHUKK7N6wU6ErOtyGjTRbQPn-Yq8ha27SYXa4moD0WSeNMFR4GSBYjlaVb7mYc348Sf9oeKgUuJMcmV6CS1t8AyzpuWBXTpA3uxmcrWylWyhURqpMXUg5qh_TTkvfrULyK0eLjd0zj23tnFuRa0mKjVD2KOYi2h-cqFTHc9gfGa7yWpYwtn44Uq_4oqluKnTBbtpeeAZEq2DI5c-epIGGIIBEO9CS_5gg6k=w800-h534-no", "https://lh3.googleusercontent.com/xr1xGfYfaljVuvZxrF0QaVrWQUQGFzRDmlISK6BC0qdS6r1TNW0GdAvQPV087YdsGP8aemGTOEbdzxy3dGzsUgkINdEg2iGlVvZRVCwwB8rDGB11noTzvzqNUj5uM8YAClWlTTMvCcvTSLe5EuUuWIbyOVLBywTm-TyVe7d2n_CMc6_LeGAcpSHvnHzmx106gaHQT7q_avdVcsXdPMp8GrXGV0EQP7YQLHdkDPAXdSe7xI-eqMclSJalGng7bntjBK3umPjxcfEowWwBS8z4I7o1k7UeaPFdXAu1IZ6L_Vp9bbG2JkRe60iRcq5de1CA5TBRG-dJu-Q8_2rOIzGR-2NxEbdPElokPiepb6r7jVOIkmjz9-IrmParyaFIQH-r5eVP3939SX_2RycZLcMc3Rw8UUJnCjAeIDGNP4l4UkKsXW2xGepmS4RuDNye9FA3qJLrxNsqRWMNKp4VpupvLWCuDsEjeTvKoz65Zhrv6hPrUHrdcMRqsdcVA06Wh5uWEDqet9yaWvFq4umThIuADHOH4y4Ft26zX_erbtRRpDs=w658-h441-no", "https://lh3.googleusercontent.com/h_j3F5mdoJR4NJmhmMHrWYJ30z7at9KbLAtrzouypKDRqEh_UXzei_m7EkR3pdYIbTZyC1BBOlV51hPzPNTbeh0hxiPrR35tDFgDZ_mlfhgfPH0TBq9QtW9StDP3W81wOEhI9ClycyxnuuZhpbnxtxSW6aCb7a3KhcpICfVZ7klIUo8cwjCyj_hHHey70fiPDBOFTmsi0ZzWXbUK8OcnashPoQoi34pHkcOGs_kpUsBDUjkXlsat7vtIB3fPTdkXrpyLkc_F6eRg6BCxwFyo88Fx4im1ZdtUrK3-rZ8FuvKjWE38R-oG4un7N3CkD-TKCYpRJyMXU4yWdeNAXiTQgq1MrvdhgFLfdMsEOHMqx5SkDOtGBJa6_SU9KbjEbMUvgxwFBCHUfBmXfZUNrc4HkDnJIt9zlkjlZDCO6OR-2WUi3qAs2_yfLMcjOKpS3BwipDYR95hd158K4_DOpsKYLKpfEwVBnk7IzwGN6Gpb4ZV9YYwOHTwFeqSHyxfni4tTCp_taoh4dANKTmjEwOqUtYIeel11DB4CvK6HUDd7GXQ=w441-h658-no" ])
 	      }), new Types.Node({
@@ -6837,7 +6906,7 @@
 	      if (_47 instanceof Data_Either.Right) {
 	          return new Data_Either.Right(_47.value0);
 	      };
-	      throw new Error("Failed pattern match at Processors.Blog.Main line 186, column 1 - line 187, column 1: " + [ _47.constructor.name ]);
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 187, column 1 - line 188, column 1: " + [ _47.constructor.name ]);
 	  };
 	  var loadNparseGist = function (gid) {
 	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_15) {
@@ -6915,21 +6984,131 @@
 	  var Control_Monad_Eff = PS["Control.Monad.Eff"];
 	  var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
 	  var Data_Maybe = PS["Data.Maybe"];
+	  var Data_Tuple = PS["Data.Tuple"];
+	  var Data_String = PS["Data.String"];
+	  var Data_Int = PS["Data.Int"];
 	  var Prelude = PS["Prelude"];
+	  var Text_Smolder_HTML = PS["Text.Smolder.HTML"];
+	  var Text_Smolder_HTML_Attributes = PS["Text.Smolder.HTML.Attributes"];
+	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];
+	  var Data_Foldable = PS["Data.Foldable"];
+	  var Data_Array = PS["Data.Array"];
 	  var Types = PS["Types"];
-	  var Utils = PS["Utils"];     
-	  var mdImg = function (s) {
-	      return "# ![" + (s + ("](" + (s + ")")));
+	  var Utils = PS["Utils"];
+	  var Control_Monad_Aff_AVar = PS["Control.Monad.Aff.AVar"];
+	  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];     
+	  var renderImgSingle = function (base) {
+	      return function (prev) {
+	          return function (next) {
+	              return function (src$prime) {
+	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("single-img"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav-img-close"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(base))(Text_Smolder_Markup.text("\xd7"))))(function () {
+	                      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav-img nav-img-left"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(prev))(Text_Smolder_Markup.text("<"))))(function () {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("just-img"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.img)(Text_Smolder_HTML_Attributes.src(src$prime))))(function () {
+	                              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav-img nav-img-right"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(next))(Text_Smolder_Markup.text(">")));
+	                          });
+	                      });
+	                  }));
+	              };
+	          };
+	      };
+	  };
+	  var imgLink = function (baseUrl) {
+	      return function (idx) {
+	          return baseUrl + ("/" + Prelude.show(Prelude.showInt)(idx));
+	      };
+	  };
+	  var nextImgLink = function (baseUrl) {
+	      return function (imgsCount) {
+	          return function (idx) {
+	              var next = (function () {
+	                  var _4 = (idx + 1 | 0) > imgsCount - 1;
+	                  if (_4) {
+	                      return 0;
+	                  };
+	                  if (!_4) {
+	                      return idx + 1 | 0;
+	                  };
+	                  throw new Error("Failed pattern match at Processors.ImgList.Main line 67, column 9 - line 69, column 1: " + [ _4.constructor.name ]);
+	              })();
+	              return imgLink(baseUrl)(next);
+	          };
+	      };
+	  };
+	  var prevImgLink = function (baseUrl) {
+	      return function (imgsCount) {
+	          return function (idx) {
+	              var next = (function () {
+	                  var _5 = idx - 1 < 0;
+	                  if (_5) {
+	                      return imgsCount - 1;
+	                  };
+	                  if (!_5) {
+	                      return idx - 1;
+	                  };
+	                  throw new Error("Failed pattern match at Processors.ImgList.Main line 64, column 9 - line 66, column 1: " + [ _5.constructor.name ]);
+	              })();
+	              return imgLink(baseUrl)(next);
+	          };
+	      };
+	  };
+	  var htmlLinkImg = function (baseUrl) {
+	      return function (_3) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(imgLink(baseUrl)(_3.value1)))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupM)(Text_Smolder_HTML.img)(Text_Smolder_HTML_Attributes.className("image")))(Text_Smolder_HTML_Attributes.src(_3.value0)));
+	      };
+	  };
+	  var renderImgList = function (baseUrl) {
+	      return function (srcs) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("img-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(Data_Array.zip(srcs)(Data_Array.range(0)(Data_Array.length(srcs))))(htmlLinkImg(baseUrl)));
+	      };
+	  };
+	  var errorMsg = function (m) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("error"))(Text_Smolder_Markup.text("Error: " + m));
+	  };
+	  var currentPathToUrl = function (_2) {
+	      return "#" + Data_Maybe.fromMaybe("")(Data_Array["!!"](_2.value0.menuPath)(0));
+	  };
+	  var go = function (srcs) {
+	      return function (_1) {
+	          var noAccess = function (x) {
+	              return "access denied for: " + Prelude.show(Prelude.showString)(x);
+	          };
+	          var imgsCount = Data_Array.length(srcs);
+	          var baseUrl = currentPathToUrl(_1);
+	          var nextUrl = function (n) {
+	              return nextImgLink(baseUrl)(imgsCount)(n);
+	          };
+	          var prevUrl = function (n) {
+	              return prevImgLink(baseUrl)(imgsCount)(n);
+	          };
+	          if (_1.value0.currentPath.length === 0) {
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(renderImgList(baseUrl)(srcs))));
+	          };
+	          if (_1.value0.currentPath.length === 1) {
+	              var _15 = Data_Int.fromString(_1.value0.currentPath[0]);
+	              if (_15 instanceof Data_Maybe.Just) {
+	                  var _16 = _15.value0 >= 0 && _15.value0 < Data_Array.length(srcs);
+	                  if (_16) {
+	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(Data_Maybe.fromMaybe(errorMsg(noAccess(_1.value0.currentPath[0])))(Prelude["<$>"](Data_Maybe.functorMaybe)(renderImgSingle(baseUrl)(prevUrl(_15.value0))(nextUrl(_15.value0)))(Data_Array["!!"](srcs)(_15.value0))))));
+	                  };
+	                  if (!_16) {
+	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(errorMsg(noAccess(_1.value0.currentPath[0])))));
+	                  };
+	                  throw new Error("Failed pattern match at Processors.ImgList.Main line 34, column 1 - line 35, column 1: " + [ _16.constructor.name ]);
+	              };
+	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(errorMsg(noAccess(_1.value0.currentPath[0])))));
+	          };
+	          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(errorMsg("unknown request: " + Prelude.show(Prelude.showArray(Prelude.showString))(_1.value0.currentPath)))));
+	      };
 	  };
 	  var imgListProcessor = function (_0) {
-	      return function (_1) {
+	      return function (apst) {
 	          if (_0 instanceof Types.StringInput) {
-	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(mdImg(_0.value0))));
+	              return go([ _0.value0 ])(apst);
 	          };
 	          if (_0 instanceof Types.ArrayInput) {
-	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.Md.create(Utils.unlines(Prelude["<$>"](Prelude.functorArray)(mdImg)(_0.value0)))));
+	              return go(_0.value0)(apst);
 	          };
-	          throw new Error("Failed pattern match at Processors.ImgList.Main line 18, column 1 - line 19, column 1: " + [ _0.constructor.name, _1.constructor.name ]);
+	          throw new Error("Failed pattern match at Processors.ImgList.Main line 30, column 1 - line 31, column 1: " + [ _0.constructor.name, apst.constructor.name ]);
 	      };
 	  };
 	  exports["imgListProcessor"] = imgListProcessor;;
