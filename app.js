@@ -8560,7 +8560,7 @@
 	        return function() {
 	          console.log("disqus reset", id, url, title );
 
-	          setTimeout(100, function() {
+	          setTimeout(function() {
 	            try {
 	              DISQUS.reset({
 	                reload: true,
@@ -8574,7 +8574,7 @@
 	            } catch (e) {
 	              console.log(e.toString());
 	            }
-	          });
+	          }, 20); // vdom delay?
 	        }
 	      }
 	    }
