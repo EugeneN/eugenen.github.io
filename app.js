@@ -7025,7 +7025,7 @@
 	              return renderFilesH(_18.value0.files);
 	          })))(function () {
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
-	                  return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "var disqus_config = function () {", "//this.page.url = '" + ("#blog/" + _18.value0.id + "';"), "this.page.identifier = '" + ("#blog/" + _18.value0.id + "';"), "};", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = '//eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	                  return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "var disqus_config = function () {", "this.page.url = document.location.href;", "this.page.identifier = '" + ("#blog/" + _18.value0.id + "';"), "};", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = '//eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
 	              }));
 	          }));
 	      });
