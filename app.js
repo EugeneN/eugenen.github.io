@@ -7021,11 +7021,9 @@
 	  };
 	  var renderFullArticle = function (_18) {
 	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_18.value0.description)))(function () {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_18.value0.description)))(function () {
 	              return renderFilesH(_18.value0.files);
-	          })))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)));
-	          }));
+	          })));
 	      });
 	  };
 	  var renderArticleH = function (_19) {
@@ -8552,24 +8550,31 @@
 
 	  exports.setLocationUrl = function(url) { return function() { document.location.url = url } }
 
+	  exports.getBaseUrl = function() {
+	    return document.location.href.replace(/#.*$/, "");
+	  }
+
 	  exports.disqussReset = function(id) {
 	    return function(url) {
 	      return function(title) {
 	        return function() {
 	          console.log("disqus reset", id, url, title );
-	          try {
-	            DISQUS.reset({
-	              reload: true,
-	              config: function () {
-	                this.page.identifier = id;
-	                this.page.url = url;
-	                this.page.title = id;
-	                this.language = "en";
-	              }
-	            });
-	          } catch (e) {
-	            console.log(e.toString());
-	          }
+
+	          setTimeout(100, function() {
+	            try {
+	              DISQUS.reset({
+	                reload: true,
+	                config: function () {
+	                  this.page.identifier = id;
+	                  this.page.url = url;
+	                  this.page.title = id;
+	                  this.language = "en";
+	                }
+	              });
+	            } catch (e) {
+	              console.log(e.toString());
+	            }
+	          });
 	        }
 	      }
 	    }
@@ -8743,6 +8748,7 @@
 	  exports["getMenuItems"] = getMenuItems;
 	  exports["vNode2vTree"] = vNode2vTree;
 	  exports["parseContent"] = parseContent;
+	  exports["getBaseUrl"] = $foreign.getBaseUrl;
 	  exports["disqussReset"] = $foreign.disqussReset;
 	  exports["appendToBody"] = $foreign.appendToBody;
 	  exports["setLocationUrl"] = $foreign.setLocationUrl;;
@@ -8793,92 +8799,93 @@
 	      return UIState;
 	  })();
 	  var renderMenu = function (fullPath) {
-	      return function (_9) {
+	      return function (_10) {
 	          return function (baseUrl) {
 	              return function (level) {
-	                  if (_9 instanceof Data_Maybe.Nothing) {
+	                  if (_10 instanceof Data_Maybe.Nothing) {
 	                      return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	                  };
-	                  if (_9 instanceof Data_Maybe.Just) {
+	                  if (_10 instanceof Data_Maybe.Just) {
 	                      var makeUrl = function (base_url) {
 	                          return function (slug) {
 	                              return "#!" + Data_String.joinWith("/")(Prelude["<>"](Prelude.semigroupArray)(base_url)([ slug ]));
 	                          };
 	                      };
-	                      var drawNodeMenu = function (_13) {
+	                      var drawNodeMenu = function (_14) {
 	                          return function (baseUrl$prime) {
 	                              return function (selected) {
 	                                  return function (level_2) {
-	                                      if (_13 instanceof Data_Maybe.Nothing) {
+	                                      if (_14 instanceof Data_Maybe.Nothing) {
 	                                          return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	                                      };
-	                                      if (_13 instanceof Data_Maybe.Just) {
+	                                      if (_14 instanceof Data_Maybe.Just) {
 	                                          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("menu-level-" + (Prelude.show(Prelude.showInt)(level_2) + (" " + (function () {
-	                                              var _22 = level_2 > 0;
-	                                              if (_22) {
+	                                              var _23 = level_2 > 0;
+	                                              if (_23) {
 	                                                  return "sub-menu";
 	                                              };
-	                                              if (!_22) {
+	                                              if (!_23) {
 	                                                  return "";
 	                                              };
-	                                              throw new Error("Failed pattern match: " + [ _22.constructor.name ]);
-	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_13.value0))(function (_4) {
+	                                              throw new Error("Failed pattern match: " + [ _23.constructor.name ]);
+	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_14.value0))(function (_5) {
 	                                              if (selected instanceof Data_Maybe.Nothing) {
-	                                                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_4.value0)))(Text_Smolder_Markup.text(_4.value1));
+	                                                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                              };
 	                                              if (selected instanceof Data_Maybe.Just) {
-	                                                  var _25 = Prelude["=="](Prelude.eqString)(_4.value0)(selected.value0);
-	                                                  if (_25) {
-	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("current-menu-item")))(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_4.value0)))(Text_Smolder_Markup.text(_4.value1));
+	                                                  var _26 = Prelude["=="](Prelude.eqString)(_5.value0)(selected.value0);
+	                                                  if (_26) {
+	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("current-menu-item")))(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  if (!_25) {
-	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_4.value0)))(Text_Smolder_Markup.text(_4.value1));
+	                                                  if (!_26) {
+	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  throw new Error("Failed pattern match: " + [ _25.constructor.name ]);
+	                                                  throw new Error("Failed pattern match: " + [ _26.constructor.name ]);
 	                                              };
 	                                              throw new Error("Failed pattern match: " + [ selected.constructor.name ]);
 	                                          }));
 	                                      };
-	                                      throw new Error("Failed pattern match: " + [ _13.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
+	                                      throw new Error("Failed pattern match: " + [ _14.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
 	                                  };
 	                              };
 	                          };
 	                      };
-	                      var _30 = Data_Array.uncons(fullPath);
-	                      if (_30 instanceof Data_Maybe.Nothing) {
-	                          return drawNodeMenu(new Data_Maybe.Just(_9.value0))(baseUrl)(Data_Maybe.Nothing.value)(level);
+	                      var _31 = Data_Array.uncons(fullPath);
+	                      if (_31 instanceof Data_Maybe.Nothing) {
+	                          return drawNodeMenu(new Data_Maybe.Just(_10.value0))(baseUrl)(Data_Maybe.Nothing.value)(level);
 	                      };
-	                      if (_30 instanceof Data_Maybe.Just && _30.value0.tail.length === 0) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_9.value0))(baseUrl)(new Data_Maybe.Just(_30.value0.head))(level))(function () {
-	                              return drawNodeMenu(Core.findChildNodeByPath([ _30.value0.head ])(_9.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _30.value0.head ]))(new Data_Maybe.Just(_30.value0.head))(level + 1 | 0);
+	                      if (_31 instanceof Data_Maybe.Just && _31.value0.tail.length === 0) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_10.value0))(baseUrl)(new Data_Maybe.Just(_31.value0.head))(level))(function () {
+	                              return drawNodeMenu(Core.findChildNodeByPath([ _31.value0.head ])(_10.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _31.value0.head ]))(new Data_Maybe.Just(_31.value0.head))(level + 1 | 0);
 	                          });
 	                      };
-	                      if (_30 instanceof Data_Maybe.Just) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_9.value0))(baseUrl)(new Data_Maybe.Just(_30.value0.head))(level))(function () {
-	                              return renderMenu(_30.value0.tail)(Core.findChildNodeByPath([ _30.value0.head ])(_9.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _30.value0.head ]))(level + 1 | 0);
+	                      if (_31 instanceof Data_Maybe.Just) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_10.value0))(baseUrl)(new Data_Maybe.Just(_31.value0.head))(level))(function () {
+	                              return renderMenu(_31.value0.tail)(Core.findChildNodeByPath([ _31.value0.head ])(_10.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _31.value0.head ]))(level + 1 | 0);
 	                          });
 	                      };
-	                      throw new Error("Failed pattern match: " + [ _30.constructor.name ]);
+	                      throw new Error("Failed pattern match: " + [ _31.constructor.name ]);
 	                  };
-	                  throw new Error("Failed pattern match: " + [ fullPath.constructor.name, _9.constructor.name, baseUrl.constructor.name, level.constructor.name ]);
+	                  throw new Error("Failed pattern match: " + [ fullPath.constructor.name, _10.constructor.name, baseUrl.constructor.name, level.constructor.name ]);
 	              };
 	          };
 	      };
 	  };
-	  var patchVDom = function (_8) {
-	      var patches = VirtualDOM.diff(_8.value0.oldVDom)(_8.value0.newVDom);
+	  var patchVDom = function (_9) {
+	      var patches = VirtualDOM.diff(_9.value0.oldVDom)(_9.value0.newVDom);
 	      return function __do() {
-	          var _3 = VirtualDOM.patch(_8.value0.rootNode)(patches)();
-	          Utils.setTitle(_8.value0.title)();
-	          UI_HTML_Utils.disqussReset(_8.value0.pageId)(_8.value0.pageUrl)(_8.value0.title)();
+	          var _4 = VirtualDOM.patch(_9.value0.rootNode)(patches)();
+	          Utils.setTitle(_9.value0.title)();
+	          var _3 = UI_HTML_Utils.getBaseUrl();
+	          UI_HTML_Utils.disqussReset(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title)();
 	          return Prelude.unit;
 	      };
 	  };
 	  var page404 = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd("> ## 404 Not found"));
-	  var renderHTML = function (_10) {
-	      var menuPath = Core.getMenuPath(_10);
-	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_10.value0.currentContent));
-	      var currentNode = Core.getCurrentNode(_10);
+	  var renderHTML = function (_11) {
+	      var menuPath = Core.getMenuPath(_11);
+	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_11.value0.currentContent));
+	      var currentNode = Core.getCurrentNode(_11);
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
 	      })))(function () {
@@ -8886,52 +8893,54 @@
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })))(function () {
-	          return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "var disqus_config = function () {", "this.page.url = document.location.href;", "this.page.identifier = document.location.href;", "};", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = '//eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	              return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "var disqus_config = function () {", "this.page.url = document.location.href;", "this.page.identifier = document.location.hash;", "};", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	          });
 	      }));
 	  };
-	  var uiLogic = function (_5) {
-	      return function (_6) {
-	          if (_5 instanceof Types.RenderState) {
-	              var newMarkup = renderHTML(_5.value0);
+	  var uiLogic = function (_6) {
+	      return function (_7) {
+	          if (_6 instanceof Types.RenderState) {
+	              var newMarkup = renderHTML(_6.value0);
 	              var newVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(newMarkup));
 	              return new UIState((function () {
-	                  var _45 = {};
-	                  for (var _46 in _6.value0) {
-	                      if (_6.value0.hasOwnProperty(_46)) {
-	                          _45[_46] = _6.value0[_46];
+	                  var _47 = {};
+	                  for (var _48 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_48)) {
+	                          _47[_48] = _7.value0[_48];
 	                      };
 	                  };
-	                  _45.oldVDom = _6.value0.newVDom;
-	                  _45.title = Core.calcTitle(_5.value0);
-	                  _45.pageUrl = Core.calcPageUrl(_5.value0);
-	                  _45.pageId = Core.calcPageId(_5.value0);
-	                  _45.cmd = Data_Maybe.Nothing.value;
-	                  _45.newVDom = newVDom;
-	                  return _45;
+	                  _47.oldVDom = _7.value0.newVDom;
+	                  _47.title = Core.calcTitle(_6.value0);
+	                  _47.pageUrl = Core.calcPageUrl(_6.value0);
+	                  _47.pageId = Core.calcPageId(_6.value0);
+	                  _47.cmd = Data_Maybe.Nothing.value;
+	                  _47.newVDom = newVDom;
+	                  return _47;
 	              })());
 	          };
-	          if (_5 instanceof Types.SetCmd) {
+	          if (_6 instanceof Types.SetCmd) {
 	              return new UIState((function () {
-	                  var _49 = {};
-	                  for (var _50 in _6.value0) {
-	                      if (_6.value0.hasOwnProperty(_50)) {
-	                          _49[_50] = _6.value0[_50];
+	                  var _51 = {};
+	                  for (var _52 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_52)) {
+	                          _51[_52] = _7.value0[_52];
 	                      };
 	                  };
-	                  _49.cmd = new Data_Maybe.Just(_5.value0);
-	                  return _49;
+	                  _51.cmd = new Data_Maybe.Just(_6.value0);
+	                  return _51;
 	              })());
 	          };
-	          if (_5 instanceof Types.RenderNoop) {
-	              return _6;
+	          if (_6 instanceof Types.RenderNoop) {
+	              return _7;
 	          };
-	          throw new Error("Failed pattern match at UI.HTML.Main line 61, column 1 - line 72, column 1: " + [ _5.constructor.name, _6.constructor.name ]);
+	          throw new Error("Failed pattern match at UI.HTML.Main line 61, column 1 - line 72, column 1: " + [ _6.constructor.name, _7.constructor.name ]);
 	      };
 	  };
 	  var initialVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(Text_Smolder_HTML.div(Text_Smolder_Markup.text("One moment please"))));
-	  var execCmd = function (_7) {
-	      if (_7.value0.cmd instanceof Data_Maybe.Just) {
-	          return UI_HTML_Utils.setLocationUrl(_7.value0.cmd.value0.value0);
+	  var execCmd = function (_8) {
+	      if (_8.value0.cmd instanceof Data_Maybe.Just) {
+	          return UI_HTML_Utils.setLocationUrl(_8.value0.cmd.value0.value0);
 	      };
 	      return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
 	  };
@@ -8952,14 +8961,14 @@
 	                  cmd: Data_Maybe.Nothing.value, 
 	                  newVDom: initialVDom
 	              });
-	              var justRender = function (_11) {
-	                  if (_11.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justRender = function (_12) {
+	                  if (_12.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return true;
 	                  };
 	                  return false;
 	              };
-	              var justCmd = function (_12) {
-	                  if (_12.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justCmd = function (_13) {
+	                  if (_13.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return false;
 	                  };
 	                  return true;
