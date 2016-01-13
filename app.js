@@ -8895,7 +8895,7 @@
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })))(function () {
-	          return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "var disqus_config = function () {", "this.page.url = document.location.href;", "this.page.identifier = document.location.hash;", "};", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	          return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
 	      }));
 	  };
 	  var uiLogic = function (_6) {
