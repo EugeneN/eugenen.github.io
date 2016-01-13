@@ -3908,7 +3908,7 @@
 	      currentContent: Data_Maybe.Nothing.value, 
 	      keyboardInput: Data_Maybe.Nothing.value
 	  });
-	  var helpDS = new Types.StringSource(Utils.unlines([ "This \xabweb site\xbb is a *concept application* aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage. Github link: [https://github.com/EugeneN/meta.repl](https://github.com/EugeneN/meta.repl) ", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- [conventional HTML-based](?ui=html#about), rendered using virtual dom;", "- [REPL-based](?ui=console#about) using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without a browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]));
+	  var helpDS = new Types.StringSource(Utils.unlines([ "This \xabweb site\xbb is a *concept application* aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage. Github link: [https://github.com/EugeneN/meta.repl](https://github.com/EugeneN/meta.repl) ", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- [conventional HTML-based](?ui=html#!about), rendered using virtual dom;", "- [REPL-based](?ui=console#!about) using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without a browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]));
 	  var golDS = new Types.StringSource(Utils.unlines([ "\u201cGame of Life\u201d game written in Purescript as a research on", "decoupling and encapsulating state between user interface, application core and input effects in reactive web applications. ", "Features a stateful core and few distinct interchangeable stateful user interfaces.", "", "[pureGoL](http://eugenen.github.io/pureGoL)", "# ![gol](gol.png)", "" ]));
 	  var g4DS = new Types.StringSource(Utils.unlines([ "G4 is a rich web application for managing geospatial data \u2013 GPS tracks, waypoints, geotagged items, custom maps etc. ", "The application features complex geographical/geometric calculations, automatic categorization and clustering of data, ", "real-time push based communications, external RESTful API, spatial search, uses advanced HTML5 ", "features like drag-and-drop multi-file upload, sound effects, interactive svg charting etc.", "", "", "The application is currently offline, but you can see some screenshots here:", "", "# ![Many objects](http://eugenen.github.io/g4/g4massive.png)", "# ![Many waypoints](http://eugenen.github.io/g4/g4manywpts.jpg)", "# ![Login screen](http://eugenen.github.io/g4/g4greenbtn1.png)", "# ![Track charts](http://eugenen.github.io/g4/g4chartsnew.png)", "# ![More charts](http://eugenen.github.io/g4/g4evolving.png)", "# ![Tracks comparison](http://eugenen.github.io/g4/g4r.jpg)" ]));
 	  var cmdDS = new Types.StringSource(Utils.unlines([ "This is a rich markdown editor for Github Gists, a 100% client side application written in ClojureScript to explore offline mode and multiprocessing for web applications.", "", "[C.MD](http://eugenen.github.io/C.MD)", "# ![cmd](cmd.png)", "" ]));
@@ -6846,7 +6846,7 @@
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_2.value1.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
 	      };
 	      if (_2 instanceof Text_Markdown_SlamDown.Link && (_2.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _2.value1.value0 instanceof Data_Maybe.Nothing)) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
 	      };
 	      if (_2 instanceof Text_Markdown_SlamDown.Link && (_2.value1 instanceof Text_Markdown_SlamDown.ReferenceLink && _2.value1.value0 instanceof Data_Maybe.Just)) {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(_2.value1.value0.value0))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_2.value0)(toHtml(toHtmlInline)));
@@ -7020,19 +7020,17 @@
 	      return Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(_20.value0)(renderFileH);
 	  };
 	  var renderFullArticle = function (_18) {
-	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
+	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_18.value0.description)))(function () {
 	              return renderFilesH(_18.value0.files);
 	          })))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
-	                  return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "var disqus_config = function () {", "this.page.url = document.location.href;", "this.page.identifier = '" + ("#blog/" + _18.value0.id + "';"), "};", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = '//eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
-	              }));
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)));
 	          }));
 	      });
 	  };
 	  var renderArticleH = function (_19) {
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text("Entry ")))(function () {
-	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#blog/" + _19.value0.id))(Text_Smolder_Markup.text(_19.value0.id)))(function () {
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog/" + _19.value0.id))(Text_Smolder_Markup.text(_19.value0.id)))(function () {
 	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text(": ")))(function () {
 	                  return Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_19.value0.description));
 	              });
@@ -7106,7 +7104,7 @@
 	      if (_47 instanceof Data_Either.Right) {
 	          return new Data_Either.Right(_47.value0);
 	      };
-	      throw new Error("Failed pattern match at Processors.Blog.Main line 203, column 1 - line 204, column 1: " + [ _47.constructor.name ]);
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 192, column 1 - line 193, column 1: " + [ _47.constructor.name ]);
 	  };
 	  var loadNparseGist = function (gid) {
 	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_15) {
@@ -7276,7 +7274,7 @@
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("error"))(Text_Smolder_Markup.text("Error: " + m));
 	  };
 	  var currentPathToUrl = function (_2) {
-	      return "#" + Data_Maybe.fromMaybe("")(Data_Array["!!"](_2.value0.menuPath)(0));
+	      return "#!" + Data_Maybe.fromMaybe("")(Data_Array["!!"](_2.value0.menuPath)(0));
 	  };
 	  var go = function (srcs) {
 	      return function (_1) {
@@ -7402,20 +7400,20 @@
 	  var Control_Monad_Maybe_Trans = PS["Control.Monad.Maybe.Trans"];
 	  var Data_Foldable = PS["Data.Foldable"];
 	  var Network_HTTP_Affjax_Response = PS["Network.HTTP.Affjax.Response"];     
-	  var getTitle = function (_14) {
-	      return _14.value0.title;
+	  var getTitle = function (_16) {
+	      return _16.value0.title;
 	  };
-	  var getProcessor = function (_17) {
-	      return _17.value0.processor;
+	  var getProcessor = function (_19) {
+	      return _19.value0.processor;
 	  };
-	  var getPathProcessor = function (_18) {
-	      return _18.value0.pathProcessor;
+	  var getPathProcessor = function (_20) {
+	      return _20.value0.pathProcessor;
 	  };
 	  var getMenuPath = function (_13) {
 	      return _13.value0.menuPath;
 	  };
-	  var getDataSource = function (_16) {
-	      return _16.value0.dataSource;
+	  var getDataSource = function (_18) {
+	      return _18.value0.dataSource;
 	  };
 	  var getCurrentPath = function (_12) {
 	      return _12.value0.currentPath;
@@ -7431,8 +7429,8 @@
 	          var _11 = __copy__11;
 	          tco: while (true) {
 	              var match = function (p) {
-	                  return function (_22) {
-	                      return Prelude["=="](Prelude.eqString)(_22.value0.path)(p);
+	                  return function (_24) {
+	                      return Prelude["=="](Prelude.eqString)(_24.value0.path)(p);
 	                  };
 	              };
 	              var find = function (path_) {
@@ -7440,26 +7438,26 @@
 	                      return Data_Array.head(Data_Array.filter(match(path_))(nodes));
 	                  };
 	              };
-	              var _46 = Data_Array.uncons(pathElements);
-	              if (_46 instanceof Data_Maybe.Nothing) {
+	              var _48 = Data_Array.uncons(pathElements);
+	              if (_48 instanceof Data_Maybe.Nothing) {
 	                  return Data_Maybe.Nothing.value;
 	              };
-	              if (_46 instanceof Data_Maybe.Just && _46.value0.tail.length === 0) {
-	                  return find(_46.value0.head)(_11.value0.children);
+	              if (_48 instanceof Data_Maybe.Just && _48.value0.tail.length === 0) {
+	                  return find(_48.value0.head)(_11.value0.children);
 	              };
-	              if (_46 instanceof Data_Maybe.Just) {
-	                  var _50 = find(_46.value0.head)(_11.value0.children);
-	                  if (_50 instanceof Data_Maybe.Nothing) {
+	              if (_48 instanceof Data_Maybe.Just) {
+	                  var _52 = find(_48.value0.head)(_11.value0.children);
+	                  if (_52 instanceof Data_Maybe.Nothing) {
 	                      return Data_Maybe.Nothing.value;
 	                  };
-	                  if (_50 instanceof Data_Maybe.Just) {
-	                      pathElements = _46.value0.tail;
-	                      _11 = _50.value0;
+	                  if (_52 instanceof Data_Maybe.Just) {
+	                      pathElements = _48.value0.tail;
+	                      _11 = _52.value0;
 	                      continue tco;
 	                  };
-	                  throw new Error("Failed pattern match: " + [ _50.constructor.name ]);
+	                  throw new Error("Failed pattern match: " + [ _52.constructor.name ]);
 	              };
-	              throw new Error("Failed pattern match: " + [ _46.constructor.name ]);
+	              throw new Error("Failed pattern match: " + [ _48.constructor.name ]);
 	          };
 	      };
 	  };
@@ -7467,21 +7465,21 @@
 	      return function (parent) {
 	          return Prelude.bind(Data_Maybe.bindMaybe)(Data_Array.uncons(path))(function (_5) {
 	              return Prelude.bind(Data_Maybe.bindMaybe)(findChildNodeByPath([ _5.head ])(parent))(function (_4) {
-	                  var _58 = getPathProcessor(_4);
-	                  if (_58 instanceof Types.ChildPP) {
+	                  var _60 = getPathProcessor(_4);
+	                  if (_60 instanceof Types.ChildPP) {
 	                      return Prelude.pure(Data_Maybe.applicativeMaybe)(new Data_Tuple.Tuple(_4, _5.tail));
 	                  };
-	                  if (_58 instanceof Types.GlobalPP) {
-	                      var _59 = Prelude["=="](Prelude.eqArray(Prelude.eqString))(_5.tail)([  ]);
-	                      if (_59) {
+	                  if (_60 instanceof Types.GlobalPP) {
+	                      var _61 = Prelude["=="](Prelude.eqArray(Prelude.eqString))(_5.tail)([  ]);
+	                      if (_61) {
 	                          return Prelude.pure(Data_Maybe.applicativeMaybe)(new Data_Tuple.Tuple(_4, [  ]));
 	                      };
-	                      if (!_59) {
+	                      if (!_61) {
 	                          return findTargetNode(_5.tail)(_4);
 	                      };
-	                      throw new Error("Failed pattern match: " + [ _59.constructor.name ]);
+	                      throw new Error("Failed pattern match: " + [ _61.constructor.name ]);
 	                  };
-	                  throw new Error("Failed pattern match: " + [ _58.constructor.name ]);
+	                  throw new Error("Failed pattern match: " + [ _60.constructor.name ]);
 	              });
 	          });
 	      };
@@ -7492,88 +7490,94 @@
 	  var calcTitle = function (appState) {
 	      return Data_String.joinWith(" <*> ")([ Data_Maybe.fromMaybe("Hi")(Prelude["<$>"](Data_Maybe.functorMaybe)(getTitle)(getCurrentNode(appState))), getTitle(Data.appDNA) ]);
 	  };
+	  var calcPageUrl = function (_14) {
+	      return "#!" + Data_String.joinWith("/")(_14.value0.menuPath);
+	  };
+	  var calcPageId = function (_15) {
+	      return "#!" + Data_String.joinWith("/")(_15.value0.menuPath);
+	  };
 	  var appLogic = function (_8) {
 	      return function (_9) {
 	          if (_8 instanceof Types.Navigate) {
-	              var _64 = findTargetNode(_8.value0)(Data.appDNA);
-	              if (_64 instanceof Data_Maybe.Nothing) {
+	              var _70 = findTargetNode(_8.value0)(Data.appDNA);
+	              if (_70 instanceof Data_Maybe.Nothing) {
 	                  return new Types.AppState((function () {
-	                      var _65 = {};
-	                      for (var _66 in _9.value0) {
-	                          if (_9.value0.hasOwnProperty(_66)) {
-	                              _65[_66] = _9.value0[_66];
+	                      var _71 = {};
+	                      for (var _72 in _9.value0) {
+	                          if (_9.value0.hasOwnProperty(_72)) {
+	                              _71[_72] = _9.value0[_72];
 	                          };
 	                      };
-	                      _65.actionsCount = _9.value0.actionsCount + 1 | 0;
-	                      _65.currentPath = _8.value0;
-	                      _65.menuPath = _8.value0;
-	                      _65.keyboardInput = Data_Maybe.Nothing.value;
-	                      _65.currentNode = Data_Maybe.Nothing.value;
-	                      return _65;
+	                      _71.actionsCount = _9.value0.actionsCount + 1 | 0;
+	                      _71.currentPath = _8.value0;
+	                      _71.menuPath = _8.value0;
+	                      _71.keyboardInput = Data_Maybe.Nothing.value;
+	                      _71.currentNode = Data_Maybe.Nothing.value;
+	                      return _71;
 	                  })());
 	              };
-	              if (_64 instanceof Data_Maybe.Just) {
+	              if (_70 instanceof Data_Maybe.Just) {
 	                  var newTargetNode = (function () {
-	                      var _67 = getDataSource(_64.value0.value0);
-	                      if (_67 instanceof Types.ChildSource) {
-	                          return findChildNodeByPath([ _67.value0 ])(_64.value0.value0);
+	                      var _73 = getDataSource(_70.value0.value0);
+	                      if (_73 instanceof Types.ChildSource) {
+	                          return findChildNodeByPath([ _73.value0 ])(_70.value0.value0);
 	                      };
-	                      return new Data_Maybe.Just(_64.value0.value0);
+	                      return new Data_Maybe.Just(_70.value0.value0);
 	                  })();
 	                  var newPath = (function () {
-	                      var _69 = getDataSource(_64.value0.value0);
-	                      if (_69 instanceof Types.ChildSource) {
-	                          return Prelude["<>"](Prelude.semigroupArray)(_8.value0)([ _69.value0 ]);
+	                      var _75 = getDataSource(_70.value0.value0);
+	                      if (_75 instanceof Types.ChildSource) {
+	                          return Prelude["<>"](Prelude.semigroupArray)(_8.value0)([ _75.value0 ]);
 	                      };
-	                      return _64.value0.value1;
+	                      return _70.value0.value1;
 	                  })();
 	                  var menuPath = (function () {
-	                      var _71 = getDataSource(_64.value0.value0);
-	                      if (_71 instanceof Types.ChildSource) {
-	                          return Prelude["<>"](Prelude.semigroupArray)(_8.value0)([ _71.value0 ]);
+	                      var _77 = getDataSource(_70.value0.value0);
+	                      if (_77 instanceof Types.ChildSource) {
+	                          return Prelude["<>"](Prelude.semigroupArray)(_8.value0)([ _77.value0 ]);
 	                      };
 	                      return _8.value0;
 	                  })();
 	                  return new Types.AppState((function () {
-	                      var _73 = {};
-	                      for (var _74 in _9.value0) {
-	                          if (_9.value0.hasOwnProperty(_74)) {
-	                              _73[_74] = _9.value0[_74];
+	                      var _79 = {};
+	                      for (var _80 in _9.value0) {
+	                          if (_9.value0.hasOwnProperty(_80)) {
+	                              _79[_80] = _9.value0[_80];
 	                          };
 	                      };
-	                      _73.actionsCount = _9.value0.actionsCount + 1 | 0;
-	                      _73.currentPath = newPath;
-	                      _73.menuPath = menuPath;
-	                      _73.keyboardInput = Data_Maybe.Nothing.value;
-	                      _73.currentNode = newTargetNode;
-	                      return _73;
+	                      _79.actionsCount = _9.value0.actionsCount + 1 | 0;
+	                      _79.currentPath = newPath;
+	                      _79.menuPath = menuPath;
+	                      _79.keyboardInput = Data_Maybe.Nothing.value;
+	                      _79.currentNode = newTargetNode;
+	                      return _79;
 	                  })());
 	              };
-	              throw new Error("Failed pattern match at Core line 101, column 1 - line 102, column 1: " + [ _64.constructor.name ]);
+	              throw new Error("Failed pattern match at Core line 101, column 1 - line 102, column 1: " + [ _70.constructor.name ]);
 	          };
 	          if (_8 instanceof Types.KeyboardInput) {
 	              return new Types.AppState((function () {
-	                  var _80 = {};
-	                  for (var _81 in _9.value0) {
-	                      if (_9.value0.hasOwnProperty(_81)) {
-	                          _80[_81] = _9.value0[_81];
+	                  var _86 = {};
+	                  for (var _87 in _9.value0) {
+	                      if (_9.value0.hasOwnProperty(_87)) {
+	                          _86[_87] = _9.value0[_87];
 	                      };
 	                  };
-	                  _80.keyboardInput = new Data_Maybe.Just(_8.value0);
-	                  _80.actionsCount = _9.value0.actionsCount + 1 | 0;
-	                  return _80;
+	                  _86.keyboardInput = new Data_Maybe.Just(_8.value0);
+	                  _86.actionsCount = _9.value0.actionsCount + 1 | 0;
+	                  return _86;
 	              })());
 	          };
 	          if (_8 instanceof Types.Noop) {
 	              return new Types.AppState((function () {
-	                  var _84 = {};
-	                  for (var _85 in _9.value0) {
-	                      if (_9.value0.hasOwnProperty(_85)) {
-	                          _84[_85] = _9.value0[_85];
+	                  var _90 = {};
+	                  for (var _91 in _9.value0) {
+	                      if (_9.value0.hasOwnProperty(_91)) {
+	                          _90[_91] = _9.value0[_91];
 	                      };
 	                  };
-	                  _84.actionsCount = _9.value0.actionsCount + 1 | 0;
-	                  return _84;
+	                  _90.actionsCount = _9.value0.actionsCount + 1 | 0;
+	                  return _90;
 	              })());
 	          };
 	          throw new Error("Failed pattern match at Core line 101, column 1 - line 102, column 1: " + [ _8.constructor.name, _9.constructor.name ]);
@@ -7583,46 +7587,46 @@
 	      return function (_7) {
 	          var setContent = function (x) {
 	              return Signal_Channel.send(uiChannel)(new Types.RenderState(new Types.AppState((function () {
-	                  var _89 = {};
-	                  for (var _90 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_90)) {
-	                          _89[_90] = _7.value0[_90];
+	                  var _95 = {};
+	                  for (var _96 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_96)) {
+	                          _95[_96] = _7.value0[_96];
 	                      };
 	                  };
-	                  _89.currentContent = x;
-	                  return _89;
+	                  _95.currentContent = x;
+	                  return _95;
 	              })())));
 	          };
 	          var setCmd = function (x) {
 	              return Signal_Channel.send(uiChannel)(new Types.SetCmd(x, _7));
 	          };
 	          var setBusy = Signal_Channel.send(uiChannel)(Types.RenderState.create(new Types.AppState((function () {
-	              var _91 = {};
-	              for (var _92 in _7.value0) {
-	                  if (_7.value0.hasOwnProperty(_92)) {
-	                      _91[_92] = _7.value0[_92];
+	              var _97 = {};
+	              for (var _98 in _7.value0) {
+	                  if (_7.value0.hasOwnProperty(_98)) {
+	                      _97[_98] = _7.value0[_98];
 	                  };
 	              };
-	              _91.currentContent = new Data_Maybe.Just(new Types.Md("###### ![...](ajax-loader.gif) Loading..."));
-	              return _91;
+	              _97.currentContent = new Data_Maybe.Just(new Types.Md("###### ![...](ajax-loader.gif) Loading..."));
+	              return _97;
 	          })())));
 	          var loadGist = function (gid) {
 	              return Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)("https://api.github.com/gists/" + gid);
 	          };
-	          var readSource = function (_21) {
-	              if (_21 instanceof Types.StringSource) {
-	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_21.value0)));
+	          var readSource = function (_23) {
+	              if (_23 instanceof Types.StringSource) {
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_23.value0)));
 	              };
-	              if (_21 instanceof Types.ArraySource) {
-	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.ArrayInput(_21.value0)));
+	              if (_23 instanceof Types.ArraySource) {
+	                  return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.ArrayInput(_23.value0)));
 	              };
-	              if (_21 instanceof Types.GistSource) {
-	                  return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist(_21.value0))(function (_0) {
+	              if (_23 instanceof Types.GistSource) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist(_23.value0))(function (_0) {
 	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.StringInput.create(Utils.parseGistResponse(_0.response))));
 	                  });
 	              };
-	              if (_21 instanceof Types.GithubSource) {
-	                  return Prelude.bind(Control_Monad_Aff.bindAff)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(_21.value0))(function (_1) {
+	              if (_23 instanceof Types.GithubSource) {
+	                  return Prelude.bind(Control_Monad_Aff.bindAff)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(_23.value0))(function (_1) {
 	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(new Types.StringInput(_1.response)));
 	                  });
 	              };
@@ -7637,25 +7641,25 @@
 	          var runAppEffects = function (x) {
 	              return Control_Monad_Aff.runAff(handleError)(handleResult)(x);
 	          };
-	          var getCurrentNode_1 = function (_19) {
-	              return _19.value0.currentNode;
+	          var getCurrentNode_1 = function (_21) {
+	              return _21.value0.currentNode;
 	          };
 	          var currentNode = getCurrentNode_1(_7);
 	          var ds = Prelude["<$>"](Data_Maybe.functorMaybe)(getDataSource)(currentNode);
 	          var proc = Prelude["<$>"](Data_Maybe.functorMaybe)(getProcessor)(currentNode);
-	          var callProcessor = function (_20) {
+	          var callProcessor = function (_22) {
 	              return function (apst_1) {
 	                  return function (i) {
-	                      if (_20 instanceof Types.MdProcessor) {
+	                      if (_22 instanceof Types.MdProcessor) {
 	                          return Processors_PlainText_Main.textProcessor(i)(apst_1);
 	                      };
-	                      if (_20 instanceof Types.TextProcessor) {
+	                      if (_22 instanceof Types.TextProcessor) {
 	                          return Processors_PlainText_Main.textProcessor(i)(apst_1);
 	                      };
-	                      if (_20 instanceof Types.ImgListProcessor) {
+	                      if (_22 instanceof Types.ImgListProcessor) {
 	                          return Processors_ImgList_Main.imgListProcessor(i)(apst_1);
 	                      };
-	                      if (_20 instanceof Types.BlogProcessor) {
+	                      if (_22 instanceof Types.BlogProcessor) {
 	                          return Processors_Blog_Main.blogProcessor(i)(apst_1);
 	                      };
 	                      return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Nothing.value);
@@ -7684,6 +7688,8 @@
 	  exports["getProcessor"] = getProcessor;
 	  exports["getDataSource"] = getDataSource;
 	  exports["getTitle"] = getTitle;
+	  exports["calcPageId"] = calcPageId;
+	  exports["calcPageUrl"] = calcPageUrl;
 	  exports["calcTitle"] = calcTitle;
 	  exports["getMenuPath"] = getMenuPath;
 	  exports["getCurrentPath"] = getCurrentPath;
@@ -8439,7 +8445,7 @@
 	  };
 	  var setupCliUi = function (inputChannel) {
 	      return function __do() {
-	          Utils.injectBody(Utils.unlines([ "<div class='repl-message'>", "<p>Application is in REPL interface mode.</p>", "<p>To use the aplication please open browser console and follow prompts. ", "Alternatively switch to <a href='?ui=html#about'>HTML</a> or ", "<a href='app.js'>CLI/telnet</a> mode.</p>", "<p>For CLI/telnet mode please run `app.js` with Node.js and ", "connect to it with telnet or netcat.</p>", "</div>" ]))();
+	          Utils.injectBody(Utils.unlines([ "<div class='repl-message'>", "<p>Application is in REPL interface mode.</p>", "<p>To use the aplication please open browser console and follow prompts. ", "Alternatively switch to <a href='?ui=html#!about'>HTML</a> or ", "<a href='app.js'>CLI/telnet</a> mode.</p>", "<p>For CLI/telnet mode please run `app.js` with Node.js and ", "connect to it with telnet or netcat.</p>", "</div>" ]))();
 	          var _0 = Signal_Channel.channel(Types.RenderNoop.value)();
 	          return (function () {
 	              var renderSignal = Signal_Channel.subscribe(_0);
@@ -8545,6 +8551,29 @@
 	  // exports.vNode2vTree = function(vnode) { return vnode }
 
 	  exports.setLocationUrl = function(url) { return function() { document.location.url = url } }
+
+	  exports.disqussReset = function(id) {
+	    return function(url) {
+	      return function(title) {
+	        return function() {
+	          console.log("disqus reset", id, url, title );
+	          try {
+	            DISQUS.reset({
+	              reload: true,
+	              config: function () {
+	                this.page.identifier = id;
+	                this.page.url = url;
+	                this.page.title = id;
+	                this.language = "en";
+	              }
+	            });
+	          } catch (e) {
+	            console.log(e.toString());
+	          }
+	        }
+	      }
+	    }
+	  }
 	 
 	})(PS["UI.HTML.Utils"] = PS["UI.HTML.Utils"] || {});
 	(function(exports) {
@@ -8714,6 +8743,7 @@
 	  exports["getMenuItems"] = getMenuItems;
 	  exports["vNode2vTree"] = vNode2vTree;
 	  exports["parseContent"] = parseContent;
+	  exports["disqussReset"] = $foreign.disqussReset;
 	  exports["appendToBody"] = $foreign.appendToBody;
 	  exports["setLocationUrl"] = $foreign.setLocationUrl;;
 	 
@@ -8772,7 +8802,7 @@
 	                  if (_9 instanceof Data_Maybe.Just) {
 	                      var makeUrl = function (base_url) {
 	                          return function (slug) {
-	                              return "#" + Data_String.joinWith("/")(Prelude["<>"](Prelude.semigroupArray)(base_url)([ slug ]));
+	                              return "#!" + Data_String.joinWith("/")(Prelude["<>"](Prelude.semigroupArray)(base_url)([ slug ]));
 	                          };
 	                      };
 	                      var drawNodeMenu = function (_13) {
@@ -8840,6 +8870,7 @@
 	      return function __do() {
 	          var _3 = VirtualDOM.patch(_8.value0.rootNode)(patches)();
 	          Utils.setTitle(_8.value0.title)();
+	          UI_HTML_Utils.disqussReset(_8.value0.pageId)(_8.value0.pageUrl)(_8.value0.title)();
 	          return Prelude.unit;
 	      };
 	  };
@@ -8848,13 +8879,15 @@
 	      var menuPath = Core.getMenuPath(_10);
 	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_10.value0.currentContent));
 	      var currentNode = Core.getCurrentNode(_10);
-	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
 	      })))(function () {
 	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("nav"))(renderMenu(menuPath)(new Data_Maybe.Just(Data.appDNA))([  ])(0)))(function () {
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
-	      })));
+	      })))(function () {
+	          return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "var disqus_config = function () {", "this.page.url = document.location.href;", "this.page.identifier = document.location.href;", "};", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = '//eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	      }));
 	  };
 	  var uiLogic = function (_5) {
 	      return function (_6) {
@@ -8870,6 +8903,8 @@
 	                  };
 	                  _45.oldVDom = _6.value0.newVDom;
 	                  _45.title = Core.calcTitle(_5.value0);
+	                  _45.pageUrl = Core.calcPageUrl(_5.value0);
+	                  _45.pageId = Core.calcPageId(_5.value0);
 	                  _45.cmd = Data_Maybe.Nothing.value;
 	                  _45.newVDom = newVDom;
 	                  return _45;
@@ -8890,7 +8925,7 @@
 	          if (_5 instanceof Types.RenderNoop) {
 	              return _6;
 	          };
-	          throw new Error("Failed pattern match at UI.HTML.Main line 59, column 1 - line 68, column 1: " + [ _5.constructor.name, _6.constructor.name ]);
+	          throw new Error("Failed pattern match at UI.HTML.Main line 61, column 1 - line 72, column 1: " + [ _5.constructor.name, _6.constructor.name ]);
 	      };
 	  };
 	  var initialVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(Text_Smolder_HTML.div(Text_Smolder_Markup.text("One moment please"))));
@@ -8900,7 +8935,7 @@
 	      };
 	      return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
 	  };
-	  var defaultTitle = "Eugene Naumenko";
+	  var defaultTitle = Core.getTitle(Data.appDNA);
 	  var setupHtmlUi = function (inputChannel) {
 	      var rootNode = VirtualDOM.createElement(initialVDom);
 	      return function __do() {
@@ -8912,6 +8947,8 @@
 	                  rootNode: rootNode, 
 	                  oldVDom: initialVDom, 
 	                  title: defaultTitle, 
+	                  pageUrl: "", 
+	                  pageId: "", 
 	                  cmd: Data_Maybe.Nothing.value, 
 	                  newVDom: initialVDom
 	              });
@@ -8942,7 +8979,7 @@
 	                      if (!x) {
 	                          return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
 	                      };
-	                      throw new Error("Failed pattern match at UI.HTML.Main line 74, column 1 - line 75, column 1: " + [ x.constructor.name ]);
+	                      throw new Error("Failed pattern match at UI.HTML.Main line 78, column 1 - line 79, column 1: " + [ x.constructor.name ]);
 	                  }))();
 	                  Signal.runSignal(Signal["~>"](Signal.functorSignal)(_0)(function (x) {
 	                      if (x) {
@@ -8951,13 +8988,13 @@
 	                      if (!x) {
 	                          return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
 	                      };
-	                      throw new Error("Failed pattern match at UI.HTML.Main line 74, column 1 - line 75, column 1: " + [ x.constructor.name ]);
+	                      throw new Error("Failed pattern match at UI.HTML.Main line 78, column 1 - line 79, column 1: " + [ x.constructor.name ]);
 	                  }))();
 	                  Routing.hashChanged(function (old) {
 	                      return function ($$new) {
 	                          return function __do() {
 	                              Control_Monad_Eff_Console.log("hash changed: " + (old + (" -> " + $$new)))();
-	                              Signal_Channel.send(inputChannel)(Types.Navigate.create(Data_String.split("/")($$new)))();
+	                              Signal_Channel.send(inputChannel)(Types.Navigate.create(Data_String.split("/")(Data_String.drop(1)($$new))))();
 	                              return Prelude.unit;
 	                          };
 	                      };
