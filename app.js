@@ -7021,11 +7021,9 @@
 	  };
 	  var renderFullArticle = function (_18) {
 	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_18.value0.description)))(function () {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_18.value0.description)))(function () {
 	              return renderFilesH(_18.value0.files);
-	          })))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)));
-	          }));
+	          })));
 	      });
 	  };
 	  var renderArticleH = function (_19) {
@@ -8895,7 +8893,9 @@
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })))(function () {
-	          return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	              return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	          });
 	      }));
 	  };
 	  var uiLogic = function (_6) {
