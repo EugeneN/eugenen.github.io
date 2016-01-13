@@ -8554,7 +8554,7 @@
 	    return document.location.href.replace(/#.*$/, "");
 	  }
 
-	  exports.disqussReset = function(id) {
+	  exports.resetDisqusUnsafe = function(id) {
 	    return function(url) {
 	      return function(title) {
 	        return function() {
@@ -8567,8 +8567,8 @@
 	                config: function () {
 	                  this.page.identifier = id;
 	                  this.page.url = url;
-	                  this.page.title = id;
-	                  this.language = "en";
+	                  //this.page.title = id;
+	                  //this.language = "en";
 	                }
 	              });
 	            } catch (e) {
@@ -8749,7 +8749,7 @@
 	  exports["vNode2vTree"] = vNode2vTree;
 	  exports["parseContent"] = parseContent;
 	  exports["getBaseUrl"] = $foreign.getBaseUrl;
-	  exports["disqussReset"] = $foreign.disqussReset;
+	  exports["resetDisqusUnsafe"] = $foreign.resetDisqusUnsafe;
 	  exports["appendToBody"] = $foreign.appendToBody;
 	  exports["setLocationUrl"] = $foreign.setLocationUrl;;
 	 
@@ -8798,94 +8798,99 @@
 	      };
 	      return UIState;
 	  })();
+	  var resetDisqus = function (_9) {
+	      return function __do() {
+	          var _3 = UI_HTML_Utils.getBaseUrl();
+	          UI_HTML_Utils.resetDisqusUnsafe(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title)();
+	          return Prelude.unit;
+	      };
+	  };
 	  var renderMenu = function (fullPath) {
-	      return function (_10) {
+	      return function (_11) {
 	          return function (baseUrl) {
 	              return function (level) {
-	                  if (_10 instanceof Data_Maybe.Nothing) {
+	                  if (_11 instanceof Data_Maybe.Nothing) {
 	                      return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	                  };
-	                  if (_10 instanceof Data_Maybe.Just) {
+	                  if (_11 instanceof Data_Maybe.Just) {
 	                      var makeUrl = function (base_url) {
 	                          return function (slug) {
 	                              return "#!" + Data_String.joinWith("/")(Prelude["<>"](Prelude.semigroupArray)(base_url)([ slug ]));
 	                          };
 	                      };
-	                      var drawNodeMenu = function (_14) {
+	                      var drawNodeMenu = function (_15) {
 	                          return function (baseUrl$prime) {
 	                              return function (selected) {
 	                                  return function (level_2) {
-	                                      if (_14 instanceof Data_Maybe.Nothing) {
+	                                      if (_15 instanceof Data_Maybe.Nothing) {
 	                                          return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	                                      };
-	                                      if (_14 instanceof Data_Maybe.Just) {
+	                                      if (_15 instanceof Data_Maybe.Just) {
 	                                          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("menu-level-" + (Prelude.show(Prelude.showInt)(level_2) + (" " + (function () {
-	                                              var _23 = level_2 > 0;
-	                                              if (_23) {
+	                                              var _27 = level_2 > 0;
+	                                              if (_27) {
 	                                                  return "sub-menu";
 	                                              };
-	                                              if (!_23) {
+	                                              if (!_27) {
 	                                                  return "";
 	                                              };
-	                                              throw new Error("Failed pattern match: " + [ _23.constructor.name ]);
-	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_14.value0))(function (_5) {
+	                                              throw new Error("Failed pattern match: " + [ _27.constructor.name ]);
+	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_15.value0))(function (_5) {
 	                                              if (selected instanceof Data_Maybe.Nothing) {
 	                                                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                              };
 	                                              if (selected instanceof Data_Maybe.Just) {
-	                                                  var _26 = Prelude["=="](Prelude.eqString)(_5.value0)(selected.value0);
-	                                                  if (_26) {
+	                                                  var _30 = Prelude["=="](Prelude.eqString)(_5.value0)(selected.value0);
+	                                                  if (_30) {
 	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("current-menu-item")))(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  if (!_26) {
+	                                                  if (!_30) {
 	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  throw new Error("Failed pattern match: " + [ _26.constructor.name ]);
+	                                                  throw new Error("Failed pattern match: " + [ _30.constructor.name ]);
 	                                              };
 	                                              throw new Error("Failed pattern match: " + [ selected.constructor.name ]);
 	                                          }));
 	                                      };
-	                                      throw new Error("Failed pattern match: " + [ _14.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
+	                                      throw new Error("Failed pattern match: " + [ _15.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
 	                                  };
 	                              };
 	                          };
 	                      };
-	                      var _31 = Data_Array.uncons(fullPath);
-	                      if (_31 instanceof Data_Maybe.Nothing) {
-	                          return drawNodeMenu(new Data_Maybe.Just(_10.value0))(baseUrl)(Data_Maybe.Nothing.value)(level);
+	                      var _35 = Data_Array.uncons(fullPath);
+	                      if (_35 instanceof Data_Maybe.Nothing) {
+	                          return drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(Data_Maybe.Nothing.value)(level);
 	                      };
-	                      if (_31 instanceof Data_Maybe.Just && _31.value0.tail.length === 0) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_10.value0))(baseUrl)(new Data_Maybe.Just(_31.value0.head))(level))(function () {
-	                              return drawNodeMenu(Core.findChildNodeByPath([ _31.value0.head ])(_10.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _31.value0.head ]))(new Data_Maybe.Just(_31.value0.head))(level + 1 | 0);
+	                      if (_35 instanceof Data_Maybe.Just && _35.value0.tail.length === 0) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(new Data_Maybe.Just(_35.value0.head))(level))(function () {
+	                              return drawNodeMenu(Core.findChildNodeByPath([ _35.value0.head ])(_11.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _35.value0.head ]))(new Data_Maybe.Just(_35.value0.head))(level + 1 | 0);
 	                          });
 	                      };
-	                      if (_31 instanceof Data_Maybe.Just) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_10.value0))(baseUrl)(new Data_Maybe.Just(_31.value0.head))(level))(function () {
-	                              return renderMenu(_31.value0.tail)(Core.findChildNodeByPath([ _31.value0.head ])(_10.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _31.value0.head ]))(level + 1 | 0);
+	                      if (_35 instanceof Data_Maybe.Just) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(new Data_Maybe.Just(_35.value0.head))(level))(function () {
+	                              return renderMenu(_35.value0.tail)(Core.findChildNodeByPath([ _35.value0.head ])(_11.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _35.value0.head ]))(level + 1 | 0);
 	                          });
 	                      };
-	                      throw new Error("Failed pattern match: " + [ _31.constructor.name ]);
+	                      throw new Error("Failed pattern match: " + [ _35.constructor.name ]);
 	                  };
-	                  throw new Error("Failed pattern match: " + [ fullPath.constructor.name, _10.constructor.name, baseUrl.constructor.name, level.constructor.name ]);
+	                  throw new Error("Failed pattern match: " + [ fullPath.constructor.name, _11.constructor.name, baseUrl.constructor.name, level.constructor.name ]);
 	              };
 	          };
 	      };
 	  };
-	  var patchVDom = function (_9) {
-	      var patches = VirtualDOM.diff(_9.value0.oldVDom)(_9.value0.newVDom);
+	  var patchVDom = function (_10) {
+	      var patches = VirtualDOM.diff(_10.value0.oldVDom)(_10.value0.newVDom);
 	      return function __do() {
-	          var _4 = VirtualDOM.patch(_9.value0.rootNode)(patches)();
-	          Utils.setTitle(_9.value0.title)();
-	          var _3 = UI_HTML_Utils.getBaseUrl();
-	          UI_HTML_Utils.disqussReset(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title)();
+	          var _4 = VirtualDOM.patch(_10.value0.rootNode)(patches)();
+	          Utils.setTitle(_10.value0.title)();
 	          return Prelude.unit;
 	      };
 	  };
 	  var page404 = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd("> ## 404 Not found"));
-	  var renderHTML = function (_11) {
-	      var menuPath = Core.getMenuPath(_11);
-	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_11.value0.currentContent));
-	      var currentNode = Core.getCurrentNode(_11);
+	  var renderHTML = function (_12) {
+	      var menuPath = Core.getMenuPath(_12);
+	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_12.value0.currentContent));
+	      var currentNode = Core.getCurrentNode(_12);
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
 	      })))(function () {
@@ -8904,31 +8909,31 @@
 	              var newMarkup = renderHTML(_6.value0);
 	              var newVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(newMarkup));
 	              return new UIState((function () {
-	                  var _47 = {};
-	                  for (var _48 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_48)) {
-	                          _47[_48] = _7.value0[_48];
+	                  var _50 = {};
+	                  for (var _51 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_51)) {
+	                          _50[_51] = _7.value0[_51];
 	                      };
 	                  };
-	                  _47.oldVDom = _7.value0.newVDom;
-	                  _47.title = Core.calcTitle(_6.value0);
-	                  _47.pageUrl = Core.calcPageUrl(_6.value0);
-	                  _47.pageId = Core.calcPageId(_6.value0);
-	                  _47.cmd = Data_Maybe.Nothing.value;
-	                  _47.newVDom = newVDom;
-	                  return _47;
+	                  _50.oldVDom = _7.value0.newVDom;
+	                  _50.title = Core.calcTitle(_6.value0);
+	                  _50.pageUrl = Core.calcPageUrl(_6.value0);
+	                  _50.pageId = Core.calcPageId(_6.value0);
+	                  _50.cmd = Data_Maybe.Nothing.value;
+	                  _50.newVDom = newVDom;
+	                  return _50;
 	              })());
 	          };
 	          if (_6 instanceof Types.SetCmd) {
 	              return new UIState((function () {
-	                  var _51 = {};
-	                  for (var _52 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_52)) {
-	                          _51[_52] = _7.value0[_52];
+	                  var _54 = {};
+	                  for (var _55 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_55)) {
+	                          _54[_55] = _7.value0[_55];
 	                      };
 	                  };
-	                  _51.cmd = new Data_Maybe.Just(_6.value0);
-	                  return _51;
+	                  _54.cmd = new Data_Maybe.Just(_6.value0);
+	                  return _54;
 	              })());
 	          };
 	          if (_6 instanceof Types.RenderNoop) {
@@ -8961,14 +8966,14 @@
 	                  cmd: Data_Maybe.Nothing.value, 
 	                  newVDom: initialVDom
 	              });
-	              var justRender = function (_12) {
-	                  if (_12.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justRender = function (_13) {
+	                  if (_13.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return true;
 	                  };
 	                  return false;
 	              };
-	              var justCmd = function (_13) {
-	                  if (_13.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justCmd = function (_14) {
+	                  if (_14.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return false;
 	                  };
 	                  return true;
@@ -8978,6 +8983,7 @@
 	              var cmdSig = Signal.filter(justCmd)(initialUIState)(ui);
 	              return function __do() {
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(patchVDom)(renderSig))();
+	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(resetDisqus)(renderSig))();
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(execCmd)(ui))();
 	                  var _1 = Signal_DOM.keyPressed(37)();
 	                  var _0 = Signal_DOM.keyPressed(39)();
