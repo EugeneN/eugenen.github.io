@@ -3707,6 +3707,27 @@
 	      };
 	      return Node;
 	  })();
+	  var Disqus = (function () {
+	      function Disqus() {
+
+	      };
+	      Disqus.value = new Disqus();
+	      return Disqus;
+	  })();
+	  var Livefyre = (function () {
+	      function Livefyre() {
+
+	      };
+	      Livefyre.value = new Livefyre();
+	      return Livefyre;
+	  })();
+	  var NoComments = (function () {
+	      function NoComments() {
+
+	      };
+	      NoComments.value = new NoComments();
+	      return NoComments;
+	  })();
 	  var Navigate = (function () {
 	      function Navigate(value0) {
 	          this.value0 = value0;
@@ -3769,17 +3790,29 @@
 	      };
 	      return SetCmd;
 	  })();
-	  var showPlatform = new Prelude.Show(function (_4) {
-	      if (_4 instanceof Browser) {
+	  var showPlatform = new Prelude.Show(function (_5) {
+	      if (_5 instanceof Browser) {
 	          return "Browser";
 	      };
-	      if (_4 instanceof Nodejs) {
+	      if (_5 instanceof Nodejs) {
 	          return "Nodejs";
 	      };
-	      if (_4 instanceof Unknown) {
+	      if (_5 instanceof Unknown) {
 	          return "Unknown";
 	      };
-	      throw new Error("Failed pattern match at Types line 100, column 1 - line 103, column 18: " + [ _4.constructor.name ]);
+	      throw new Error("Failed pattern match at Types line 107, column 1 - line 110, column 18: " + [ _5.constructor.name ]);
+	  });
+	  var showComments = new Prelude.Show(function (_0) {
+	      if (_0 instanceof Disqus) {
+	          return "Disqus";
+	      };
+	      if (_0 instanceof Livefyre) {
+	          return "Livefyre";
+	      };
+	      if (_0 instanceof NoComments) {
+	          return "NoComments";
+	      };
+	      throw new Error("Failed pattern match at Types line 32, column 1 - line 39, column 1: " + [ _0.constructor.name ]);
 	  });
 	  exports["Browser"] = Browser;
 	  exports["Nodejs"] = Nodejs;
@@ -3803,12 +3836,16 @@
 	  exports["BlogProcessor"] = BlogProcessor;
 	  exports["Node"] = Node;
 	  exports["AppState"] = AppState;
+	  exports["Disqus"] = Disqus;
+	  exports["Livefyre"] = Livefyre;
+	  exports["NoComments"] = NoComments;
 	  exports["RenderState"] = RenderState;
 	  exports["RenderNoop"] = RenderNoop;
 	  exports["SetCmd"] = SetCmd;
 	  exports["Navigate"] = Navigate;
 	  exports["Noop"] = Noop;
 	  exports["KeyboardInput"] = KeyboardInput;
+	  exports["showComments"] = showComments;
 	  exports["showPlatform"] = showPlatform;;
 	 
 	})(PS["Types"] = PS["Types"] || {});
@@ -3906,7 +3943,8 @@
 	      menuPath: [ "about" ], 
 	      currentNode: Data_Maybe.Nothing.value, 
 	      currentContent: Data_Maybe.Nothing.value, 
-	      keyboardInput: Data_Maybe.Nothing.value
+	      keyboardInput: Data_Maybe.Nothing.value, 
+	      commentsMode: Types.Livefyre.value
 	  });
 	  var helpDS = new Types.StringSource(Utils.unlines([ "This \xabweb site\xbb is a *concept application* aimed to explore ways to reach *The Holy Grail* of software engineering -", "*composability* and *reusability*. These ways look like following SOLID, GRASP, ", "and reinventing \xabOOP in a large\xbb using [purely functional language with powerful type system](http://www.purescript.org/), ", "high level abstractions, immutable data, messaging, some Category Theory and engineering approach for the win.", "Currently it is at a very early stage. Github link: [https://github.com/EugeneN/meta.repl](https://github.com/EugeneN/meta.repl) ", "", "", "The application can be run either in browsers or under node.js - 100% *isomorphic* application :-)", "", "", "To run it in a browser, just open [eugenen.github.io](http://eugenen.github.io/) and then follow instructions. ", "There are 2 distinct user interfaces for browsers: ", "- [conventional HTML-based](?ui=html#!about), rendered using virtual dom;", "- [REPL-based](?ui=console#!about) using Javascript console. After switching to this mode one has to open Javascript console and ", "  use functions provided to interact with the application.", "", "", "Another option is to run the application without a browser. Just save the very same [app.js](app.js) file, which is used ", "in browsers, to your filesystem, then run it with `node.js` and connect using `telnet`:", "", "```", "$ wget http://eugenen.github.io/app.js", "$ node app.js", "```", "", "and in another terminal:", "", "```", "$ telnet localhost 8888", "```", "", "Then follow prompts and input commands to interact with the application :-)", "", "", "_", "", "", "Here be dragons." ]));
 	  var golDS = new Types.StringSource(Utils.unlines([ "\u201cGame of Life\u201d game written in Purescript as a research on", "decoupling and encapsulating state between user interface, application core and input effects in reactive web applications. ", "Features a stateful core and few distinct interchangeable stateful user interfaces.", "", "[pureGoL](http://eugenen.github.io/pureGoL)", "# ![gol](gol.png)", "" ]));
@@ -7406,7 +7444,9 @@
 	  var renderFullArticle = function (_19) {
 	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(renderFilesH(_19.value0.files)))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)));
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
+	              }));
 	          }));
 	      });
 	  };
@@ -8949,6 +8989,31 @@
 	  exports.getBaseUrl = function() {
 	    return document.location.href.replace(/#.*$/, "");
 	  }
+
+	  exports.resetDisqusUnsafe = function(id) {
+	    return function(url) {
+	      return function(title) {
+	        return function() {
+	          setTimeout(function() {
+	            console.log("disqus reset", id, url, title );
+	            try {
+	              DISQUS.reset({
+	                reload: true,
+	                config: function () {
+	                  this.page.identifier = id;
+	                  this.page.url = url;
+	                  //this.page.title = id;
+	                  //this.language = "en";
+	                }
+	              });
+	            } catch (e) {
+	              console.log(e.toString());
+	            }
+	          }, 20); // vdom delay?
+	        }
+	      }
+	    }
+	  }
 	  exports.resetLivefyreUnsafe = function(id) {
 	    return function(url) {
 	      return function(title) {
@@ -9151,6 +9216,7 @@
 	  exports["parseContent"] = parseContent;
 	  exports["getBaseUrl"] = $foreign.getBaseUrl;
 	  exports["resetLivefyreUnsafe"] = $foreign.resetLivefyreUnsafe;
+	  exports["resetDisqusUnsafe"] = $foreign.resetDisqusUnsafe;
 	  exports["appendToBody"] = $foreign.appendToBody;
 	  exports["setLocationUrl"] = $foreign.setLocationUrl;;
 	 
@@ -9202,7 +9268,15 @@
 	  var resetComments = function (_9) {
 	      return function __do() {
 	          var _3 = UI_HTML_Utils.getBaseUrl();
-	          UI_HTML_Utils.resetLivefyreUnsafe(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title)();
+	          (function () {
+	              if (_9.value0.commentsMode instanceof Types.Disqus) {
+	                  return UI_HTML_Utils.resetDisqusUnsafe(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title);
+	              };
+	              if (_9.value0.commentsMode instanceof Types.Livefyre) {
+	                  return UI_HTML_Utils.resetLivefyreUnsafe(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title);
+	              };
+	              return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
+	          })()();
 	          return Prelude.unit;
 	      };
 	  };
@@ -9219,60 +9293,60 @@
 	                              return "#!" + Data_String.joinWith("/")(Prelude["<>"](Prelude.semigroupArray)(base_url)([ slug ]));
 	                          };
 	                      };
-	                      var drawNodeMenu = function (_15) {
+	                      var drawNodeMenu = function (_16) {
 	                          return function (baseUrl$prime) {
 	                              return function (selected) {
 	                                  return function (level_2) {
-	                                      if (_15 instanceof Data_Maybe.Nothing) {
+	                                      if (_16 instanceof Data_Maybe.Nothing) {
 	                                          return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	                                      };
-	                                      if (_15 instanceof Data_Maybe.Just) {
+	                                      if (_16 instanceof Data_Maybe.Just) {
 	                                          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("menu-level-" + (Prelude.show(Prelude.showInt)(level_2) + (" " + (function () {
-	                                              var _27 = level_2 > 0;
-	                                              if (_27) {
+	                                              var _29 = level_2 > 0;
+	                                              if (_29) {
 	                                                  return "sub-menu";
 	                                              };
-	                                              if (!_27) {
+	                                              if (!_29) {
 	                                                  return "";
 	                                              };
-	                                              throw new Error("Failed pattern match: " + [ _27.constructor.name ]);
-	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_15.value0))(function (_5) {
+	                                              throw new Error("Failed pattern match: " + [ _29.constructor.name ]);
+	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_16.value0))(function (_5) {
 	                                              if (selected instanceof Data_Maybe.Nothing) {
 	                                                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                              };
 	                                              if (selected instanceof Data_Maybe.Just) {
-	                                                  var _30 = Prelude["=="](Prelude.eqString)(_5.value0)(selected.value0);
-	                                                  if (_30) {
+	                                                  var _32 = Prelude["=="](Prelude.eqString)(_5.value0)(selected.value0);
+	                                                  if (_32) {
 	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("current-menu-item")))(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  if (!_30) {
+	                                                  if (!_32) {
 	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  throw new Error("Failed pattern match: " + [ _30.constructor.name ]);
+	                                                  throw new Error("Failed pattern match: " + [ _32.constructor.name ]);
 	                                              };
 	                                              throw new Error("Failed pattern match: " + [ selected.constructor.name ]);
 	                                          }));
 	                                      };
-	                                      throw new Error("Failed pattern match: " + [ _15.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
+	                                      throw new Error("Failed pattern match: " + [ _16.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
 	                                  };
 	                              };
 	                          };
 	                      };
-	                      var _35 = Data_Array.uncons(fullPath);
-	                      if (_35 instanceof Data_Maybe.Nothing) {
+	                      var _37 = Data_Array.uncons(fullPath);
+	                      if (_37 instanceof Data_Maybe.Nothing) {
 	                          return drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(Data_Maybe.Nothing.value)(level);
 	                      };
-	                      if (_35 instanceof Data_Maybe.Just && _35.value0.tail.length === 0) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(new Data_Maybe.Just(_35.value0.head))(level))(function () {
-	                              return drawNodeMenu(Core.findChildNodeByPath([ _35.value0.head ])(_11.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _35.value0.head ]))(new Data_Maybe.Just(_35.value0.head))(level + 1 | 0);
+	                      if (_37 instanceof Data_Maybe.Just && _37.value0.tail.length === 0) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(new Data_Maybe.Just(_37.value0.head))(level))(function () {
+	                              return drawNodeMenu(Core.findChildNodeByPath([ _37.value0.head ])(_11.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _37.value0.head ]))(new Data_Maybe.Just(_37.value0.head))(level + 1 | 0);
 	                          });
 	                      };
-	                      if (_35 instanceof Data_Maybe.Just) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(new Data_Maybe.Just(_35.value0.head))(level))(function () {
-	                              return renderMenu(_35.value0.tail)(Core.findChildNodeByPath([ _35.value0.head ])(_11.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _35.value0.head ]))(level + 1 | 0);
+	                      if (_37 instanceof Data_Maybe.Just) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_11.value0))(baseUrl)(new Data_Maybe.Just(_37.value0.head))(level))(function () {
+	                              return renderMenu(_37.value0.tail)(Core.findChildNodeByPath([ _37.value0.head ])(_11.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _37.value0.head ]))(level + 1 | 0);
 	                          });
 	                      };
-	                      throw new Error("Failed pattern match: " + [ _35.constructor.name ]);
+	                      throw new Error("Failed pattern match: " + [ _37.constructor.name ]);
 	                  };
 	                  throw new Error("Failed pattern match: " + [ fullPath.constructor.name, _11.constructor.name, baseUrl.constructor.name, level.constructor.name ]);
 	              };
@@ -9291,7 +9365,7 @@
 	  var renderHTML = function (_12) {
 	      var menuPath = Core.getMenuPath(_12);
 	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_12.value0.currentContent));
-	      var discusScript = Data_String.joinWith("\n")([ "", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ]);
+	      var discusScript = Data_String.joinWith("\n")([ "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ]);
 	      var currentNode = Core.getCurrentNode(_12);
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
@@ -9300,9 +9374,17 @@
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })))(function () {
-	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.script)(Text_Smolder_HTML_Attributes.src("http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
-	          });
+	          if (_12.value0.commentsMode instanceof Types.Disqus) {
+	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	                  return Text_Smolder_HTML.script(Text_Smolder_Markup.text(discusScript));
+	              });
+	          };
+	          if (_12.value0.commentsMode instanceof Types.Livefyre) {
+	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.script)(Text_Smolder_HTML_Attributes.src("http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
+	              });
+	          };
+	          return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	      }));
 	  };
 	  var uiLogic = function (_6) {
@@ -9310,38 +9392,42 @@
 	          if (_6 instanceof Types.RenderState) {
 	              var newMarkup = renderHTML(_6.value0);
 	              var newVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(newMarkup));
+	              var comments = function (_13) {
+	                  return _13.value0.commentsMode;
+	              };
 	              return new UIState((function () {
-	                  var _50 = {};
-	                  for (var _51 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_51)) {
-	                          _50[_51] = _7.value0[_51];
+	                  var _55 = {};
+	                  for (var _56 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_56)) {
+	                          _55[_56] = _7.value0[_56];
 	                      };
 	                  };
-	                  _50.oldVDom = _7.value0.newVDom;
-	                  _50.title = Core.calcTitle(_6.value0);
-	                  _50.pageUrl = Core.calcPageUrl(_6.value0);
-	                  _50.pageId = Core.calcPageId(_6.value0);
-	                  _50.cmd = Data_Maybe.Nothing.value;
-	                  _50.newVDom = newVDom;
-	                  return _50;
+	                  _55.oldVDom = _7.value0.newVDom;
+	                  _55.title = Core.calcTitle(_6.value0);
+	                  _55.pageUrl = Core.calcPageUrl(_6.value0);
+	                  _55.pageId = Core.calcPageId(_6.value0);
+	                  _55.commentsMode = comments(_6.value0);
+	                  _55.cmd = Data_Maybe.Nothing.value;
+	                  _55.newVDom = newVDom;
+	                  return _55;
 	              })());
 	          };
 	          if (_6 instanceof Types.SetCmd) {
 	              return new UIState((function () {
-	                  var _54 = {};
-	                  for (var _55 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_55)) {
-	                          _54[_55] = _7.value0[_55];
+	                  var _59 = {};
+	                  for (var _60 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_60)) {
+	                          _59[_60] = _7.value0[_60];
 	                      };
 	                  };
-	                  _54.cmd = new Data_Maybe.Just(_6.value0);
-	                  return _54;
+	                  _59.cmd = new Data_Maybe.Just(_6.value0);
+	                  return _59;
 	              })());
 	          };
 	          if (_6 instanceof Types.RenderNoop) {
 	              return _7;
 	          };
-	          throw new Error("Failed pattern match at UI.HTML.Main line 61, column 1 - line 72, column 1: " + [ _6.constructor.name, _7.constructor.name ]);
+	          throw new Error("Failed pattern match at UI.HTML.Main line 62, column 1 - line 75, column 1: " + [ _6.constructor.name, _7.constructor.name ]);
 	      };
 	  };
 	  var initialVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(Text_Smolder_HTML.div(Text_Smolder_Markup.text("One moment please"))));
@@ -9365,17 +9451,18 @@
 	                  title: defaultTitle, 
 	                  pageUrl: "", 
 	                  pageId: "", 
+	                  commentsMode: Types.NoComments.value, 
 	                  cmd: Data_Maybe.Nothing.value, 
 	                  newVDom: initialVDom
 	              });
-	              var justRender = function (_13) {
-	                  if (_13.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justRender = function (_14) {
+	                  if (_14.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return true;
 	                  };
 	                  return false;
 	              };
-	              var justCmd = function (_14) {
-	                  if (_14.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justCmd = function (_15) {
+	                  if (_15.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return false;
 	                  };
 	                  return true;
@@ -9396,7 +9483,7 @@
 	                      if (!x) {
 	                          return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
 	                      };
-	                      throw new Error("Failed pattern match at UI.HTML.Main line 78, column 1 - line 79, column 1: " + [ x.constructor.name ]);
+	                      throw new Error("Failed pattern match at UI.HTML.Main line 81, column 1 - line 82, column 1: " + [ x.constructor.name ]);
 	                  }))();
 	                  Signal.runSignal(Signal["~>"](Signal.functorSignal)(_0)(function (x) {
 	                      if (x) {
@@ -9405,7 +9492,7 @@
 	                      if (!x) {
 	                          return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
 	                      };
-	                      throw new Error("Failed pattern match at UI.HTML.Main line 78, column 1 - line 79, column 1: " + [ x.constructor.name ]);
+	                      throw new Error("Failed pattern match at UI.HTML.Main line 81, column 1 - line 82, column 1: " + [ x.constructor.name ]);
 	                  }))();
 	                  Routing.hashChanged(function (old) {
 	                      return function ($$new) {
@@ -9707,7 +9794,7 @@
 	      return function (actionsChannel) {
 	          return function (uiParam) {
 	              return function __do() {
-	                  var _1 = (function () {
+	                  var _2 = (function () {
 	                      if (uiParam instanceof HtmlUI) {
 	                          return UI_HTML_Main.setupHtmlUi(actionsChannel);
 	                      };
@@ -9717,11 +9804,25 @@
 	                      if (uiParam instanceof TelnetUI) {
 	                          return UI_Telnet_Main.setupTelnetUi(actionsChannel);
 	                      };
-	                      throw new Error("Failed pattern match at Main line 32, column 1 - line 40, column 1: " + [ uiParam.constructor.name ]);
+	                      throw new Error("Failed pattern match at Main line 40, column 1 - line 48, column 1: " + [ uiParam.constructor.name ]);
 	                  })()();
-	                  return Signal.runSignal(Signal["~>"](Signal.functorSignal)(appSignal)(Core.appEffectsLogic(_1)))();
+	                  return Signal.runSignal(Signal["~>"](Signal.functorSignal)(appSignal)(Core.appEffectsLogic(_2)))();
 	              };
 	          };
+	      };
+	  };
+	  var setCommentsMode = function (_9) {
+	      return function (m) {
+	          return new Types.AppState((function () {
+	              var _14 = {};
+	              for (var _15 in _9.value0) {
+	                  if (_9.value0.hasOwnProperty(_15)) {
+	                      _14[_15] = _9.value0[_15];
+	                  };
+	              };
+	              _14.commentsMode = m;
+	              return _14;
+	          })());
 	      };
 	  };
 	  var parseUiParam = function __do() {
@@ -9737,39 +9838,69 @@
 	      };
 	      return Data_Maybe.Nothing.value;
 	  };
+	  var parseCommentsParam = function __do() {
+	      var _1 = Utils["getParameterByName'"]("comments")();
+	      if (_1 instanceof Data_Maybe.Just && _1.value0 === "disqus") {
+	          return new Data_Maybe.Just(Types.Disqus.value);
+	      };
+	      if (_1 instanceof Data_Maybe.Just && _1.value0 === "livefyre") {
+	          return new Data_Maybe.Just(Types.Livefyre.value);
+	      };
+	      if (_1 instanceof Data_Maybe.Just && _1.value0 === "nocomments") {
+	          return new Data_Maybe.Just(Types.NoComments.value);
+	      };
+	      return Data_Maybe.Nothing.value;
+	  };
 	  var main = function __do() {
-	      var _5 = Utils["platformDetect'"]();
-	      Control_Monad_Eff_Console.log("platform " + Prelude.show(Types.showPlatform)(_5))();
-	      var _4 = (function () {
-	          if (_5 instanceof Types.Browser) {
+	      var _8 = Utils["platformDetect'"]();
+	      Control_Monad_Eff_Console.log("Platform " + Prelude.show(Types.showPlatform)(_8))();
+	      var _7 = (function () {
+	          if (_8 instanceof Types.Browser) {
 	              return function __do() {
-	                  var _2 = parseUiParam();
-	                  return Data_Maybe.Just.create(Data_Maybe.fromMaybe(ConsoleUI.value)(_2));
+	                  var _3 = parseUiParam();
+	                  return Data_Maybe.Just.create(Data_Maybe.fromMaybe(ConsoleUI.value)(_3));
 	              };
 	          };
-	          if (_5 instanceof Types.Nodejs) {
+	          if (_8 instanceof Types.Nodejs) {
 	              return Prelude.pure(Control_Monad_Eff.applicativeEff)(new Data_Maybe.Just(TelnetUI.value));
 	          };
 	          return Prelude.pure(Control_Monad_Eff.applicativeEff)(Data_Maybe.Nothing.value);
 	      })()();
-	      var _3 = Signal_Channel.channel(Types.Noop.value)();
+	      var _6 = (function () {
+	          if (_8 instanceof Types.Browser) {
+	              return function __do() {
+	                  var _4 = parseCommentsParam();
+	                  return Data_Maybe.fromMaybe(Types.Disqus.value)(_4);
+	              };
+	          };
+	          return Prelude.pure(Control_Monad_Eff.applicativeEff)(Types.NoComments.value);
+	      })()();
 	      return (function () {
-	          var actionsSignal = Signal_Channel.subscribe(_3);
-	          var appSignal = Signal.foldp(Core.appLogic)(Data.initialState)(actionsSignal);
-	          if (_4 instanceof Data_Maybe.Just) {
-	              return setupUI(appSignal)(_3)(_4.value0);
+	          var initialState$prime = setCommentsMode(Data.initialState)(_6);
+	          return function __do() {
+	              Control_Monad_Eff_Console.log("Setting comments mode " + Prelude.show(Types.showComments)(_6))();
+	              var _5 = Signal_Channel.channel(Types.Noop.value)();
+	              return (function () {
+	                  var actionsSignal = Signal_Channel.subscribe(_5);
+	                  var appSignal = Signal.foldp(Core.appLogic)(initialState$prime)(actionsSignal);
+	                  if (_7 instanceof Data_Maybe.Just) {
+	                      return setupUI(appSignal)(_5)(_7.value0);
+	                  };
+	                  if (_7 instanceof Data_Maybe.Nothing) {
+	                      return Control_Monad_Eff_Console.log("Error: No interface.");
+	                  };
+	                  throw new Error("Failed pattern match at Main line 50, column 1 - line 80, column 23: " + [ _7.constructor.name ]);
+	              })()();
 	          };
-	          if (_4 instanceof Data_Maybe.Nothing) {
-	              return Control_Monad_Eff_Console.log("Error: No interface.");
-	          };
-	          throw new Error("Failed pattern match at Main line 40, column 1 - line 59, column 23: " + [ _4.constructor.name ]);
 	      })()();
 	  };
 	  exports["HtmlUI"] = HtmlUI;
 	  exports["ConsoleUI"] = ConsoleUI;
 	  exports["TelnetUI"] = TelnetUI;
 	  exports["main"] = main;
+	  exports["setCommentsMode"] = setCommentsMode;
 	  exports["setupUI"] = setupUI;
+	  exports["parseCommentsParam"] = parseCommentsParam;
 	  exports["parseUiParam"] = parseUiParam;;
 	 
 	})(PS["Main"] = PS["Main"] || {});
