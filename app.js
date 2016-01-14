@@ -7406,7 +7406,7 @@
 	  var renderFullArticle = function (_19) {
 	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(renderFilesH(_19.value0.files)))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)));
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)));
 	          }));
 	      });
 	  };
@@ -7498,7 +7498,7 @@
 	      if (_58 instanceof Data_Either.Right) {
 	          return new Data_Either.Right(_58.value0);
 	      };
-	      throw new Error("Failed pattern match at Processors.Blog.Main line 206, column 1 - line 207, column 1: " + [ _58.constructor.name ]);
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 207, column 1 - line 208, column 1: " + [ _58.constructor.name ]);
 	  };
 	  var loadNparseGist = function (gid) {
 	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_16) {
@@ -8949,27 +8949,32 @@
 	  exports.getBaseUrl = function() {
 	    return document.location.href.replace(/#.*$/, "");
 	  }
-
-	  exports.resetDisqusUnsafe = function(id) {
+	  exports.resetLivefyreUnsafe = function(id) {
 	    return function(url) {
 	      return function(title) {
 	        return function() {
-	          console.log("disqus reset", id, url, title );
-
 	          setTimeout(function() {
-	            try {
-	              DISQUS.reset({
-	                reload: true,
-	                config: function () {
-	                  this.page.identifier = id;
-	                  this.page.url = url;
-	                  //this.page.title = id;
-	                  //this.language = "en";
-	                }
-	              });
-	            } catch (e) {
-	              console.log(e.toString());
-	            }
+	            console.log("livefyre reset", id, url, title );
+	            //try {
+	              if(window.fyre) {
+	                var articleId = fyre.conv.load.makeArticleId(null);
+	                fyre.conv.load({}, [{
+	                    el: 'livefyre-comments',
+	                    network: "livefyre.com",
+	                    siteId: "380346",
+	                    articleId: id,
+	                    signed: false,
+	                    collectionMeta: {
+	                        articleId: id,
+	                        url: fyre.conv.load.makeCollectionUrl(),
+	                    }
+	                }], function() {});
+	              } else {
+	                console.log("fype not available");
+	              }
+	            // } catch (e) {
+	            //   console.log(e.toString());
+	            // }
 	          }, 20); // vdom delay?
 	        }
 	      }
@@ -9145,7 +9150,7 @@
 	  exports["vNode2vTree"] = vNode2vTree;
 	  exports["parseContent"] = parseContent;
 	  exports["getBaseUrl"] = $foreign.getBaseUrl;
-	  exports["resetDisqusUnsafe"] = $foreign.resetDisqusUnsafe;
+	  exports["resetLivefyreUnsafe"] = $foreign.resetLivefyreUnsafe;
 	  exports["appendToBody"] = $foreign.appendToBody;
 	  exports["setLocationUrl"] = $foreign.setLocationUrl;;
 	 
@@ -9194,10 +9199,10 @@
 	      };
 	      return UIState;
 	  })();
-	  var resetDisqus = function (_9) {
+	  var resetComments = function (_9) {
 	      return function __do() {
 	          var _3 = UI_HTML_Utils.getBaseUrl();
-	          UI_HTML_Utils.resetDisqusUnsafe(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title)();
+	          UI_HTML_Utils.resetLivefyreUnsafe(_9.value0.pageId)(_3 + _9.value0.pageUrl)(_9.value0.title)();
 	          return Prelude.unit;
 	      };
 	  };
@@ -9286,6 +9291,7 @@
 	  var renderHTML = function (_12) {
 	      var menuPath = Core.getMenuPath(_12);
 	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_12.value0.currentContent));
+	      var discusScript = Data_String.joinWith("\n")([ "", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ]);
 	      var currentNode = Core.getCurrentNode(_12);
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
@@ -9294,8 +9300,8 @@
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })))(function () {
-	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
-	              return Text_Smolder_HTML.script(Text_Smolder_Markup.text(Data_String.joinWith("\n")([ "", "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ])));
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.script)(Text_Smolder_HTML_Attributes.src("http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
 	          });
 	      }));
 	  };
@@ -9379,7 +9385,7 @@
 	              var cmdSig = Signal.filter(justCmd)(initialUIState)(ui);
 	              return function __do() {
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(patchVDom)(renderSig))();
-	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(resetDisqus)(renderSig))();
+	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(resetComments)(renderSig))();
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(execCmd)(ui))();
 	                  var _1 = Signal_DOM.keyPressed(37)();
 	                  var _0 = Signal_DOM.keyPressed(39)();
