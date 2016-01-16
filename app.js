@@ -5991,7 +5991,7 @@
 	              if (Prelude.otherwise) {
 	                  return Text_Markdown_SlamDown.Space.value;
 	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 196, column 5 - line 203, column 3: " + [ cs.constructor.name ]);
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 207, column 5 - line 214, column 3: " + [ cs.constructor.name ]);
 	          };
 	          return Prelude["<$>"](Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(function (_106) {
 	              return toSpace(Prelude["<$>"](Data_List.functorList)(Data_String.fromChar)(_106));
@@ -6013,7 +6013,7 @@
 	      });
 	      var isAlphaNum = function (c) {
 	          var s = Data_String.fromChar(c);
-	          return Prelude[">="](Prelude.ordString)(s)("a") && Prelude["<="](Prelude.ordString)(s)("z") || (Prelude[">="](Prelude.ordString)(s)("A") && Prelude["<="](Prelude.ordString)(s)("Z") || (Prelude[">="](Prelude.ordString)(s)("0") && Prelude["<="](Prelude.ordString)(s)("9") || Prelude[">="](Prelude.ordString)(s)(":") && Prelude["<="](Prelude.ordString)(s)(";")));
+	          return Prelude[">="](Prelude.ordString)(s)("a") && Prelude["<="](Prelude.ordString)(s)("z") || (Prelude[">="](Prelude.ordString)(s)("A") && Prelude["<="](Prelude.ordString)(s)("Z") || (Prelude[">="](Prelude.ordString)(s)("\u0430") && Prelude["<="](Prelude.ordString)(s)("\u044f") || (Prelude[">="](Prelude.ordString)(s)("\u0410") && Prelude["<="](Prelude.ordString)(s)("\u042f") || (Prelude["=="](Prelude.eqString)(s)("\u0456") || (Prelude["=="](Prelude.eqString)(s)("\u0406") || (Prelude["=="](Prelude.eqString)(s)("\u0457") || (Prelude["=="](Prelude.eqString)(s)("\u0407") || (Prelude["=="](Prelude.eqString)(s)("\u0491") || (Prelude["=="](Prelude.eqString)(s)("\u0490") || (Prelude["=="](Prelude.eqString)(s)("\u0454") || (Prelude["=="](Prelude.eqString)(s)("\u0404") || (Prelude["=="](Prelude.eqString)(s)("\u044e") || (Prelude["=="](Prelude.eqString)(s)("\u042e") || (Prelude["=="](Prelude.eqString)(s)("\u044c") || (Prelude["=="](Prelude.eqString)(s)("\u042c") || (Prelude[">="](Prelude.ordString)(s)("0") && Prelude["<="](Prelude.ordString)(s)("9") || Prelude[">="](Prelude.ordString)(s)(":") && Prelude["<="](Prelude.ordString)(s)(";")))))))))))))))));
 	      };
 	      var formElement = (function () {
 	          var unevaluated = Prelude.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Data_Identity.monadIdentity)("!"))(function () {
@@ -6141,7 +6141,7 @@
 	              if (Prelude.otherwise) {
 	                  return s;
 	              };
-	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 241, column 5 - line 242, column 5: " + [ s.constructor.name ]);
+	              throw new Error("Failed pattern match at Text.Markdown.SlamDown.Parser.Inline line 252, column 5 - line 253, column 5: " + [ s.constructor.name ]);
 	          };
 	          return Prelude.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Data_Identity.monadIdentity)("<"))(function () {
 	              return Prelude.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Prelude["<$>"](Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(function (_112) {
