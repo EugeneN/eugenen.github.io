@@ -7330,12 +7330,12 @@
 	          }));
 	      };
 	      if (_1 instanceof Text_Markdown_SlamDown.CodeBlock && _1.value0 instanceof Text_Markdown_SlamDown.Fenced) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.pre)(Text_Smolder_HTML_Attributes.className("code"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(function (s) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.pre)(Text_Smolder_HTML_Attributes.className("code line-numbers"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(function (s) {
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.code)(Text_Smolder_HTML_Attributes.className("code-line language-" + _1.value0.value1))(Text_Smolder_Markup.text(s));
 	          }));
 	      };
 	      if (_1 instanceof Text_Markdown_SlamDown.CodeBlock) {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.pre)(Text_Smolder_HTML_Attributes.className("code"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(function (s) {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.pre)(Text_Smolder_HTML_Attributes.className("code line-numbers "))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_List.foldableList)(_1.value1)(function (s) {
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.code)(Text_Smolder_HTML_Attributes.className("code-line language-haskell"))(Text_Smolder_Markup.text(s));
 	          }));
 	      };
