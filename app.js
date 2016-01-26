@@ -2076,6 +2076,9 @@
 	  };
 	  var index = $foreign.indexImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
 	  var $bang$bang = index;
+	  var last = function (xs) {
+	      return $bang$bang(xs)($foreign.length(xs) - 1);
+	  };
 	  var head = $foreign["uncons'"](Prelude["const"](Data_Maybe.Nothing.value))(function (x) {
 	      return function (_6) {
 	          return new Data_Maybe.Just(x);
@@ -2106,6 +2109,7 @@
 	  exports["!!"] = $bang$bang;
 	  exports["uncons"] = uncons;
 	  exports["tail"] = tail;
+	  exports["last"] = last;
 	  exports["head"] = head;
 	  exports["singleton"] = singleton;
 	  exports["filter"] = $foreign.filter;
@@ -3888,8 +3892,6 @@
 	    }
 	  }
 
-
-
 	  exports.getParameterByName = function (name) {
 	      return function() {
 	          name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -3906,6 +3908,11 @@
 	    console.log(jsn);
 	    var filenames = Object.keys(jsn.files);
 	    return jsn.files[filenames[0]].content;
+	  }
+
+	  exports.encodeURIUnsafe = function(orig) {
+	    var x = encodeURIComponent(orig);
+	    return x;
 	  }
 	 
 	})(PS["Utils"] = PS["Utils"] || {});
@@ -3942,6 +3949,7 @@
 	  exports["platformDetect'"] = platformDetect$prime;
 	  exports["getParameterByName'"] = getParameterByName$prime;
 	  exports["unlines"] = unlines;
+	  exports["encodeURIUnsafe"] = $foreign.encodeURIUnsafe;
 	  exports["parseGistResponse"] = $foreign.parseGistResponse;
 	  exports["setTitle"] = $foreign.setTitle;
 	  exports["toString"] = $foreign.toString;
@@ -7036,46 +7044,7 @@
 	      };
 	      December.value = new December();
 	      return December;
-	  })();
-	  var showMonth = new Prelude.Show(function (_20) {
-	      if (_20 instanceof January) {
-	          return "January";
-	      };
-	      if (_20 instanceof February) {
-	          return "February";
-	      };
-	      if (_20 instanceof March) {
-	          return "March";
-	      };
-	      if (_20 instanceof April) {
-	          return "April";
-	      };
-	      if (_20 instanceof May) {
-	          return "May";
-	      };
-	      if (_20 instanceof June) {
-	          return "June";
-	      };
-	      if (_20 instanceof July) {
-	          return "July";
-	      };
-	      if (_20 instanceof August) {
-	          return "August";
-	      };
-	      if (_20 instanceof September) {
-	          return "September";
-	      };
-	      if (_20 instanceof October) {
-	          return "October";
-	      };
-	      if (_20 instanceof November) {
-	          return "November";
-	      };
-	      if (_20 instanceof December) {
-	          return "December";
-	      };
-	      throw new Error("Failed pattern match at Data.Date line 161, column 1 - line 175, column 1: " + [ _20.constructor.name ]);
-	  });                                  
+	  })();                                
 	  var monthToEnum = function (_3) {
 	      if (_3 === 0) {
 	          return new Data_Maybe.Just(January.value);
@@ -7186,7 +7155,6 @@
 	  exports["fromString"] = fromString;
 	  exports["fromJSDate"] = fromJSDate;
 	  exports["boundedMonth"] = boundedMonth;
-	  exports["showMonth"] = showMonth;
 	  exports["enumMonth"] = enumMonth;;
 	 
 	})(PS["Data.Date"] = PS["Data.Date"] || {});
@@ -7376,6 +7344,7 @@
 	  var Data_String = PS["Data.String"];
 	  var Data_String_Regex = PS["Data.String.Regex"];
 	  var Data_Traversable = PS["Data.Traversable"];
+	  var Data_Foldable = PS["Data.Foldable"];
 	  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
 	  var Network_HTTP_ResponseHeader = PS["Network.HTTP.ResponseHeader"];
 	  var Network_HTTP_StatusCode = PS["Network.HTTP.StatusCode"];
@@ -7390,7 +7359,6 @@
 	  var Text_Smolder_HTML = PS["Text.Smolder.HTML"];
 	  var Text_Smolder_HTML_Attributes = PS["Text.Smolder.HTML.Attributes"];
 	  var Text_Smolder_Markup = PS["Text.Smolder.Markup"];
-	  var Data_Foldable = PS["Data.Foldable"];
 	  var Data_Monoid = PS["Data.Monoid"];
 	  var Data_Date = PS["Data.Date"];
 	  var Data_Date_UTC = PS["Data.Date.UTC"];
@@ -7450,49 +7418,138 @@
 	      };
 	      return Article;
 	  })();
-	  var showError = new Prelude.Show(function (_24) {
-	      return _24.value0;
+	  var showYear = function (_23) {
+	      return Prelude.show(Prelude.showInt)(_23);
+	  };
+	  var showMonth = function (_24) {
+	      if (_24 instanceof Data_Date.January) {
+	          return "1";
+	      };
+	      if (_24 instanceof Data_Date.February) {
+	          return "2";
+	      };
+	      if (_24 instanceof Data_Date.March) {
+	          return "3";
+	      };
+	      if (_24 instanceof Data_Date.April) {
+	          return "4";
+	      };
+	      if (_24 instanceof Data_Date.May) {
+	          return "5";
+	      };
+	      if (_24 instanceof Data_Date.June) {
+	          return "6";
+	      };
+	      if (_24 instanceof Data_Date.July) {
+	          return "7";
+	      };
+	      if (_24 instanceof Data_Date.August) {
+	          return "8";
+	      };
+	      if (_24 instanceof Data_Date.September) {
+	          return "9";
+	      };
+	      if (_24 instanceof Data_Date.October) {
+	          return "10";
+	      };
+	      if (_24 instanceof Data_Date.November) {
+	          return "11";
+	      };
+	      if (_24 instanceof Data_Date.December) {
+	          return "12";
+	      };
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 206, column 1 - line 207, column 1: " + [ _24.constructor.name ]);
+	  };
+	  var showError = new Prelude.Show(function (_28) {
+	      return _28.value0;
 	  });
-	  var showDate = function (_20) {
-	      if (_20 instanceof Data_Maybe.Just) {
-	          var showYear = function (_26) {
-	              return Prelude.show(Prelude.showInt)(_26);
-	          };
-	          var showDay = function (_25) {
-	              return Prelude.show(Prelude.showInt)(_25);
-	          };
-	          return Data_String.take(3)(Prelude.show(Data_Date.showMonth)(Data_Date_UTC.month(_20.value0))) + (" " + (showDay(Data_Date_UTC.dayOfMonth(_20.value0)) + (", " + showYear(Data_Date_UTC.year(_20.value0)))));
+	  var showDay = function (_22) {
+	      return Prelude.show(Prelude.showInt)(_22);
+	  };
+	  var showDate = function (_21) {
+	      if (_21 instanceof Data_Maybe.Just) {
+	          return showMonth(Data_Date_UTC.month(_21.value0)) + ("/" + showDay(Data_Date_UTC.dayOfMonth(_21.value0)));
 	      };
 	      return "Invalid date";
 	  };
-	  var renderFileH = function (_23) {
-	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_23.value0.content))));
+	  var renderFileH = function (_27) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_27.value0.content))));
 	  };
-	  var renderFilesH = function (_22) {
-	      return Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(_22.value0)(renderFileH);
+	  var renderFilesH = function (_26) {
+	      return Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(_26.value0)(renderFileH);
 	  };
-	  var renderFullArticle = function (_19) {
-	      return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("sub-nav"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog"))(Text_Smolder_Markup.text("\u2191up to index"))))(function () {
-	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(renderFilesH(_19.value0.files)))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
-	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
-	              }));
-	          }));
-	      });
+	  var renderArticleIndexYear = function (y) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.li)(Text_Smolder_HTML_Attributes.className("articles-index"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-index-year"))(Text_Smolder_Markup.text(y)));
 	  };
-	  var renderArticleIndexTitle = function (_21) {
-	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.li)(Text_Smolder_HTML_Attributes.className("articles-index"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-index-title"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text(showDate(_21.value0.createdAt))))(function () {
-	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.span(Text_Smolder_Markup.text("\u21d2")))(function () {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog/" + _21.value0.id))(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_21.value0.description)));
-	          });
+	  var renderArticleIndexTitle = function (_25) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.li)(Text_Smolder_HTML_Attributes.className("articles-index"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-index-title"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.span)(Text_Smolder_HTML_Attributes.className("article-index-title-date"))(Text_Smolder_Markup.text(showDate(_25.value0.createdAt))))(function () {
+	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href("#!blog/" + _25.value0.id))(Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd(_25.value0.description)));
 	      })));
+	  };
+	  var renderIndex = function (ps) {
+	      return function (apst) {
+	          var extractYear = function (b) {
+	              return function (_29) {
+	                  if (_29 instanceof Data_Either.Left) {
+	                      return Prelude["<>"](Prelude.semigroupArray)(b)([ new Data_Either.Left(Prelude.show(showError)(_29.value0)) ]);
+	                  };
+	                  if (_29 instanceof Data_Either.Right) {
+	                      var _46 = Data_Array.last(b);
+	                      if (_46 instanceof Data_Maybe.Nothing) {
+	                          return Prelude["<>"](Prelude.semigroupArray)(b)(Prelude["<>"](Prelude.semigroupArray)([ new Data_Either.Left(Data_Maybe.fromMaybe("Invalid date")(Prelude["<$>"](Data_Maybe.functorMaybe)(function (_94) {
+	                              return showYear(Data_Date_UTC.year(_94));
+	                          })(_29.value0.value0.createdAt))) ])([ new Data_Either.Right(_29.value0) ]));
+	                      };
+	                      if (_46 instanceof Data_Maybe.Just && _46.value0 instanceof Data_Either.Right) {
+	                          var _47 = Prelude["=="](Prelude.eqString)(Data_Maybe.fromMaybe("x")(Prelude["<$>"](Data_Maybe.functorMaybe)(function (_95) {
+	                              return showYear(Data_Date_UTC.year(_95));
+	                          })(_46.value0.value0.value0.createdAt)))(Data_Maybe.fromMaybe("y")(Prelude["<$>"](Data_Maybe.functorMaybe)(function (_96) {
+	                              return showYear(Data_Date_UTC.year(_96));
+	                          })(_29.value0.value0.createdAt)));
+	                          if (_47) {
+	                              return Prelude["<>"](Prelude.semigroupArray)(b)([ new Data_Either.Right(_29.value0) ]);
+	                          };
+	                          if (!_47) {
+	                              return Prelude["<>"](Prelude.semigroupArray)(b)(Prelude["<>"](Prelude.semigroupArray)([ new Data_Either.Left(Data_Maybe.fromMaybe("Invalid date")(Prelude["<$>"](Data_Maybe.functorMaybe)(function (_97) {
+	                                  return showYear(Data_Date_UTC.year(_97));
+	                              })(_29.value0.value0.createdAt))) ])([ new Data_Either.Right(_29.value0) ]));
+	                          };
+	                          throw new Error("Failed pattern match at Processors.Blog.Main line 152, column 3 - line 153, column 3: " + [ _47.constructor.name ]);
+	                      };
+	                      if (_46 instanceof Data_Maybe.Just && _46.value0 instanceof Data_Either.Left) {
+	                          var _51 = Prelude["=="](Prelude.eqString)(_46.value0.value0)(Data_Maybe.fromMaybe("y")(Prelude["<$>"](Data_Maybe.functorMaybe)(function (_98) {
+	                              return showYear(Data_Date_UTC.year(_98));
+	                          })(_29.value0.value0.createdAt)));
+	                          if (_51) {
+	                              return Prelude["<>"](Prelude.semigroupArray)(b)([ new Data_Either.Right(_29.value0) ]);
+	                          };
+	                          if (!_51) {
+	                              return Prelude["<>"](Prelude.semigroupArray)(b)(Prelude["<>"](Prelude.semigroupArray)([ new Data_Either.Left(Data_Maybe.fromMaybe("Invalid date")(Prelude["<$>"](Data_Maybe.functorMaybe)(function (_99) {
+	                                  return showYear(Data_Date_UTC.year(_99));
+	                              })(_29.value0.value0.createdAt))) ])([ new Data_Either.Right(_29.value0) ]));
+	                          };
+	                          throw new Error("Failed pattern match at Processors.Blog.Main line 152, column 3 - line 153, column 3: " + [ _51.constructor.name ]);
+	                      };
+	                      throw new Error("Failed pattern match at Processors.Blog.Main line 152, column 3 - line 153, column 3: " + [ _46.constructor.name ]);
+	                  };
+	                  throw new Error("Failed pattern match at Processors.Blog.Main line 152, column 3 - line 153, column 3: " + [ b.constructor.name, _29.constructor.name ]);
+	              };
+	          };
+	          var zipYears = function (ps_1) {
+	              return Data_Foldable.foldl(Data_Foldable.foldableArray)(extractYear)([  ])(ps_1);
+	          };
+	          var renderListH = function (ps_1) {
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.ul)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(zipYears(ps_1))(Data_Either.either(renderArticleIndexYear)(renderArticleIndexTitle)));
+	          };
+	          return Data_Maybe.Just.create(Types.HTML.create(renderListH(ps)));
+	      };
 	  };
 	  var readDate = function (__dict_Index_0) {
 	      return function (key) {
 	          return function (obj) {
-	              var _41 = Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(__dict_Index_0)(key)(obj);
-	              if (_41 instanceof Data_Either.Right) {
-	                  return Data_Either.Right.create(Data_Date.fromString(_41.value0));
+	              var _56 = Data_Foreign_Class.readProp(Data_Foreign_Class.stringIsForeign)(__dict_Index_0)(key)(obj);
+	              if (_56 instanceof Data_Either.Right) {
+	                  return Data_Either.Right.create(Data_Date.fromString(_56.value0));
 	              };
 	              return new Data_Either.Right(Data_Maybe.Nothing.value);
 	          };
@@ -7561,14 +7618,14 @@
 	      });
 	  });
 	  var parseJsonGistResponse = function (respJson) {
-	      var _58 = Data_Foreign_Class.readJSON(isForeignArticle)(respJson);
-	      if (_58 instanceof Data_Either.Left) {
-	          return Data_Either.Left.create($$Error.create(Prelude.show(Data_Foreign.showForeignError)(_58.value0)));
+	      var _73 = Data_Foreign_Class.readJSON(isForeignArticle)(respJson);
+	      if (_73 instanceof Data_Either.Left) {
+	          return Data_Either.Left.create($$Error.create(Prelude.show(Data_Foreign.showForeignError)(_73.value0)));
 	      };
-	      if (_58 instanceof Data_Either.Right) {
-	          return new Data_Either.Right(_58.value0);
+	      if (_73 instanceof Data_Either.Right) {
+	          return new Data_Either.Right(_73.value0);
 	      };
-	      throw new Error("Failed pattern match at Processors.Blog.Main line 207, column 1 - line 208, column 1: " + [ _58.constructor.name ]);
+	      throw new Error("Failed pattern match at Processors.Blog.Main line 258, column 1 - line 259, column 1: " + [ _73.constructor.name ]);
 	  };
 	  var loadNparseGist = function (gid) {
 	      return Prelude.bind(Control_Monad_Aff.bindAff)(loadGist$prime(gid))(function (_16) {
@@ -7580,16 +7637,16 @@
 	  };
 	  var getBlogPostsIds = function (toc) {
 	      var regexFlags = (function () {
-	          var _63 = {};
-	          for (var _64 in Data_String_Regex.noFlags) {
-	              if (Data_String_Regex.noFlags.hasOwnProperty(_64)) {
-	                  _63[_64] = Data_String_Regex.noFlags[_64];
+	          var _78 = {};
+	          for (var _79 in Data_String_Regex.noFlags) {
+	              if (Data_String_Regex.noFlags.hasOwnProperty(_79)) {
+	                  _78[_79] = Data_String_Regex.noFlags[_79];
 	              };
 	          };
-	          _63.global = true;
-	          _63.ignoreCase = true;
-	          _63.multiline = true;
-	          return _63;
+	          _78.global = true;
+	          _78.ignoreCase = true;
+	          _78.multiline = true;
+	          return _78;
 	      })();
 	      var idRegex = Data_String_Regex.regex("\\([a-f0-9]{20}\\)")(regexFlags);
 	      var rawIds = Data_String_Regex.match(idRegex)(toc);
@@ -7600,15 +7657,18 @@
 	  var errorMsg = function (m) {
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("error"))(Text_Smolder_Markup.text("Error: " + m));
 	  };
-	  var renderIndex = function (ps) {
-	      return function (apst) {
-	          var renderListH = function (ps_1) {
-	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.ul)(Text_Smolder_HTML_Attributes.className("articles-list"))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(ps_1)(Data_Either.either(function (_75) {
-	                  return errorMsg(Prelude.show(showError)(_75));
-	              })(renderArticleIndexTitle)));
-	          };
-	          return Data_Maybe.Just.create(Types.HTML.create(renderListH(ps)));
-	      };
+	  var baseUrl = "http://eugenen.github.io/?ui=html";
+	  var tweetUrl = function (_20) {
+	      return "https://twitter.com/intent/tweet" + ("?text=" + (Utils.encodeURIUnsafe(_20.value0.description) + ("&url=" + (Utils.encodeURIUnsafe(baseUrl + ("#!blog/" + _20.value0.id)) + "&via=8gene"))));
+	  };
+	  var renderFullArticle = function (_19) {
+	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("article-file-body"))(renderFilesH(_19.value0.files)))(function () {
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("social-block"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("twitter-share-button")))(Text_Smolder_HTML_Attributes.href(tweetUrl(_19)))(Text_Smolder_Markup.text("Tweet"))))(function () {
+	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("comments-block"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
+	              }));
+	          });
+	      }));
 	  };
 	  var blogProcessor = function (_17) {
 	      return function (_18) {
@@ -7621,11 +7681,11 @@
 	              };
 	              if (_18.value0.currentPath.length === 1) {
 	                  var gids = getBlogPostsIds(_17.value0);
-	                  var _69 = Data_Array.elemIndex(Prelude.eqString)(_18.value0.currentPath[0])(gids);
-	                  if (_69 instanceof Data_Maybe.Just) {
+	                  var _88 = Data_Array.elemIndex(Prelude.eqString)(_18.value0.currentPath[0])(gids);
+	                  if (_88 instanceof Data_Maybe.Just) {
 	                      return Prelude.bind(Control_Monad_Aff.bindAff)(loadNparseGist(_18.value0.currentPath[0]))(function (_15) {
-	                          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(Data_Either.either(function (_76) {
-	                              return errorMsg(Prelude.show(showError)(_76));
+	                          return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(Data_Either.either(function (_100) {
+	                              return errorMsg(Prelude.show(showError)(_100));
 	                          })(renderFullArticle)(_15))));
 	                      });
 	                  };
@@ -7633,7 +7693,7 @@
 	              };
 	              return Prelude.pure(Control_Monad_Aff.applicativeAff)(Data_Maybe.Just.create(Types.HTML.create(errorMsg("unknown request: " + Prelude.show(Prelude.showArray(Prelude.showString))(_18.value0.currentPath)))));
 	          };
-	          throw new Error("Failed pattern match at Processors.Blog.Main line 119, column 1 - line 120, column 1: " + [ _17.constructor.name, _18.constructor.name ]);
+	          throw new Error("Failed pattern match at Processors.Blog.Main line 123, column 1 - line 124, column 1: " + [ _17.constructor.name, _18.constructor.name ]);
 	      };
 	  };
 	  exports["blogProcessor"] = blogProcessor;;
@@ -9021,14 +9081,15 @@
 	  }
 
 	  exports.highlightCodeUnsafe = function() {
-	    try {
-	      Prism.highlightAll();
-	      console.log("Prism success")
-	    } catch(e) {
-	      console.log("Prism error:", e)
-	    }
-
+	    try { Prism.highlightAll(); console.log("Prism success") }
+	    catch(e) { console.log("Prism error:", e) }
 	  }
+
+	  exports.loadTwitterUnsafe = function() {
+	    try { twttr.widgets.load(); console.log("Twitter load success") }
+	    catch(e) { console.log("Twitter load error:", e) }
+	  }
+
 
 	  exports.resetDisqusUnsafe = function(id) {
 	    return function(url) {
@@ -9279,6 +9340,7 @@
 	  exports["vNode2vTree"] = vNode2vTree;
 	  exports["parseContent"] = parseContent;
 	  exports["getBaseUrl"] = $foreign.getBaseUrl;
+	  exports["loadTwitterUnsafe"] = $foreign.loadTwitterUnsafe;
 	  exports["highlightCodeUnsafe"] = $foreign.highlightCodeUnsafe;
 	  exports["resetLivefyreUnsafe"] = $foreign.resetLivefyreUnsafe;
 	  exports["resetDisqusUnsafe"] = $foreign.resetDisqusUnsafe;
@@ -9330,15 +9392,15 @@
 	      };
 	      return UIState;
 	  })();
-	  var resetComments = function (_10) {
+	  var resetComments = function (_11) {
 	      return function __do() {
 	          var _3 = UI_HTML_Utils.getBaseUrl();
 	          (function () {
-	              if (_10.value0.commentsMode instanceof Types.Disqus) {
-	                  return UI_HTML_Utils.resetDisqusUnsafe(_10.value0.pageId)(_3 + _10.value0.pageUrl)(_10.value0.title);
+	              if (_11.value0.commentsMode instanceof Types.Disqus) {
+	                  return UI_HTML_Utils.resetDisqusUnsafe(_11.value0.pageId)(_3 + _11.value0.pageUrl)(_11.value0.title);
 	              };
-	              if (_10.value0.commentsMode instanceof Types.Livefyre) {
-	                  return UI_HTML_Utils.resetLivefyreUnsafe(_10.value0.pageId)(_3 + _10.value0.pageUrl)(_10.value0.title);
+	              if (_11.value0.commentsMode instanceof Types.Livefyre) {
+	                  return UI_HTML_Utils.resetLivefyreUnsafe(_11.value0.pageId)(_3 + _11.value0.pageUrl)(_11.value0.title);
 	              };
 	              return Prelude.pure(Control_Monad_Eff.applicativeEff)(Prelude.unit);
 	          })()();
@@ -9346,92 +9408,93 @@
 	      };
 	  };
 	  var renderMenu = function (fullPath) {
-	      return function (_12) {
+	      return function (_13) {
 	          return function (baseUrl) {
 	              return function (level) {
-	                  if (_12 instanceof Data_Maybe.Nothing) {
+	                  if (_13 instanceof Data_Maybe.Nothing) {
 	                      return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	                  };
-	                  if (_12 instanceof Data_Maybe.Just) {
+	                  if (_13 instanceof Data_Maybe.Just) {
 	                      var makeUrl = function (base_url) {
 	                          return function (slug) {
 	                              return "#!" + Data_String.joinWith("/")(Prelude["<>"](Prelude.semigroupArray)(base_url)([ slug ]));
 	                          };
 	                      };
-	                      var drawNodeMenu = function (_17) {
+	                      var drawNodeMenu = function (_18) {
 	                          return function (baseUrl$prime) {
 	                              return function (selected) {
 	                                  return function (level_2) {
-	                                      if (_17 instanceof Data_Maybe.Nothing) {
+	                                      if (_18 instanceof Data_Maybe.Nothing) {
 	                                          return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
 	                                      };
-	                                      if (_17 instanceof Data_Maybe.Just) {
+	                                      if (_18 instanceof Data_Maybe.Just) {
 	                                          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("menu-level-" + (Prelude.show(Prelude.showInt)(level_2) + (" " + (function () {
-	                                              var _30 = level_2 > 0;
-	                                              if (_30) {
+	                                              var _31 = level_2 > 0;
+	                                              if (_31) {
 	                                                  return "sub-menu";
 	                                              };
-	                                              if (!_30) {
+	                                              if (!_31) {
 	                                                  return "";
 	                                              };
-	                                              throw new Error("Failed pattern match: " + [ _30.constructor.name ]);
-	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_17.value0))(function (_5) {
+	                                              throw new Error("Failed pattern match: " + [ _31.constructor.name ]);
+	                                          })()))))(Data_Foldable.for_(Text_Smolder_Markup.applicativeMarkupM)(Data_Foldable.foldableArray)(UI_HTML_Utils.getMenuItems(_18.value0))(function (_5) {
 	                                              if (selected instanceof Data_Maybe.Nothing) {
 	                                                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                              };
 	                                              if (selected instanceof Data_Maybe.Just) {
-	                                                  var _33 = Prelude["=="](Prelude.eqString)(_5.value0)(selected.value0);
-	                                                  if (_33) {
+	                                                  var _34 = Prelude["=="](Prelude.eqString)(_5.value0)(selected.value0);
+	                                                  if (_34) {
 	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("current-menu-item")))(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  if (!_33) {
+	                                                  if (!_34) {
 	                                                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.href(makeUrl(baseUrl$prime)(_5.value0)))(Text_Smolder_Markup.text(_5.value1));
 	                                                  };
-	                                                  throw new Error("Failed pattern match: " + [ _33.constructor.name ]);
+	                                                  throw new Error("Failed pattern match: " + [ _34.constructor.name ]);
 	                                              };
 	                                              throw new Error("Failed pattern match: " + [ selected.constructor.name ]);
 	                                          }));
 	                                      };
-	                                      throw new Error("Failed pattern match: " + [ _17.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
+	                                      throw new Error("Failed pattern match: " + [ _18.constructor.name, baseUrl$prime.constructor.name, selected.constructor.name, level_2.constructor.name ]);
 	                                  };
 	                              };
 	                          };
 	                      };
-	                      var _38 = Data_Array.uncons(fullPath);
-	                      if (_38 instanceof Data_Maybe.Nothing) {
-	                          return drawNodeMenu(new Data_Maybe.Just(_12.value0))(baseUrl)(Data_Maybe.Nothing.value)(level);
+	                      var _39 = Data_Array.uncons(fullPath);
+	                      if (_39 instanceof Data_Maybe.Nothing) {
+	                          return drawNodeMenu(new Data_Maybe.Just(_13.value0))(baseUrl)(Data_Maybe.Nothing.value)(level);
 	                      };
-	                      if (_38 instanceof Data_Maybe.Just && _38.value0.tail.length === 0) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_12.value0))(baseUrl)(new Data_Maybe.Just(_38.value0.head))(level))(function () {
-	                              return drawNodeMenu(Core.findChildNodeByPath([ _38.value0.head ])(_12.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _38.value0.head ]))(new Data_Maybe.Just(_38.value0.head))(level + 1 | 0);
+	                      if (_39 instanceof Data_Maybe.Just && _39.value0.tail.length === 0) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_13.value0))(baseUrl)(new Data_Maybe.Just(_39.value0.head))(level))(function () {
+	                              return drawNodeMenu(Core.findChildNodeByPath([ _39.value0.head ])(_13.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _39.value0.head ]))(new Data_Maybe.Just(_39.value0.head))(level + 1 | 0);
 	                          });
 	                      };
-	                      if (_38 instanceof Data_Maybe.Just) {
-	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_12.value0))(baseUrl)(new Data_Maybe.Just(_38.value0.head))(level))(function () {
-	                              return renderMenu(_38.value0.tail)(Core.findChildNodeByPath([ _38.value0.head ])(_12.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _38.value0.head ]))(level + 1 | 0);
+	                      if (_39 instanceof Data_Maybe.Just) {
+	                          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(drawNodeMenu(new Data_Maybe.Just(_13.value0))(baseUrl)(new Data_Maybe.Just(_39.value0.head))(level))(function () {
+	                              return renderMenu(_39.value0.tail)(Core.findChildNodeByPath([ _39.value0.head ])(_13.value0))(Prelude["<>"](Prelude.semigroupArray)(baseUrl)([ _39.value0.head ]))(level + 1 | 0);
 	                          });
 	                      };
-	                      throw new Error("Failed pattern match: " + [ _38.constructor.name ]);
+	                      throw new Error("Failed pattern match: " + [ _39.constructor.name ]);
 	                  };
-	                  throw new Error("Failed pattern match: " + [ fullPath.constructor.name, _12.constructor.name, baseUrl.constructor.name, level.constructor.name ]);
+	                  throw new Error("Failed pattern match: " + [ fullPath.constructor.name, _13.constructor.name, baseUrl.constructor.name, level.constructor.name ]);
 	              };
 	          };
 	      };
 	  };
-	  var patchVDom = function (_11) {
-	      var patches = VirtualDOM.diff(_11.value0.oldVDom)(_11.value0.newVDom);
+	  var patchVDom = function (_12) {
+	      var patches = VirtualDOM.diff(_12.value0.oldVDom)(_12.value0.newVDom);
 	      return function __do() {
-	          var _4 = VirtualDOM.patch(_11.value0.rootNode)(patches)();
-	          Utils.setTitle(_11.value0.title)();
+	          var _4 = VirtualDOM.patch(_12.value0.rootNode)(patches)();
+	          Utils.setTitle(_12.value0.title)();
 	          return Prelude.unit;
 	      };
 	  };
 	  var page404 = Internal.toHtml(Internal.toHtmlSlamDown)(Text_Markdown_SlamDown_Parser.parseMd("> ## 404 Not found"));
-	  var renderHTML = function (_13) {
-	      var menuPath = Core.getMenuPath(_13);
-	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_13.value0.currentContent));
+	  var renderHTML = function (_14) {
+	      var twitterScript = Data_String.joinWith("\n")([ "window.twttr = (function(d, s, id) {", "var js, fjs = d.getElementsByTagName(s)[0],", "  t = window.twttr || {};", "if (d.getElementById(id)) return t;", "js = d.createElement(s);", "js.id = id;", "js.src = 'https://platform.twitter.com/widgets.js';", "fjs.parentNode.insertBefore(js, fjs);", "", "t._e = [];", "t.ready = function(f) {", "  t._e.push(f);", "};", "", "return t;", "}(document, 'script', 'twitter-wjs'));" ]);
+	      var menuPath = Core.getMenuPath(_14);
+	      var internalAST = Data_Maybe.fromMaybe(page404)(Prelude["<$>"](Data_Maybe.functorMaybe)(UI_HTML_Utils.parseContent)(_14.value0.currentContent));
 	      var discusScript = Data_String.joinWith("\n")([ "(function() { ", "var d = document, s = d.createElement('script');", "s.src = 'http://eugenen-github-io-html.disqus.com/embed.js';", "s.setAttribute('data-timestamp', +new Date());", "(d.head || d.body).appendChild(s);", "})();" ]);
-	      var currentNode = Core.getCurrentNode(_13);
+	      var currentNode = Core.getCurrentNode(_14);
 	      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("content"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("mode-menu-toolbar"))(Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("?ui=console"))(Text_Smolder_Markup.text("REPL mode")))(function () {
 	          return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.a)(Text_Smolder_HTML_Attributes.className("text mode-menu")))(Text_Smolder_HTML_Attributes.href("app.js")))(Text_Smolder_HTML_Attributes.title("To use CLI/telnet mode, please run `app.js` with Node.js and then connect to it with telnet or netcat"))(Text_Smolder_Markup.text("CLI/telnet mode"));
 	      })))(function () {
@@ -9439,17 +9502,19 @@
 	              return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("section page"))(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.className("text"))(internalAST));
 	          });
 	      })))(function () {
-	          if (_13.value0.commentsMode instanceof Types.Disqus) {
-	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
-	                  return Text_Smolder_HTML.script(Text_Smolder_Markup.text(discusScript));
-	              });
-	          };
-	          if (_13.value0.commentsMode instanceof Types.Livefyre) {
-	              return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
-	                  return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.script)(Text_Smolder_HTML_Attributes.src("http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
-	              });
-	          };
-	          return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
+	          return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_HTML.script(Text_Smolder_Markup.text(twitterScript)))(function () {
+	              if (_14.value0.commentsMode instanceof Types.Disqus) {
+	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("disqus_thread")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	                      return Text_Smolder_HTML.script(Text_Smolder_Markup.text(discusScript));
+	                  });
+	              };
+	              if (_14.value0.commentsMode instanceof Types.Livefyre) {
+	                  return Prelude.bind(Text_Smolder_Markup.bindMarkupM)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.div)(Text_Smolder_HTML_Attributes.id("livefyre-comments")))(Text_Smolder_HTML_Attributes.className("hidden"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup)))(function () {
+	                      return Text_Smolder_Markup["!"](Text_Smolder_Markup.attributableMarkupMF)(Text_Smolder_HTML.script)(Text_Smolder_HTML_Attributes.src("http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js"))(Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup));
+	                  });
+	              };
+	              return Data_Monoid.mempty(Text_Smolder_Markup.monoidMarkup);
+	          });
 	      }));
 	  };
 	  var uiLogic = function (_6) {
@@ -9457,42 +9522,48 @@
 	          if (_6 instanceof Types.RenderState) {
 	              var newMarkup = renderHTML(_6.value0);
 	              var newVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(newMarkup));
-	              var comments = function (_14) {
-	                  return _14.value0.commentsMode;
+	              var comments = function (_15) {
+	                  return _15.value0.commentsMode;
 	              };
 	              return new UIState((function () {
-	                  var _56 = {};
-	                  for (var _57 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_57)) {
-	                          _56[_57] = _7.value0[_57];
+	                  var _57 = {};
+	                  for (var _58 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_58)) {
+	                          _57[_58] = _7.value0[_58];
 	                      };
 	                  };
-	                  _56.oldVDom = _7.value0.newVDom;
-	                  _56.title = Core.calcTitle(_6.value0);
-	                  _56.pageUrl = Core.calcPageUrl(_6.value0);
-	                  _56.pageId = Core.calcPageId(_6.value0);
-	                  _56.commentsMode = comments(_6.value0);
-	                  _56.cmd = Data_Maybe.Nothing.value;
-	                  _56.newVDom = newVDom;
-	                  return _56;
+	                  _57.oldVDom = _7.value0.newVDom;
+	                  _57.title = Core.calcTitle(_6.value0);
+	                  _57.pageUrl = Core.calcPageUrl(_6.value0);
+	                  _57.pageId = Core.calcPageId(_6.value0);
+	                  _57.commentsMode = comments(_6.value0);
+	                  _57.cmd = Data_Maybe.Nothing.value;
+	                  _57.newVDom = newVDom;
+	                  return _57;
 	              })());
 	          };
 	          if (_6 instanceof Types.SetCmd) {
 	              return new UIState((function () {
-	                  var _60 = {};
-	                  for (var _61 in _7.value0) {
-	                      if (_7.value0.hasOwnProperty(_61)) {
-	                          _60[_61] = _7.value0[_61];
+	                  var _61 = {};
+	                  for (var _62 in _7.value0) {
+	                      if (_7.value0.hasOwnProperty(_62)) {
+	                          _61[_62] = _7.value0[_62];
 	                      };
 	                  };
-	                  _60.cmd = new Data_Maybe.Just(_6.value0);
-	                  return _60;
+	                  _61.cmd = new Data_Maybe.Just(_6.value0);
+	                  return _61;
 	              })());
 	          };
 	          if (_6 instanceof Types.RenderNoop) {
 	              return _7;
 	          };
 	          throw new Error("Failed pattern match at UI.HTML.Main line 62, column 1 - line 75, column 1: " + [ _6.constructor.name, _7.constructor.name ]);
+	      };
+	  };
+	  var loadTwitter = function (_10) {
+	      return function __do() {
+	          UI_HTML_Utils.loadTwitterUnsafe();
+	          return Prelude.unit;
 	      };
 	  };
 	  var initialVDom = UI_HTML_Utils.vNode2vTree(UI_HTML_VDom.render(Text_Smolder_HTML.div(Text_Smolder_Markup.text("One moment please"))));
@@ -9526,14 +9597,14 @@
 	                  cmd: Data_Maybe.Nothing.value, 
 	                  newVDom: initialVDom
 	              });
-	              var justRender = function (_15) {
-	                  if (_15.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justRender = function (_16) {
+	                  if (_16.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return true;
 	                  };
 	                  return false;
 	              };
-	              var justCmd = function (_16) {
-	                  if (_16.value0.cmd instanceof Data_Maybe.Nothing) {
+	              var justCmd = function (_17) {
+	                  if (_17.value0.cmd instanceof Data_Maybe.Nothing) {
 	                      return false;
 	                  };
 	                  return true;
@@ -9545,6 +9616,7 @@
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(patchVDom)(renderSig))();
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(resetComments)(renderSig))();
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(highlightCode)(renderSig))();
+	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(loadTwitter)(renderSig))();
 	                  Signal.runSignal(Prelude["<$>"](Signal.functorSignal)(execCmd)(ui))();
 	                  var _1 = Signal_DOM.keyPressed(37)();
 	                  var _0 = Signal_DOM.keyPressed(39)();
