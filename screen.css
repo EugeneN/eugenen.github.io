@@ -472,3 +472,13 @@ blockquote ul li {
   font-size: 80%;
   color: grey;
 }
+
+
+/*--------------*/
+
+.article-file-body blockquote {
+  text-align: left;
+}
+
+
+/*--------------*/
