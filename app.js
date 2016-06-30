@@ -7651,8 +7651,8 @@
 	      var idRegex = Data_String_Regex.regex("\\([a-f0-9]+\\)")(regexFlags);
 	      var rawIds = Data_String_Regex.match(idRegex)(toc);
 	      var justIds = Data_Maybe.fromMaybe([  ])(Prelude["<$>"](Data_Maybe.functorMaybe)(Data_Array.catMaybes)(rawIds));
-	      var cleanIds = Prelude["<$>"](Prelude.functorArray)(Prelude[">>>"](Prelude.semigroupoidFn)(Data_String.drop(1))(Data_String.take(20)))(justIds);
-				console.log(cleanIds);
+	      // var cleanIds = Prelude["<$>"](Prelude.functorArray)(Prelude[">>>"](Prelude.semigroupoidFn)(Data_String.drop(1))(Data_String.take(20)))(justIds);
+	      var cleanIds = justIds.map(function(x) { return x.substring(1, x.length-1) });
 	      return cleanIds;
 	  };
 	  var errorMsg = function (m) {
