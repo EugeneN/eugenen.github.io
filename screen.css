@@ -476,6 +476,11 @@ blockquote ul li {
 
 /*--------------*/
 
+.article-file-body blockquote > p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .article-file-body blockquote {
   text-align    : left;
   margin-top    : 10px;
