@@ -55,6 +55,7 @@
 		<script src="https://d3js.org/d3.v5.min.js"></script>
 		<script src="https://d3js.org/d3-geo.v1.min.js"></script>
 
+		<script src="TrackballControls.js"></script>
 		<script src="Projector.js"></script>
 		<script src="SoftwareRenderer.js"></script>
 		<script src="WebGLDeferredRenderer.js"></script>
@@ -76,7 +77,7 @@
 			var textureCache;
 
 			var container, stats;
-			var camera, scene, renderer;
+			var camera, scene, renderer, controls;
 			var group;
 			var mouseX = 0, mouseY = 0;
 			var rotationDeltaSpin = 0.5;
@@ -112,23 +113,52 @@
 
 				scene = new THREE.Scene();
 
+				scene.add(new THREE.AmbientLight(0x333333));
+
+				var light = new THREE.DirectionalLight(0xffffff, 1);
+				light.position.set(5000,3000,5000);
+				scene.add(light);
+
 				group = new THREE.Group();
 				scene.add( group );
 
-				var loader = new THREE.TextureLoader();
-				loader.load( 'textures/land_ocean_ice_cloud_2048.jpg', function ( texture ) {
 
-					var geometry = new THREE.SphereBufferGeometry( 200, 20, 20 );
-					var material = new THREE.MeshLambertMaterial( { map: texture } );
-					var mesh = new THREE.Mesh( geometry, material );
 
-					group.add( mesh );
+				var earth = new THREE.Mesh(
+					new THREE.SphereBufferGeometry( 200, 32, 32 ), 
+					new THREE.MeshPhongMaterial({
+						map: THREE.ImageUtils.loadTexture('textures/2_no_clouds_4k.jpg'),
+						bumpMap: THREE.ImageUtils.loadTexture('textures/elev_bump_4k.jpg'),
+						bumpScale:   0.005,
+						specularMap: THREE.ImageUtils.loadTexture('textures/water_4k.png'),
+						specular: new THREE.Color('grey')      
+					})
+				);
+				group.add(earth);
 
-				} );
+				var clouds = new THREE.Mesh(
+					new THREE.SphereGeometry(201, 32, 32),
+					new THREE.MeshPhongMaterial({
+						map: THREE.ImageUtils.loadTexture('textures/fair_clouds_4k.png'),
+						transparent: true
+					})
+				);
+				group.add(clouds);
 
-				renderer = new THREE.SoftwareRenderer();
-				// renderer = new THREE.WebGLRenderer();
+				var thestars = new THREE.Mesh(
+					new THREE.SphereGeometry(1500, 64, 64), 
+					new THREE.MeshBasicMaterial({
+						map: THREE.ImageUtils.loadTexture('textures/galaxy_starfield.png'), 
+						side: THREE.BackSide
+					})
+				);
+				group.add(thestars);
+
+				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
+
+
+				controls = new THREE.TrackballControls(camera);
 
 				container.appendChild( renderer.domElement );
 
@@ -162,7 +192,7 @@
 				
 				material = new THREE.MeshPhongMaterial({map: map, transparent: true});
 				if (!overlay) {
-					overlay = new THREE.Mesh(new THREE.SphereGeometry(200, 40, 40), material);
+					overlay = new THREE.Mesh(new THREE.SphereGeometry(202, 40, 40), material);
 					overlay.name = country.id;
 					group.add(overlay);
 				} else {
@@ -242,9 +272,10 @@
 			}
 
 			function render() {
-				camera.lookAt( scene.position );
+				controls.update();
+				camera.lookAt(scene.position);
 				group.rotation.y += rotationDelta;
-				renderer.render( scene, camera );
+				renderer.render(scene, camera);
 			}
 		</script>
 	</body>
