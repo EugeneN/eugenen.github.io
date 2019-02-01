@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Spin the Globe</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #808080;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #ffffff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+
+			a {
+
+				color: #0080ff;
+			}
+
+			#spinner {
+				font-size: 27px;
+			}
+
+			#winner {
+				position: relative;
+				top: 20px;
+				color: white; 
+				font-size: 27px; 
+				display: none
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+		<div id="info">
+			<button id="spinner" onclick="spinTheGlobe()">Spin the Globe</button>
+			<button id="spinner" onclick="togglePause()">Toggle Pause</button>
+			<div id="winner"></div>
+		</div>
+
+		<script src="three.js"></script>
+		<script src="https://unpkg.com/topojson@3"></script>
+		<script src="https://d3js.org/d3.v5.min.js"></script>
+		<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+
+		<script src="Projector.js"></script>
+		<script src="SoftwareRenderer.js"></script>
+		<script src="WebGLDeferredRenderer.js"></script>
+		<script src="geoHelpers.js"></script>
+		<script src="mapTexture.js"></script>
+		<script src="utils.js"></script>
+
+		<script src="stats.min.js"></script>
+		
+
+		<script>
+			var topojsonFeature = topojson.feature;
+			var segments = 155;
+
+			var countriesTopo;
+			var geo;
+			var overlay;
+
+			var textureCache;
+
+			var container, stats;
+			var camera, scene, renderer;
+			var group;
+			var mouseX = 0, mouseY = 0;
+			var rotationDeltaSpin = 0.5;
+			var rotationDeltaDefault = 0.005;
+			var rotationDelta = rotationDeltaDefault;
+			var winner = document.getElementById("winner");
+			var spinner = document.getElementById("spinner");
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			d3.json('data/world.json').then(function(data){
+				countriesTopo = topojsonFeature(data, data.objects.countries);
+				geo = geodecoder(countriesTopo.features);
+
+				window.__geo__ = geo;
+
+				textureCache = memoize(function (cntryID, fgcolor, bgcolor) {
+					var country = geo.find(cntryID);
+					return mapTexture(country, fgcolor, bgcolor);
+				});
+
+				init();
+				animate();
+			});
+			
+
+			function init() {
+				container = document.getElementById( 'container' );
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.z = 500;
+
+				scene = new THREE.Scene();
+
+				group = new THREE.Group();
+				scene.add( group );
+
+				var loader = new THREE.TextureLoader();
+				loader.load( 'textures/land_ocean_ice_cloud_2048.jpg', function ( texture ) {
+
+					var geometry = new THREE.SphereBufferGeometry( 200, 20, 20 );
+					var material = new THREE.MeshLambertMaterial( { map: texture } );
+					var mesh = new THREE.Mesh( geometry, material );
+
+					group.add( mesh );
+
+				} );
+
+				renderer = new THREE.SoftwareRenderer();
+				// renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function togglePause(event) {
+				if (rotationDelta == 0) { 
+					rotationDelta = rotationDeltaDefault;
+				} else {
+					rotationDelta = 0;
+				}
+			}
+
+			function highlightCountry(country) {
+				var map = textureCache(country.id, '#ff0000', 'rgba(255,0,0,0.2)');
+				
+				material = new THREE.MeshPhongMaterial({map: map, transparent: true});
+				if (!overlay) {
+					overlay = new THREE.Mesh(new THREE.SphereGeometry(200, 40, 40), material);
+					overlay.name = country.id;
+					group.add(overlay);
+				} else {
+					overlay.material = material;
+				}
+				flyTo(country);
+			}
+
+			function findGeomCenter(country) {
+				// WTF XXX coords in the data file are [lon, lat] XXX WTF //
+				var findCenter = function(g) {
+					var xs = g.map(function(x){ return x[0] });
+					var ys = g.map(function(x){ return x[1] });
+					var lon = (Math.min(...xs)+Math.max(...xs))/2;
+					var lat = (Math.max(...ys)+Math.min(...ys))/2
+					console.log("findCenter", lat, lon, g)
+
+					return [lat, lon]
+				}
+
+				var r;
+
+				if (country.geometry.coordinates.length == 1) {
+					r = country.geometry.coordinates[0];
+				} else if (country.geometry.coordinates.length > 1) {
+					var coords = [];
+					for (var i=0; i<country.geometry.coordinates.length; i++) {
+						coords[i] = coords[i] || [];
+						coords[i].push(country.geometry.coordinates[i][0])
+					}
+					r = [];
+					for (var i=0; i<coords.length; i++) {
+						if (coords[i].length > r.length) { r = coords[i] }
+					}
+				} else {
+					throw("findGeomCenter: bad input: ", country.geometry.coordinates);
+				}
+				return findCenter(r);
+			}
+
+			function flyTo(country) {
+				var latlng = findGeomCenter(country);
+				var rot = deg2rad(latlng);
+
+				group.rotation.setFromVector3(rot);
+			}
+
+			function spinTheGlobe() {
+				winner.innerHTML = "";
+				winner.style.display = "none";
+				spinner.disabled = true;
+				group.rotation.setFromVector3({x:0,y:0,z:0})
+
+				rotationDelta = rotationDeltaSpin;
+				setTimeout(function(){ 
+					var country = geo.getRandomCountry();
+					console.log(country)
+
+					highlightCountry(country);
+
+					rotationDelta = 0;
+					winner.innerHTML = country.id;
+					winner.style.display = "block";
+					spinner.disabled = false;
+				}, 500);
+			}
+
+			function onDocumentMouseMove( event ) {
+				mouseX = ( event.clientX - windowHalfX );
+				mouseY = ( event.clientY - windowHalfY );
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+				camera.lookAt( scene.position );
+				group.rotation.y += rotationDelta;
+				renderer.render( scene, camera );
+			}
+		</script>
+	</body>
+</html>
