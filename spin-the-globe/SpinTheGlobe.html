@@ -185,20 +185,19 @@
 
 				var r;
 
-				if (country.geometry.coordinates.length == 1) {
+				if (country.geometry.type == 'Polygon') {
 					r = country.geometry.coordinates[0];
-				} else if (country.geometry.coordinates.length > 1) {
-					var coords = [];
-					for (var i=0; i<country.geometry.coordinates.length; i++) {
-						coords[i] = coords[i] || [];
-						coords[i].push(country.geometry.coordinates[i][0])
-					}
-					r = [];
-					for (var i=0; i<coords.length; i++) {
-						if (coords[i].length > r.length) { r = coords[i] }
-					}
+				} else if (country.geometry.type == 'MultiPolygon') {
+					var gs = country.geometry.coordinates.map(function(x){ return x[0] });
+					r = gs.reduce(function(acc, cur){ 
+						if (cur.length > acc.length) {
+							return cur;
+						} else {
+							return acc;
+						}
+					}, []);
 				} else {
-					throw("findGeomCenter: bad input: ", country.geometry.coordinates);
+					throw("findGeomCenter: bad input: ", country.geometry);
 				}
 				return findCenter(r);
 			}
