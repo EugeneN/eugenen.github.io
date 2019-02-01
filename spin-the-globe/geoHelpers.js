@@ -1,4 +1,35 @@
 
+function findGeomCenter(country) {
+  // WTF XXX coords in the data file are [lon, lat] XXX WTF //
+  var findCenter = function(g) {
+      var xs = g.map(function(x){ return x[0] });
+      var ys = g.map(function(x){ return x[1] });
+      var lon = (Math.min(...xs)+Math.max(...xs))/2;
+      var lat = (Math.max(...ys)+Math.min(...ys))/2
+      console.log("findCenter", lat, lon, g)
+
+      return [lat, lon]
+  }
+
+  var r;
+
+  if (country.geometry.type == 'Polygon') {
+      r = country.geometry.coordinates[0];
+  } else if (country.geometry.type == 'MultiPolygon') {
+      var gs = country.geometry.coordinates.map(function(x){ return x[0] });
+      r = gs.reduce(function(acc, cur){ 
+          if (cur.length > acc.length) {
+              return cur;
+          } else {
+              return acc;
+          }
+      }, []);
+  } else {
+      throw("findGeomCenter: bad input: ", country.geometry);
+  }
+  return findCenter(r);
+}
+
  function getPoint(event) {
 
   // Get the vertices
