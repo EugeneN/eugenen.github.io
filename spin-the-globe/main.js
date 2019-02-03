@@ -43,6 +43,7 @@ function init() {
     camera.position.z = 500;
 
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff);
 
     scene.add(new THREE.AmbientLight(0x333333));
 
@@ -84,10 +85,10 @@ function init() {
             side: THREE.BackSide
         })
     );
-    group.add(thestars);
+    //group.add(thestars);
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
 
     controls = new THREE.TrackballControls(camera);
@@ -97,7 +98,7 @@ function init() {
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    window.addEventListener( 'resize', onWindowResize, false );
+    window.addEventListener('resize', onWindowResize, false);
 
 }
 
@@ -161,15 +162,14 @@ function spinTheGlobe() {
 }
 
 function onDocumentMouseMove( event ) {
-    mouseX = ( event.clientX - windowHalfX );
-    mouseY = ( event.clientY - windowHalfY );
+    mouseX = (event.clientX - windowHalfX);
+    mouseY = (event.clientY - windowHalfY);
 }
 
 function animate() {
     requestAnimationFrame( animate );
     render();
     stats.update();
-
 }
 
 function render() {
