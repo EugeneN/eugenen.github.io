@@ -1,0 +1,134 @@
+code size summary per package:
+
+base:                    506279
+conta_5w3UY4chXx62LVUOUrXeRm:11423
+deeps_IA8DgGbqfWcHYE0vChdRyn:834
+frpde_22VkIw1OGW0D1GtqrUUMBe:41796
+ghc-prim:                11336
+ghcjs_B7KLFJ07Vte3zPHAgRIBTb:10202
+ghcjs_Kc7TQ2cEDg1F5e5cgY2Vuk:4608
+integer-gmp:             40949
+lubec_AYrcNoVrZ373XiQNAjnVeX:4450
+lubec_Gr0Kjen3Bjc7IZ2mXL7Iib:47073
+main:                    17676
+rando_3e2beemixydBACmXmsTUb2:15552
+time_KPHTSoBSjtZ5lswdMFwFfY:5807
+virtu_IwUDdRRcXto2e9uSqdoasN:13393
+
+
+code size per module:
+
+base
+    Control.Exception.Base:             7309
+    Data.Fixed:                         2041
+    Data.OldList:                       1248
+    Data.Typeable:                      885
+    Data.Typeable.Internal:             1418
+    Foreign.C.Error:                    9812
+    Foreign.Marshal.Alloc:              375
+    Foreign.Marshal.Array:              2038
+    Foreign.Storable:                   2680
+    GHC.Arr:                            3667
+    GHC.Base:                           6886
+    GHC.Char:                           718
+    GHC.Conc.Sync:                      4451
+    GHC.Enum:                           8933
+    GHC.Err:                            218
+    GHC.Exception:                      7441
+    GHC.Float:                          55973
+    GHC.Foreign:                        12136
+    GHC.ForeignPtr:                     1501
+    GHC.IO:                             3605
+    GHC.IO.Buffer:                      1276
+    GHC.IO.BufferedIO:                  864
+    GHC.IO.Device:                      1297
+    GHC.IO.Encoding:                    1030
+    GHC.IO.Encoding.Failure:            724
+    GHC.IO.Encoding.Latin1:             1863
+    GHC.IO.Encoding.Types:              1032
+    GHC.IO.Encoding.UTF8:               61149
+    GHC.IO.Exception:                   19322
+    GHC.IO.FD:                          37215
+    GHC.IO.Handle:                      416
+    GHC.IO.Handle.FD:                   6981
+    GHC.IO.Handle.Internals:            34931
+    GHC.IO.Handle.Text:                 15761
+    GHC.IO.Handle.Types:                3834
+    GHC.Int:                            3258
+    GHC.List:                           8263
+    GHC.MVar:                           188
+    GHC.Num:                            2822
+    GHC.Ptr:                            188
+    GHC.Read:                           8162
+    GHC.Real:                           14046
+    GHC.ST:                             186
+    GHC.STRef:                          194
+    GHC.Show:                           24802
+    GHC.Storable:                       1084
+    GHC.TopHandler:                     10349
+    GHC.Word:                           350
+    System.CPUTime:                     1
+    System.Posix.Internals:             16119
+    Text.ParserCombinators.ReadP:       23833
+    Text.ParserCombinators.ReadPrec:    147
+    Text.Read:                          1474
+    Text.Read.Lex:                      69783
+
+conta_5w3UY4chXx62LVUOUrXeRm
+    Data.IntMap.Base:                   11423
+
+deeps_IA8DgGbqfWcHYE0vChdRyn
+    Control.DeepSeq:                    834
+
+frpde_22VkIw1OGW0D1GtqrUUMBe
+    Lib:                                41796
+
+ghc-prim
+    GHC.CString:                        4515
+    GHC.Classes:                        4733
+    GHC.IntWord64:                      146
+    GHC.Tuple:                          802
+    GHC.Types:                          1140
+
+ghcjs_B7KLFJ07Vte3zPHAgRIBTb
+    GHCJS.Prim:                         5796
+    GHCJS.Prim.Internal:                4406
+
+ghcjs_Kc7TQ2cEDg1F5e5cgY2Vuk
+    Data.JSString:                      3948
+    Data.JSString.Internal.Type:        431
+    GHCJS.Internal.Types:               229
+
+integer-gmp
+    GHC.Integer.GMP.Prim:               172
+    GHC.Integer.Type:                   40777
+
+lubec_AYrcNoVrZ373XiQNAjnVeX
+    Lubeck.FRP:                         4450
+
+lubec_Gr0Kjen3Bjc7IZ2mXL7Iib
+    Components.Map:                     28429
+    Lubeck.App:                         3873
+    Lubeck.Forms.Select:                12570
+    Lubeck.Util:                        2201
+
+main
+    Main:                               17676
+
+rando_3e2beemixydBACmXmsTUb2
+    System.Random:                      15552
+
+time_KPHTSoBSjtZ5lswdMFwFfY
+    Data.Time.Clock.CTimeval:           1524
+    Data.Time.Clock.POSIX:              4283
+
+virtu_IwUDdRRcXto2e9uSqdoasN
+    Web.VirtualDom:                     7200
+    Web.VirtualDom.Html:                1774
+    Web.VirtualDom.Html.Attributes:     1562
+    Web.VirtualDom.Html.Events:         2857
+
+
+
+packed metadata: 144105
+
