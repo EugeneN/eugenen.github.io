@@ -96,7 +96,7 @@ function init() {
     container.appendChild( renderer.domElement );
 
     stats = new Stats();
-    container.appendChild( stats.dom );
+    // container.appendChild( stats.dom );
 
     window.addEventListener('resize', onWindowResize, false);
 
