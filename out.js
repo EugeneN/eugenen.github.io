@@ -59225,7 +59225,7 @@ function h$$at9()
   h$r1 = h$ghcjszuKc7TQ2cEDg1F5e5cgY2VukZCDataziJSStringziunpackCStringzh;
   return h$ap_1_2_fast();
 };
-var h$$businzuBKovPO3r1Bw14NiGP8rotLZCLib_bW = h$str("404");
+var h$$businzuBKovPO3r1Bw14NiGP8rotLZCLib_bW = h$str("s404");
 function h$$aub()
 {
   h$bh();
@@ -59361,7 +59361,7 @@ function h$$auo()
   h$r1 = h$ghcjszuKc7TQ2cEDg1F5e5cgY2VukZCDataziJSStringziunpackCStringzh;
   return h$ap_1_2_fast();
 };
-var h$$businzuBKovPO3r1Bw14NiGP8rotLZCLib_cc = h$str("500");
+var h$$businzuBKovPO3r1Bw14NiGP8rotLZCLib_cc = h$str("s500");
 function h$$aup()
 {
   h$bh();
