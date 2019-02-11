@@ -557,3 +557,19 @@ ul.img-list {
   flex-direction: row;
   justify-content: flex-start;
 }
+
+.error-description {
+  display: block;
+}
+
+.error-message {
+  display: block;
+  font-style: italic;
+  color: red;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.error-sorry {
+  display: block;
+}
