@@ -3324,7 +3324,7 @@ if(String.prototype.codePointAt) {
     }
     h$jsstringHead = function(str) {
                                                     ;
- var cp = ch.codePointAt(0);
+ var cp = str.codePointAt(0);
  return (cp === undefined) ? -1 : (cp|0);
     }
     h$jsstringTail = function(str) {
@@ -3347,10 +3347,12 @@ if(String.prototype.codePointAt) {
     h$jsstringUncons = function(str) {
                                                              ;
  var l = str.length;
- if(l===0) return null;
+ if(l===0) {
+          { h$ret1 = (null); return (-1); };
+        }
  var ch = str.codePointAt(0);
         if(ch === undefined) {
-     { h$ret1 = (null); return (null); };
+     { h$ret1 = (null); return (-1); };
         }
         { h$ret1 = (str.substr(((ch)>=0x10000)?2:1)); return (ch); };
     }
@@ -3405,7 +3407,9 @@ if(String.prototype.codePointAt) {
     h$jsstringUncons = function(str) {
                                                                 ;
  var l = str.length;
- if(l===0) return -1;
+ if(l===0) {
+          { h$ret1 = (null); return (-1); };
+        }
  var ch = str.charCodeAt(0);
  if(((ch|1023)===0xDBFF)) {
    if(l > 1) {
