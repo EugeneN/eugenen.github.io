@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Spin the Globe</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" media="screen" href="index.css" />
+    <link rel="stylesheet" href="https://use.typekit.net/upr2zfs.css">
+  </head>
+  
+	<body>
+		<div id="container"></div>
+		<div id="logo">
+			<div class="spin">Spin</div>
+			<div class="the">the</div>
+			<div class="globe">Globe</div>
+    </div>
+		<div id="info">
+			<div class="visited">Countries visited: <span id="visited-count"></span></div>
+      <div class="remaining">Countries remaining: <span id="remaining-count"></span></div>
+      <div id="countries-list">
+
+      </div>
+    </div>
+    <div id="result">
+      <div class="destination">Your destination:</div>
+      <div id="winner">?</div>
+      <img id="destination-arrow" src="textures/arrow.png" />
+      <div class="destination-logo">
+        <img id="destination-img" src="textures/looking-for-destination.png" />
+      </div>
+    </div>
+    <div id="play">
+        <button id="spinner" onclick="spinTheGlobe()">Spin the Globe</button>
+    </div>
+
+		<script src="three.js"></script>
+		<script src="https://unpkg.com/topojson@3"></script>
+		<script src="https://d3js.org/d3.v5.min.js"></script>
+		<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+
+		<script src="TrackballControls.js"></script>
+		<script src="Projector.js"></script>
+		<script src="SoftwareRenderer.js"></script>
+		<script src="WebGLDeferredRenderer.js"></script>
+		<script src="geolib.js"></script>
+		<script src="mapTexture.js"></script>
+		<script src="utils.js"></script>
+		<script src="cookielib.js"></script>
+
+		<script src="stats.min.js"></script>
+		<script src="main.js"></script>
+	</body>
+</html>
