@@ -1,12 +1,4 @@
-function getImage(country) {
-  console.log("getImage", country);
-  // country.id <-- this
-  if (country) {
-    return "https://instagram.fiev6-1.fna.fbcdn.net/vp/0e0f72ce6e492951eeb4bf7e22d7a058/5D0A9073/t51.2885-15/sh0.08/e35/p640x640/51573448_2349920668560825_8212115822933135242_n.jpg?_nc_ht=instagram.fiev6-1.fna.fbcdn.net"
-  } else {
-    return "textures/looking-for-destination.png"
-  }
-}
+
 
 function CountriesList(features, el, vel, rel) {
   this.store = {};

@@ -12,66 +12,69 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate3d(-620px, -265px, 0);
+    transform: translate3d(-620px, -50%, 0);
     width: 290px;
-    height: 515px;
+    height: auto;
     padding: 30px;
-    background-color: #000;
+    background-color: transparent;
 }
 
-.visited {
-    height: 45px;
-}
-
-.remaining {
-    height: 40px;
-    margin-bottom: 40px;
-    margin-top: -10px;
+#info2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(270px, -50%, 0);
+    width: 290px;
+    height: auto;
+    padding: 30px;
+    background-color: transparent;
 }
 
 #result {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate3d(270px, -265px, 0);
-    width: 290px;
-    height: 515px;
-    padding: 30px;
-    background-color: #000;
-}
-
-#play {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate3d(-50%, 230px, 0);
+    transform: translate3d(-50%, -330px, 0);
     width: 540px;
     height: 80px;
     padding: 0px;
     text-transform: uppercase;
+    background-color: transparent;
 }
 
 #logo {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate3d(-600px, -525px, 0);
-    width: 300px;
-    height: 213px;
+    top: 50px;
+    left: 50px;
+    /* transform: translate3d(-700px, -225px, 0); */
+    width: auto;
+    height: auto;
     padding: 0px;
     font-family: Europa, Helvetica, sans-serif;
-    font-size: 52px;
+    font-size: 22px;
+    line-height: 22px;
     font-weight: bold;
     text-align: left;
     text-transform: uppercase;
-}
-
-#logo .spin {
-    color: #33ccff;
-}
-
-#logo .the, #logo .globe {
     color: #fff;
+}
+#rules-trigger {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    width: 30px;
+    height: 30px;
+    padding: 0px;
+    font-family: Europa, Helvetica, sans-serif;
+    font-size: 18px;
+    line-height: 30px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fff;
+    border: 1px solid #fff;
+    background-color: transparent;
+    cursor: pointer;
 }
 
 a {
@@ -92,36 +95,31 @@ a {
     cursor: pointer;
 }
 
-.visited, .destination {
+.title {
     font-family: Europa-Bold, Helvetica, sans-serif;
-    font-size: 22px;
+    font-size: 18px;
     color: #fff;
-    text-align: left;
-    line-height: 34pt;
-    text-transform: uppercase;
-}
-
-.remaining {
-    font-family: Europa-Bold, Helvetica, sans-serif;
-    font-size: 14px;
-    color: #33ccff;
-    text-align: left;
-    line-height: 40px;
-    text-transform: uppercase;
-}
-
-.destination-logo img {
-    width: 290px;
-    height: 370px;
-}
-
-.destination-logo {
-    /* height: 680px; */
-}
-
-.destination {
-    height: 40px;
     text-align: center;
+    line-height: 34px;
+    text-transform: uppercase;
+}
+#visited-count, #remaining-count {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    color: #fff;
+    font-size: 36px;
+    text-align: center;
+}
+.action {
+    background: transparent;
+    border: 1px solid #fff;
+    color: white;
+    text-transform: uppercase;
+    margin: auto;
+    padding: 5px 10px;
+    font-size: 16px;
+    line-height: 35px;
+    width: 200px;
+    margin-top: 40px;
 }
 
 #winner {
@@ -129,16 +127,12 @@ a {
     font-family: Europa-Bold, Helvetica, sans-serif;
     font-size: 32px;
     font-weight: bold;
-    color: #33ccff;
+    color: #fff;
     text-align: left;
     display: block;
     margin-bottom: 0px;
     text-align: center;
     padding-bottom: 0px;
-}
-
-#destination-arrow {
-    margin: 20px 0;
 }
 
 #countries-list {
@@ -149,10 +143,88 @@ a {
     color: #fff;
     overflow-x: hidden;
     overflow-y: scroll;
-    height: 400px;
+    height: 250px;
+    padding: 0 20px;
+}
+
+#countries-list-header {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-weight: lighter;
+    color: #fff;
+    border-bottom: 1px solid #fff;
+    font-size: 23px;
+    padding: 20px 0;
+}
+#countries-list-wrapper {
+    height: auto;
+    width: 300px;
     text-transform: uppercase;
     cursor: pointer;
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    background-color: #6699cc;
+    color: #fff;
+    padding: 0px;
+    text-align: center;
+    /* z-index: 9999; */
 }
+#rules-wrapper {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 38px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    width: 300px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    background-color: #6699cc;
+    color: #fff;
+    padding: 0px;
+    text-align: center;
+}
+#rules-wrapper .rules-content li {
+    padding: 0 20px;
+}
+#rules-wrapper .rules-content {
+    text-align: left;
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 38px;
+    color: #fff;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: auto;
+    padding: 0px;
+}
+#rules-wrapper h1 {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-weight: lighter;
+    color: #fff;
+    border-bottom: 1px solid #fff;
+    font-size: 23px;
+    padding: 20px 0;
+    text-align: center;
+}
+#close-cl {
+    font-size: 23px;
+    padding: 5px;
+    font-weight: lighter;
+    color: #fff;
+    background-color: transparent;
+    border: 0px solid #fff;
+    margin: 20px;
+}
+
+
 
 #countries-list .c-visited {
     color: #33ccff;

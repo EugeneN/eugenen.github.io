@@ -10,29 +10,45 @@
   
 	<body>
 		<div id="container"></div>
+		
 		<div id="logo">
 			<div class="spin">Spin</div>
 			<div class="the">the</div>
 			<div class="globe">Globe</div>
-    </div>
+		</div>
+		
+		<button id="rules-trigger" onclick="showRules()">?</button>
+		
 		<div id="info">
-			<div class="visited">Countries visited: <span id="visited-count"></span></div>
-      <div class="remaining">Countries remaining: <span id="remaining-count"></span></div>
-      <div id="countries-list">
+			<div class="title">Countries visited</div>
+			<div id="visited-count" ></div>
+      <button class="action" id="change-visited-countries" onclick="showChangeVisited()">Change</button>
+		</div>
+		
+    <div id="info2">
+			<div class="title">Countries remaining</div>
+			<div id="remaining-count"></div>
+      <button class="action" id="play" onclick="spinTheGlobe()">Spin the Globe</button>
+		</div>
+		
+		<div id="result">
+			<div id="winner"></div>
+		</div>
 
-      </div>
-    </div>
-    <div id="result">
-      <div class="destination">Your destination:</div>
-      <div id="winner">?</div>
-      <img id="destination-arrow" src="textures/arrow.png" />
-      <div class="destination-logo">
-        <img id="destination-img" src="textures/looking-for-destination.png" />
-      </div>
-    </div>
-    <div id="play">
-        <button id="spinner" onclick="spinTheGlobe()">Spin the Globe</button>
-    </div>
+		<div id="countries-list-wrapper">
+			<div id="countries-list-header">Countries visited</div>
+			<div id="countries-list"></div>
+			<button id="close-cl" onclick="hideChangeVisited()">✕</button>
+		</div>
+
+		<div id="rules-wrapper"> 
+			<h1>Rules of the game</h1>
+			<ol class="rules-content">
+				<li>Eliminate the destinations you’ve already visited.</li>
+				<li>Spin the globe!</li>
+			</ol>
+			<button id="close-cl" onclick="hideRules()">✕</button>
+		</div>
 
 		<script src="three.js"></script>
 		<script src="https://unpkg.com/topojson@3"></script>

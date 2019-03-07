@@ -14,11 +14,11 @@ var rotationDeltaSpin = 0.5;
 var rotationDeltaDefault = 0.005;
 var rotationDelta = rotationDeltaDefault;
 var winner = document.getElementById("winner");
-var spinner = document.getElementById("spinner");
-var destImg = document.getElementById("destination-img");
+var spinner = document.getElementById("play");
+var vlist = document.getElementById("countries-list-wrapper");
+var rules = document.getElementById("rules-wrapper");
 
-
-var baseRadius = 100;
+var baseRadius = 170;
 
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
@@ -79,7 +79,7 @@ function init() {
     );
     group.add(clouds);
 
-    var bgtexture = new THREE.TextureLoader().load('textures/Bahamas_39.png');
+    var bgtexture = new THREE.TextureLoader().load('textures/gradientbg.png');
     scene.background = bgtexture;
 
     // var thestars = new THREE.Mesh(
@@ -145,9 +145,14 @@ function flyTo(country) {
     group.rotation.setFromVector3(rot);
 }
 
+function showChangeVisited() { vlist.style.display = "block"; }
+function hideChangeVisited() { vlist.style.display = "none"; }
+
+function showRules() { rules.style.display = "block"; }
+function hideRules() { rules.style.display = "none"; }
+
 function spinTheGlobe() {
-    destImg.src = getImage();
-    winner.innerHTML = "?";
+    winner.innerHTML = "";
     spinner.disabled = true;
     group.rotation.setFromVector3({x:0,y:0,z:0})
 
@@ -162,8 +167,6 @@ function spinTheGlobe() {
         winner.innerHTML = country.id;
         winner.style.display = "block";
         spinner.disabled = false;
-
-        destImg.src = getImage(country);
     }, 500);
 }
 
