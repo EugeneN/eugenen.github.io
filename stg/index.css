@@ -107,7 +107,7 @@ a { color: #0080ff; }
 #info, #info2 {
     width: 220px;
     height: auto;
-    padding: 30px;
+    padding: 0;
     background-color: transparent;
 }
 
@@ -181,7 +181,7 @@ a { color: #0080ff; }
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate3d(-280px, 220px, 0);
+        transform: translate3d(-220px, 250px, 0);
         color: #000;
     }
 
@@ -189,7 +189,7 @@ a { color: #0080ff; }
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate3d(0, 220px, 0);
+        transform: translate3d(0, 250px, 0);
     }
 
     #result {
@@ -236,14 +236,14 @@ a { color: #0080ff; }
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate3d(-620px, -50%, 0);
+        transform: translate3d(-550px, -50%, 0);
     }
 
     #info2 {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate3d(270px, -50%, 0);
+        transform: translate3d(330px, -50%, 0);
     }
 
     #result {

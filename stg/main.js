@@ -13,13 +13,18 @@ var mouseX = 0, mouseY = 0;
 var rotationDeltaSpin = 0.5;
 var rotationDeltaDefault = 0.005;
 var rotationDelta = rotationDeltaDefault;
-var winner = document.getElementById("winner");
+var winner  = document.getElementById("winner");
 var spinner = document.getElementById("play");
-var vlist = document.getElementById("countries-list-wrapper");
-var rules = document.getElementById("rules-wrapper");
+var vlist   = document.getElementById("countries-list-wrapper");
+var rules   = document.getElementById("rules-wrapper");
 
-var baseRadius = 170;
+var baseRadius    = 170;
 var winnerCountry = null;
+
+function getBaseRadius() {
+    if (window.innerWidth < 900) { return 100 }
+    else { return 170; }
+}
 
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
@@ -59,7 +64,7 @@ function init() {
     scene.add( group );
 
     var earth = new THREE.Mesh(
-        new THREE.SphereBufferGeometry( baseRadius, 32, 32 ), 
+        new THREE.SphereBufferGeometry( getBaseRadius(), 32, 32 ), 
         new THREE.MeshPhongMaterial({
             map: THREE.ImageUtils.loadTexture('textures/2_no_clouds_4k.jpg'),
             bumpMap: THREE.ImageUtils.loadTexture('textures/elev_bump_4k.jpg'),
@@ -72,7 +77,7 @@ function init() {
     group.add(earth);
 
     var clouds = new THREE.Mesh(
-        new THREE.SphereGeometry(baseRadius+1, 32, 32),
+        new THREE.SphereGeometry(getBaseRadius()+1, 32, 32),
         new THREE.MeshPhongMaterial({
             map: THREE.ImageUtils.loadTexture('textures/fair_clouds_4k.png'),
             transparent: true
@@ -114,7 +119,7 @@ function highlightCountry(country) {
     
     material = new THREE.MeshPhongMaterial({map: map, transparent: true});
     if (!overlay) {
-        overlay = new THREE.Mesh(new THREE.SphereGeometry(baseRadius+2, 40, 40), material);
+        overlay = new THREE.Mesh(new THREE.SphereGeometry(getBaseRadius()+2, 40, 40), material);
         overlay.name = country.id;
         group.add(overlay);
     } else {
