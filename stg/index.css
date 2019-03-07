@@ -66,8 +66,9 @@ body {
     height: 30px;
     padding: 0px;
     font-family: Europa, Helvetica, sans-serif;
+    font-weight: lighter;
     font-size: 18px;
-    line-height: 30px;
+    line-height: 18px;
     font-weight: bold;
     text-align: center;
     text-transform: uppercase;
@@ -120,6 +121,7 @@ a {
     line-height: 35px;
     width: 200px;
     margin-top: 40px;
+    cursor: pointer;
 }
 
 #winner {
@@ -222,6 +224,7 @@ a {
     background-color: transparent;
     border: 0px solid #fff;
     margin: 20px;
+    cursor: pointer;
 }
 
 

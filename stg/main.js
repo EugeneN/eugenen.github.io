@@ -82,26 +82,10 @@ function init() {
     var bgtexture = new THREE.TextureLoader().load('textures/gradientbg.png');
     scene.background = bgtexture;
 
-    // var thestars = new THREE.Mesh(
-    //     new THREE.SphereGeometry(1500, 64, 64), 
-    //     new THREE.MeshBasicMaterial({
-    //         map: THREE.ImageUtils.loadTexture('textures/galaxy_starfield.png'), 
-    //         side: THREE.BackSide
-    //     })
-    // );
-    //group.add(thestars);
-
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-
-    // controls = new THREE.TrackballControls(camera);
-
     container.appendChild( renderer.domElement );
-
-    stats = new Stats();
-    // container.appendChild( stats.dom );
-
     window.addEventListener('resize', onWindowResize, false);
 
 }
@@ -182,12 +166,9 @@ function animate() {
 }
 
 function render() {
-    // controls.update();
     camera.lookAt(scene.position);
     group.rotation.y += rotationDelta;
     renderer.render(scene, camera);
 }
 
-function toggleCountry(x) {
-    cl.toggle(x);
-}
+function toggleCountry(x) { cl.toggle(x); }
