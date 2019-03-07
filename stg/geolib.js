@@ -76,6 +76,12 @@ CountriesList.prototype.getRandomCountry = function() {
 
   return c;
 }
+CountriesList.prototype.markAsVisited = function(country) {
+  this.visited[country.id] = true;
+
+  setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
+  this.render();
+}
 CountriesList.prototype.toggle = function(x) {
   if (this.visited[x]) {
       this.visited[x] = !this.visited[x];

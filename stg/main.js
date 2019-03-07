@@ -19,6 +19,7 @@ var vlist = document.getElementById("countries-list-wrapper");
 var rules = document.getElementById("rules-wrapper");
 
 var baseRadius = 170;
+var winnerCountry = null;
 
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
@@ -135,6 +136,12 @@ function hideChangeVisited() { vlist.style.display = "none"; }
 function showRules() { rules.style.display = "block"; }
 function hideRules() { rules.style.display = "none"; }
 
+function handleWinnerDblClick() { 
+    if (window.getSelection) { window.getSelection().removeAllRanges(); }
+    else if (document.selection) { document.selection.empty(); }
+    cl.markAsVisited(winnerCountry) 
+}
+
 function spinTheGlobe() {
     winner.innerHTML = "";
     spinner.disabled = true;
@@ -143,7 +150,8 @@ function spinTheGlobe() {
     rotationDelta = rotationDeltaSpin;
     setTimeout(function(){ 
         var country = cl.getRandomCountry();
-        console.log(country)
+        winnerCountry = country;
+        console.log(country);
 
         highlightCountry(country);
 
@@ -162,7 +170,6 @@ function onDocumentMouseMove( event ) {
 function animate() {
     requestAnimationFrame( animate );
     render();
-    stats.update();
 }
 
 function render() {
