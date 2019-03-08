@@ -239,25 +239,25 @@ a { color: #0080ff; }
         width: 220px;
         height: 150px;
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate3d(-550px, -100px, 0);
+        top: calc(50% - 100px);
+        left: calc(50% - (32vh + 270px));
+        /* transform: translate3d(-550px, -100px, 0); */
     }
 
     #info2 {
         width: 220px;
         height: 150px;
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate3d(330px, -100px, 0);
+        top: calc(50% - 100px);
+        left: calc(50% + (32vh + 50px));
+        /* transform: translate3d(330px, -100px, 0); */
     }
 
     #result {
         position: absolute;
-        top: 50%;
+        top: calc(50% - (32vh + 75px));
         left: 50%;
-        transform: translate3d(-50%, -330px, 0);
+        transform: translate3d(-50%, 0, 0);
     }
 
     #logo {
@@ -292,3 +292,4 @@ a { color: #0080ff; }
         width: 200px;
     }
 }
+
