@@ -10,7 +10,7 @@ var container, stats;
 var camera, scene, renderer, controls;
 var group;
 var mouseX = 0, mouseY = 0;
-var rotationDeltaSpin = 0.5;
+var rotationDeltaSpin = 0.15;
 var rotationDeltaDefault = 0.005;
 var rotationDelta = rotationDeltaDefault;
 var winner  = document.getElementById("winner");
@@ -146,25 +146,46 @@ function handleWinnerClick() {
     else if (document.selection) { document.selection.empty(); }
     cl.toggle(winnerCountry.id) 
 }
-
-function spinTheGlobe() {
+var reset = function(){
     winner.innerHTML = "";
     spinner.disabled = true;
     group.rotation.setFromVector3({x:0,y:0,z:0})
+}
+var show = function(country) {
+    winner.innerHTML = country.id;
+    winner.style.display = "block";
+}
+function rotateToCountries(cs, cont) {
+    if (cs.length > 1) {
+        var c = cs.shift();
+        reset();
+        rotationDelta = rotationDeltaSpin;
+        setTimeout(function(){ 
+            rotationDelta = rotationDeltaDefault;
+            show(c)
+            highlightCountry(c);
+            setTimeout(function() { rotateToCountries(cs, cont) }, 500);
+        }, 500);
+    } else {
+        cont(cs[0]);
+    }
+}
 
-    rotationDelta = rotationDeltaSpin;
-    setTimeout(function(){ 
-        var country = cl.getRandomCountry();
+function spinTheGlobe() {
+    reset();
+    var cs = [];
+    for (var i=0; i<10; i++) { cs.push(cl.getRandomCountry()); }
+
+    rotateToCountries(cs, function(country) {
         winnerCountry = country;
         console.log(country);
 
         highlightCountry(country);
 
         rotationDelta = 0;
-        winner.innerHTML = country.id;
-        winner.style.display = "block";
+        show(country);
         spinner.disabled = false;
-    }, 500);
+    });
 }
 
 function onDocumentMouseMove( event ) {
