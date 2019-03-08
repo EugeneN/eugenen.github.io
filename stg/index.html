@@ -20,7 +20,7 @@
 		<button id="rules-trigger" onclick="showRules()">Rules of the game</button>
 		
 		<div id="info">
-			<div class="title">Countries visited</div>
+			<div class="title">Countries<br/>visited / ineligible</div>
 			<div id="visited-count" ></div>
       <button class="action" id="change-visited-countries" onclick="showChangeVisited()">Change</button>
 		</div>
@@ -36,7 +36,10 @@
 		</div>
 
 		<div id="countries-list-wrapper">
-			<div id="countries-list-header">Countries visited</div>
+			<div id="countries-list-header">
+				<span>Countries</span>
+				<button id="cl-visited" onclick="setMode(VISITED)">visited</button>/<button id="cl-ineligible" onclick="setMode(INELIGIBLE)">ineligible</button>
+			</div>
 			<div id="countries-list"></div>
 			<button id="close-cl" onclick="hideChangeVisited()">✕</button>
 		</div>
@@ -47,6 +50,10 @@
 				<li>Eliminate the destinations you’ve already visited.</li>
 				<li>Spin the globe!</li>
 			</ol>
+			<!-- <iframe width="300" height="168" 
+					src="https://www.youtube.com/embed/SdySHadrYAA" 
+					frameborder="0" 
+					></iframe> -->
 			<button id="close-cl" onclick="hideRules()">✕</button>
 		</div>
 

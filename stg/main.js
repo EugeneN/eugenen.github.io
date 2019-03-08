@@ -141,6 +141,8 @@ function hideChangeVisited() { vlist.style.display = "none"; }
 function showRules() { rules.style.display = "block"; }
 function hideRules() { rules.style.display = "none"; }
 
+function setMode(m) { cl.setMode(m); }
+
 function handleWinnerClick() { 
     if (window.getSelection) { window.getSelection().removeAllRanges(); }
     else if (document.selection) { document.selection.empty(); }

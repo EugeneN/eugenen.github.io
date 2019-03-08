@@ -1,14 +1,17 @@
-
+const VISITED = 1;
+const INELIGIBLE = 2;
 
 function CountriesList(features, el, vel, rel) {
   this.store = {};
   this.features = features;
+  this.mode = VISITED;
 
   // this.xs = xs;
   this.el = document.getElementById(el);
   this.vel = document.getElementById(vel);
   this.rel = document.getElementById(rel);
   this.visited = {};
+  this.ineligible = {};
 
   this.init();
   this.render();
@@ -22,6 +25,12 @@ CountriesList.prototype.init = function() {
   if (Array.isArray(z)) { 
     for (var i=0; i<z.length; i++) {
       this.visited[z[i]] = true;
+    }
+  }
+  try { z = JSON.parse(getCookie("ic")); } catch(e) { z = null; }
+  if (Array.isArray(z)) { 
+    for (var i=0; i<z.length; i++) {
+      this.ineligible[z[i]] = true;
     }
   }
 }
@@ -64,9 +73,13 @@ CountriesList.prototype.getVisitedCountriesList = function() {
   var self = this;
   return Object.keys(this.visited).filter(function(x) { return self.visited[x] === true });
 }
+CountriesList.prototype.getIneligibleCountriesList = function() {
+  var self = this;
+  return Object.keys(this.ineligible).filter(function(x) { return self.ineligible[x] === true });
+}
 CountriesList.prototype.getUnvisitedCountriesList = function() {
   var self = this;
-  return Object.keys(this.store).filter(function(x) { return self.visited[x] !== true });
+  return Object.keys(this.store).filter(function(x) { return self.visited[x] !== true && self.ineligible[x] !== true });
 }
 CountriesList.prototype.getRandomCountry = function() {
   var xs  = this.getUnvisitedCountriesList();
@@ -76,33 +89,54 @@ CountriesList.prototype.getRandomCountry = function() {
 
   return c;
 }
+CountriesList.prototype.setMode = function(m) { 
+  this.mode = m; 
+  this.render();
+}
 CountriesList.prototype.markAsVisited = function(country) {
   this.visited[country.id] = true;
 
   setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
+  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
   this.render();
 }
 CountriesList.prototype.toggle = function(x) {
-  if (this.visited[x]) {
-      this.visited[x] = !this.visited[x];
-  } else {
-      this.visited[x] = true;
-  }
+  if (this.mode === VISITED) { var v = this.visited; } 
+  else { var v = this.ineligible; }
+
+  if (v[x]) { v[x] = !v[x];
+  } else { v[x] = true; }
+
   setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
+  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
   this.render();
+}
+CountriesList.prototype.isSelected = function(x) {
+  if(this.mode === VISITED) { return this.visited[x] === true; } 
+  else { return this.ineligible[x] === true; }
 }
 CountriesList.prototype.render = function() {
   var self = this;
   var xs = Object.keys(this.store);
   var h = xs.map(function(x) { 
-    var cls = self.visited[x] === true ? "c-visited" : "c-not-visited"; 
+    var cls = self.isSelected(x) ? "c-visited" : "c-not-visited"; 
     return "<div class='" + cls + "' onclick='toggleCountry(\""+x+"\")'>"+x+"</div>" 
   });
-  var v = Object.values(this.visited).filter(function(x) { return x}).length;
-  var r = Object.values(xs).length - v;
+  var v  = Object.values(this.visited).filter(function(x) { return x}).length;
+  var ie = Object.values(this.ineligible).filter(function(x) { return x}).length;
+  var r  = Object.values(xs).length - (v + ie);
+
+  if (this.mode === VISITED) {
+    document.getElementById('cl-visited').classList.add('mode-visited');
+    document.getElementById('cl-ineligible').classList.remove('mode-visited');
+  } else {
+    document.getElementById('cl-visited').classList.remove('mode-visited');
+    document.getElementById('cl-ineligible').classList.add('mode-visited');
+  }
+  
 
   this.el.innerHTML = h.join("");
-  this.vel.innerHTML = v;
+  this.vel.innerHTML = v + " / " + ie;
   this.rel.innerHTML = r;
 }
 

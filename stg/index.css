@@ -14,13 +14,14 @@ a { color: #0080ff; }
     font-family: Europa-Bold, Helvetica, sans-serif;
     font-size: 18px;
     text-align: center;
-    line-height: 34px;
+    line-height: 18px;
     text-transform: uppercase;
 }
 #visited-count, #remaining-count {
     font-family: Europa-Regular, Helvetica, sans-serif;
     font-size: 36px;
     text-align: center;
+    margin: 10px 0;
 }
 .action {
     background: transparent;
@@ -57,6 +58,23 @@ a { color: #0080ff; }
     padding: 0 20px;
 }
 
+#countries-list-header > span {
+    display: block;
+}
+#countries-list-header button.mode-visited {
+    color: #33ccff;
+}
+#countries-list-header button {
+    background-color: transparent;
+    border: none;
+    text-align: center;
+    color: #fff;
+    font-size: 23px;
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-weight: lighter;
+    text-transform: uppercase;
+    cursor: pointer;
+}
 #countries-list-header {
     font-family: Europa-Regular, Helvetica, sans-serif;
     font-weight: lighter;
