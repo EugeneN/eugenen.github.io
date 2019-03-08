@@ -156,6 +156,8 @@ var show = function(country) {
     winner.style.display = "block";
 }
 function rotateToCountries(cs, cont) {
+    var spinDur = 1000;
+    var restDur = 500;
     if (cs.length > 1) {
         var c = cs.shift();
         reset();
@@ -163,11 +165,13 @@ function rotateToCountries(cs, cont) {
         setTimeout(function(){ 
             rotationDelta = rotationDeltaDefault;
             show(c)
-            highlightCountry(c);
-            setTimeout(function() { rotateToCountries(cs, cont) }, 500);
-        }, 500);
+            // highlightCountry(c);
+            setTimeout(function() { rotateToCountries(cs, cont) }, restDur);
+        }, spinDur);
     } else {
-        cont(cs[0]);
+        reset();
+        rotationDelta = rotationDeltaSpin;
+        setTimeout(function(){ cont(cs[0]) }, spinDur);
     }
 }
 
