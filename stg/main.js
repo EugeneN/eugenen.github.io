@@ -1,6 +1,10 @@
 var topojsonFeature = topojson.feature;
 var segments = 155;
 
+var spinStops = 5;
+var spinDur = 1000;
+var restDur = 500;
+
 var countriesTopo;
 var overlay;
 
@@ -114,25 +118,44 @@ function togglePause(event) {
     }
 }
 
-function highlightCountry(country) {
+function highlightCountry(country, dur, after) {
     var map = textureCache(country.id, '#ff0000', 'rgba(255,0,0,0.2)');
     
-    material = new THREE.MeshPhongMaterial({map: map, transparent: true});
-    if (!overlay) {
-        overlay = new THREE.Mesh(new THREE.SphereGeometry(getBaseRadius()+2, 40, 40), material);
-        overlay.name = country.id;
-        group.add(overlay);
-    } else {
-        overlay.material = material;
-    }
-    flyTo(country);
+    setTimeout(function() {
+        material = new THREE.MeshPhongMaterial({map: map, transparent: true});
+        if (!overlay) {
+            overlay = new THREE.Mesh(new THREE.SphereGeometry(getBaseRadius()+2, 40, 40), material);
+            overlay.name = country.id;
+            group.add(overlay);
+        } else {
+            overlay.material = material;
+        }
+        after();
+    }, dur+10);
+
+    flyTo(country, dur);
 }
 
-function flyTo(country) {
+function flyTo(country, duration) {
     var latlng = findGeomCenter(country);
-    var rot = deg2rad(latlng);
+    var targetRot1 = deg2rad(latlng);
 
-    group.rotation.setFromVector3(rot);
+    var pos = group.rotation;
+    var pi2 = 2 * Math.PI;
+
+    targetRot1 = 
+        { y: targetRot1.y + 4 * pi2
+        , x: targetRot1.x
+        , z: 0 };
+    if (targetRot1.y < pos.y) {
+        var n = Math.floor(pos.y / pi2);
+        targetRot1.y = n * pi2 + targetRot1.y;
+    }
+
+    var tween1 = new TWEEN.Tween(pos).to(targetRot1, duration);
+    tween1.onUpdate(function(){ group.rotation.setFromVector3(pos) });
+    tween1.easing(TWEEN.Easing.Linear.None);
+    tween1.start();
 }
 
 function showChangeVisited() { vlist.style.display = "block"; }
@@ -149,47 +172,50 @@ function handleWinnerClick() {
     cl.toggle(winnerCountry.id) 
 }
 var reset = function(){
-    winner.innerHTML = "";
+    hideWinnerTitle();
     spinner.disabled = true;
-    group.rotation.setFromVector3({x:0,y:0,z:0})
+
+    var pos = group.rotation;
+    var target = {x:0,y:0,z:0};
+
+    var tween = new TWEEN.Tween(pos).to(target, 250);
+    tween.onUpdate(function(){ group.rotation.setFromVector3(pos) });
+    tween.easing(TWEEN.Easing.Linear.None);
+    tween.start();
 }
-var show = function(country) {
+var showWinnerTitle = function(country) {
     winner.innerHTML = country.id;
     winner.style.display = "block";
 }
-function rotateToCountries(cs, cont) {
-    var spinDur = 1000;
-    var restDur = 500;
+var hideWinnerTitle = function(country) {
+    winner.innerHTML = "";
+}
+function rotateToCountries(cs, done) {
+    rotationDelta = 0;
+    hideWinnerTitle();
+
     if (cs.length > 1) {
-        var c = cs.shift();
-        reset();
-        rotationDelta = rotationDeltaSpin;
-        setTimeout(function(){ 
-            rotationDelta = rotationDeltaDefault;
-            show(c)
-            // highlightCountry(c);
-            setTimeout(function() { rotateToCountries(cs, cont) }, restDur);
-        }, spinDur);
+        var country = cs.shift();
+        highlightCountry(country, spinDur, function(){ 
+            showWinnerTitle(country);
+            setTimeout(function() { rotateToCountries(cs, done) }, restDur);
+        });
     } else {
-        reset();
-        rotationDelta = rotationDeltaSpin;
-        setTimeout(function(){ cont(cs[0]) }, spinDur);
+        done(cs[0]);
     }
 }
 
 function spinTheGlobe() {
     reset();
     var cs = [];
-    for (var i=0; i<10; i++) { cs.push(cl.getRandomCountry()); }
+    for (var i=0; i<spinStops; i++) { cs.push(cl.getRandomCountry()); }
 
     rotateToCountries(cs, function(country) {
         winnerCountry = country;
-        console.log(country);
-
-        highlightCountry(country);
+        
+        highlightCountry(country, spinDur, function(){ showWinnerTitle(country) });
 
         rotationDelta = 0;
-        show(country);
         spinner.disabled = false;
     });
 }
@@ -199,8 +225,9 @@ function onDocumentMouseMove( event ) {
     mouseY = (event.clientY - windowHalfY);
 }
 
-function animate() {
-    requestAnimationFrame( animate );
+function animate(time) {
+    requestAnimationFrame(animate);
+    TWEEN.update(time);
     render();
 }
 
