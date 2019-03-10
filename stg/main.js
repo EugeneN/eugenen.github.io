@@ -154,7 +154,7 @@ function flyTo(country, duration) {
 
     var tween1 = new TWEEN.Tween(pos).to(targetRot1, duration);
     tween1.onUpdate(function(){ group.rotation.setFromVector3(pos) });
-    tween1.easing(TWEEN.Easing.Linear.None);
+    tween1.easing(TWEEN.Easing.Cubic.Out);
     tween1.start();
 }
 
@@ -180,7 +180,7 @@ var reset = function(){
 
     var tween = new TWEEN.Tween(pos).to(target, 250);
     tween.onUpdate(function(){ group.rotation.setFromVector3(pos) });
-    tween.easing(TWEEN.Easing.Linear.None);
+    tween.easing(TWEEN.Easing.Cubic.Out);
     tween.start();
 }
 var showWinnerTitle = function(country) {
