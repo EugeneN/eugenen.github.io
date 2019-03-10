@@ -1,0 +1,313 @@
+body {
+    color: #000;
+    font-family: Europa, Helvetica, sans-serif;
+    font-size: 13px;
+    text-align: center;
+    background-color: #fff;
+    margin: 0px;
+    overflow: hidden;
+}
+
+a { color: #0080ff; }
+
+.title {
+    font-family: Europa-Bold, Helvetica, sans-serif;
+    font-size: 18px;
+    text-align: center;
+    line-height: 18px;
+    text-transform: uppercase;
+}
+#visited-count, #remaining-count {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-size: 36px;
+    text-align: center;
+    margin: 10px 0;
+}
+.action {
+    background: transparent;
+    text-transform: uppercase;
+    margin: auto;
+    padding: 5px 10px;
+    font-size: 16px;
+    line-height: 35px;
+    margin-top: 40px;
+    cursor: pointer;
+}
+#winner {
+    height: 40px;
+    font-family: Europa-Bold, Helvetica, sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+    color: #fff;
+    text-align: left;
+    display: block;
+    margin-bottom: 0px;
+    text-align: center;
+    padding-bottom: 0px;
+}
+
+#countries-list {
+    text-align: left;
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 38px;
+    color: #fff;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 250px;
+    padding: 0 20px;
+}
+
+#countries-list-header > span {
+    display: block;
+}
+#countries-list-header button.mode-visited {
+    color: #33ccff;
+}
+#countries-list-header button {
+    background-color: transparent;
+    border: none;
+    text-align: center;
+    color: #fff;
+    font-size: 23px;
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-weight: lighter;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+#countries-list-header {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-weight: lighter;
+    color: #fff;
+    border-bottom: 1px solid #fff;
+    font-size: 23px;
+    padding: 20px 0;
+}
+
+#rules-wrapper .rules-content li {
+    padding: 0 20px;
+}
+#rules-wrapper .rules-content {
+    text-align: left;
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 38px;
+    color: #fff;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: auto;
+    padding: 0px;
+}
+#rules-wrapper h1 {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-weight: lighter;
+    color: #fff;
+    border-bottom: 1px solid #fff;
+    font-size: 23px;
+    padding: 20px 0;
+    text-align: center;
+}
+#close-cl {
+    font-size: 23px;
+    padding: 5px;
+    font-weight: lighter;
+    color: #fff;
+    background-color: transparent;
+    border: 0px solid #fff;
+    margin: 20px;
+    cursor: pointer;
+}
+
+#countries-list .c-visited { color: #33ccff; }
+#countries-list .c-not-visited { color: #fff; }
+
+#info, #info2 {
+    padding: 0;
+    background-color: transparent;
+}
+
+#result {
+    width: 540px;
+    height: 80px;
+    padding: 0px;
+    text-transform: uppercase;
+    background-color: transparent;
+}
+
+#logo {
+    width: auto;
+    height: auto;
+    padding: 0px;
+    font-family: Europa, Helvetica, sans-serif;
+    font-size: 22px;
+    line-height: 22px;
+    font-weight: bold;
+    text-align: left;
+    text-transform: uppercase;
+    color: #fff;
+}
+#rules-trigger {
+    /* width: 30px; */
+    /* height: 30px; */
+    padding: 5px 10px;
+    font-family: Europa, Helvetica, sans-serif;
+    font-weight: lighter;
+    font-size: 12px;
+    line-height: 12px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fff;
+    border: 1px solid #fff;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+#countries-list-wrapper {
+    height: auto;
+    width: 300px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: none;
+    background-color: #6699cc;
+    color: #fff;
+    padding: 0px;
+    text-align: center;
+}
+#rules-wrapper {
+    font-family: Europa-Regular, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 38px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    width: 300px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: none;
+    background-color: #6699cc;
+    color: #fff;
+    padding: 0px;
+    text-align: center;
+}
+
+@media screen and (min-width: 320px) {
+    #info {
+        width: 50%;
+        height: 150px;
+        position: absolute;
+        bottom: 0px;
+        left: 0;
+        color: #000;
+    }
+
+    #info2 {
+        width: 50%;
+        height: 150px;
+        position: absolute;
+        bottom: 0px;
+        right: 0;
+    }
+
+    #result {
+        position: absolute;
+        top: 100px;
+        left: 50%;
+        transform: translate3d(-50%, 0, 0);
+    }
+
+    #logo {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+    }
+    #rules-trigger {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    #countries-list-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0);
+    }
+    #rules-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0);
+    }
+    #visited-count, #remaining-count { color: #000; }
+    .title { 
+        color: #000; 
+        font-size: 80%;
+    }
+    .action {
+        border: 1px solid #000;
+        color: #000;
+        margin-top: 10px;
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 1100px) {
+    #info {
+        width: 220px;
+        height: 150px;
+        position: absolute;
+        top: calc(50% - 100px);
+        left: calc(50% - (32vh + 270px));
+        /* transform: translate3d(-550px, -100px, 0); */
+    }
+
+    #info2 {
+        width: 220px;
+        height: 150px;
+        position: absolute;
+        top: calc(50% - 100px);
+        left: calc(50% + (32vh + 50px));
+        /* transform: translate3d(330px, -100px, 0); */
+    }
+
+    #result {
+        position: absolute;
+        top: calc(50% - (32vh + 75px));
+        left: 50%;
+        transform: translate3d(-50%, 0, 0);
+    }
+
+    #logo {
+        position: absolute;
+        top: 50px;
+        left: 50px;
+        /* transform: translate3d(-700px, -225px, 0); */
+    }
+    #rules-trigger {
+        position: absolute;
+        top: 50px;
+        right: 50px;
+    }
+
+    #countries-list-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0);
+    }
+    #rules-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0);
+    }
+    #visited-count, #remaining-count { color: #fff; }
+    .title { color: #fff; }
+    .action {
+        border: 1px solid #fff;
+        color: white;
+        width: 200px;
+    }
+}
+
