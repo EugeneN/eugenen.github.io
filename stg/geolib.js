@@ -93,6 +93,11 @@ CountriesList.prototype.setMode = function(m) {
   this.mode = m; 
   this.render();
 }
+CountriesList.prototype.toggleMode = function() { 
+  if (this.mode === VISITED) { this.mode = INELIGIBLE; }
+  else { this.mode = VISITED; }
+  this.render();
+}
 CountriesList.prototype.markAsVisited = function(country) {
   this.visited[country.id] = true;
 
@@ -111,15 +116,17 @@ CountriesList.prototype.toggle = function(x) {
   setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
   this.render();
 }
-CountriesList.prototype.isSelected = function(x) {
-  if(this.mode === VISITED) { return this.visited[x] === true; } 
-  else { return this.ineligible[x] === true; }
+CountriesList.prototype.getSelectedCls = function(x) {
+  if      (this.mode === VISITED &&  this.visited[x])    { return "c-visited"; } 
+  else if (this.mode === VISITED && !this.visited[x])    { return "c-not-visited"; } 
+  else if (this.mode !== VISITED &&  this.ineligible[x]) { return "c-ineligible"; } 
+  else                                                   { return "c-not-ineligible"; } 
 }
 CountriesList.prototype.render = function() {
   var self = this;
   var xs = Object.keys(this.store);
   var h = xs.map(function(x) { 
-    var cls = self.isSelected(x) ? "c-visited" : "c-not-visited"; 
+    var cls = self.getSelectedCls(x); 
     return "<div class='" + cls + "' onclick='toggleCountry(\""+x+"\")'>"+x+"</div>" 
   });
   var v  = Object.values(this.visited).filter(function(x) { return x}).length;
@@ -127,15 +134,13 @@ CountriesList.prototype.render = function() {
   var r  = Object.values(xs).length - (v + ie);
 
   if (this.mode === VISITED) {
-    document.getElementById('cl-visited').classList.add('mode-visited');
-    document.getElementById('cl-ineligible').classList.remove('mode-visited');
+    document.getElementById('cl-mode').classList.remove('mode-ineligible');
   } else {
-    document.getElementById('cl-visited').classList.remove('mode-visited');
-    document.getElementById('cl-ineligible').classList.add('mode-visited');
+    document.getElementById('cl-mode').classList.add('mode-ineligible');
   }
   
   this.el.innerHTML = h.join("");
-  this.vel.innerHTML = v + " / " + ie;
+  this.vel.innerHTML = v;
   this.rel.innerHTML = r;
 }
 

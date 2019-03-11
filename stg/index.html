@@ -20,15 +20,15 @@
 		<button id="rules-trigger" onclick="showRules()">Rules of the game</button>
 		
 		<div id="info">
-			<div class="title">Countries<br/>visited / ineligible</div>
+			<div class="title">Countries visited</div>
 			<div id="visited-count" ></div>
-            <button class="action" id="change-visited-countries" onclick="showChangeVisited()">Change</button>
+			<button class="action" id="change-visited-countries" onclick="showChangeVisited()">Change</button>
 		</div>
 		
     	<div id="info2">
-			<div class="title">Countries<br/>remaining</div>
+			<div class="title">Countries remaining</div>
 			<div id="remaining-count"></div>
-     		<button class="action" id="play" onclick="spinTheGlobe()">Spin the Globe</button>
+    	<button class="action" id="play" onclick="spinTheGlobe()">Spin the Globe</button>
 		</div>
 		
 		<div id="result">
@@ -37,9 +37,9 @@
 
 		<div id="countries-list-wrapper">
 			<div id="countries-list-header">
-				<span>Countries</span>
-				<button id="cl-visited" onclick="setMode(VISITED)">visited</button>/<button id="cl-ineligible" onclick="setMode(INELIGIBLE)">ineligible</button>
+				<span>Countries visited</span>
 			</div>
+			<button id="cl-mode" onclick="toggleMode()">Eliminate ineligible countries</button>
 			<div id="countries-list"></div>
 			<button id="close-cl" onclick="hideChangeVisited()">✕</button>
 		</div>

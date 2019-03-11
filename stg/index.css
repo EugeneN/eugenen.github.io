@@ -61,19 +61,25 @@ a { color: #0080ff; }
 #countries-list-header > span {
     display: block;
 }
-#countries-list-header button.mode-visited {
-    color: #33ccff;
+#cl-mode.mode-ineligible {
+    color: rgb(55,79,115);
+    border: 1px solid rgb(55,79,115);
 }
-#countries-list-header button {
+#cl-mode {
     background-color: transparent;
-    border: none;
+    border: 1px solid #fff;
     text-align: center;
     color: #fff;
-    font-size: 23px;
+    line-height: 14px;
+    font-size: 14px;
     font-family: Europa-Regular, Helvetica, sans-serif;
     font-weight: lighter;
     text-transform: uppercase;
     cursor: pointer;
+    margin-top: 15px;
+    padding: 5px 10px 4px 10px;
+    vertical-align: middle;
+    width: 260px;
 }
 #countries-list-header {
     font-family: Europa-Regular, Helvetica, sans-serif;
@@ -86,23 +92,27 @@ a { color: #0080ff; }
 
 #rules-wrapper .rules-content li {
     padding: 0 20px;
+    margin-bottom: 10px;
 }
 #rules-wrapper .rules-content {
-    text-align: left;
+    text-align: center;
     font-family: Europa-Regular, Helvetica, sans-serif;
-    font-size: 14px;
-    line-height: 38px;
+    font-weight: lighter;
+    font-size: 18px;
+    line-height: 28px;
     color: #fff;
     overflow-x: hidden;
     overflow-y: scroll;
     height: auto;
     padding: 0px;
+    text-transform: none;
+    margin: 0px 0 0 0;
 }
 #rules-wrapper h1 {
-    font-family: Europa-Regular, Helvetica, sans-serif;
-    font-weight: lighter;
+    font-family: Europa-Bold, Helvetica, sans-serif;
+    font-weight: bold;
     color: #fff;
-    border-bottom: 1px solid #fff;
+    border-bottom: 0px solid #fff;
     font-size: 23px;
     padding: 20px 0;
     text-align: center;
@@ -118,8 +128,10 @@ a { color: #0080ff; }
     cursor: pointer;
 }
 
-#countries-list .c-visited { color: #33ccff; }
-#countries-list .c-not-visited { color: #fff; }
+#countries-list .c-ineligible     { color: rgb(55,79,115); }
+#countries-list .c-not-ineligible { color: #fff; }
+#countries-list .c-visited        { color: #33ccff; }
+#countries-list .c-not-visited    { color: #fff; }
 
 #info, #info2 {
     padding: 0;
@@ -242,7 +254,7 @@ a { color: #0080ff; }
     #visited-count, #remaining-count { color: #000; }
     .title { 
         color: #000; 
-        font-size: 80%;
+        font-size: 100%;
     }
     .action {
         border: 1px solid #000;
@@ -303,7 +315,10 @@ a { color: #0080ff; }
         transform: translate3d(-50%, -50%, 0);
     }
     #visited-count, #remaining-count { color: #fff; }
-    .title { color: #fff; }
+    .title { 
+        color: #fff; 
+        font-size: 18px;
+    }
     .action {
         border: 1px solid #fff;
         color: white;
