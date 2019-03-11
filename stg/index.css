@@ -251,14 +251,14 @@ a { color: #0080ff; }
         left: 50%;
         transform: translate3d(-50%, -50%, 0);
     }
-    #visited-count, #remaining-count { color: #000; }
+    #visited-count, #remaining-count { color: #fff; }
     .title { 
-        color: #000; 
+        color: #fff; 
         font-size: 100%;
     }
     .action {
-        border: 1px solid #000;
-        color: #000;
+        border: 1px solid #fff;
+        color: #fff;
         margin-top: 10px;
         width: 100%;
     }

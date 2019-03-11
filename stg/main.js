@@ -30,9 +30,6 @@ function getBaseRadius() {
     else { return 170; }
 }
 
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
 var cl;
 
 d3.json('data/world.json').then(function(data){
@@ -89,8 +86,7 @@ function init() {
     );
     group.add(clouds);
 
-    var bgtexture = new THREE.TextureLoader().load('textures/gradientbg.png');
-    scene.background = bgtexture;
+    setBG();
 
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -100,14 +96,19 @@ function init() {
 
 }
 
-function onWindowResize() {
-    windowHalfX = window.innerWidth / 2;
-    windowHalfY = window.innerHeight / 2;
+function setBG() {
+    var bg = window.innerWidth >= 1100 ? 'textures/gradientbg.png' : 'textures/bgfull.png'
 
+    var bgtexture = new THREE.TextureLoader().load(bg);
+    scene.background = bgtexture;
+}
+
+function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    setBG();
 }
 
 function togglePause(event) {
@@ -218,11 +219,6 @@ function spinTheGlobe() {
         rotationDelta = 0;
         spinner.disabled = false;
     });
-}
-
-function onDocumentMouseMove( event ) {
-    mouseX = (event.clientX - windowHalfX);
-    mouseY = (event.clientY - windowHalfY);
 }
 
 function animate(time) {
