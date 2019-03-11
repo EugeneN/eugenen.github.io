@@ -206,7 +206,7 @@ a { color: #0080ff; }
 @media screen and (min-width: 320px) {
     #info {
         width: 50%;
-        height: 150px;
+        height: 136px;
         position: absolute;
         bottom: 0px;
         left: 0;
@@ -215,7 +215,7 @@ a { color: #0080ff; }
 
     #info2 {
         width: 50%;
-        height: 150px;
+        height: 136px;
         position: absolute;
         bottom: 0px;
         right: 0;
