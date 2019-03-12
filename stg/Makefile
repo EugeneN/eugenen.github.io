@@ -7,7 +7,6 @@ distdir   := $(buildroot)
 serve: 
 	sws --port 4443 -d -P $(distdir)
 
-
 bundle:
 	rm -f out.js
 	for i in \
