@@ -124,7 +124,7 @@ CountriesList.prototype.getSelectedCls = function(x) {
 }
 CountriesList.prototype.render = function() {
   var self = this;
-  var xs = Object.keys(this.store);
+  var xs = Object.keys(this.store).sort();
   var h = xs.map(function(x) { 
     var cls = self.getSelectedCls(x); 
     return "<div class='" + cls + "' onclick='toggleCountry(\""+x+"\")'>"+x+"</div>" 

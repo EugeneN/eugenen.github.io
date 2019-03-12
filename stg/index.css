@@ -6,7 +6,10 @@ body {
     background-color: #fff;
     margin: 0px;
     overflow: hidden;
+    letter-spacing: 2px;
 }
+
+button:focus { outline: 0; }
 
 a { color: #0080ff; }
 
@@ -193,7 +196,7 @@ a { color: #0080ff; }
     overflow-x: hidden;
     overflow-y: auto;
     height: auto;
-    width: 300px;
+    width: 350px;
     text-transform: uppercase;
     cursor: pointer;
     display: none;
@@ -206,7 +209,7 @@ a { color: #0080ff; }
 @media screen and (min-width: 320px) {
     #info {
         width: 50%;
-        height: 136px;
+        height: 132px;
         position: absolute;
         bottom: 0px;
         left: 0;
@@ -215,7 +218,7 @@ a { color: #0080ff; }
 
     #info2 {
         width: 50%;
-        height: 136px;
+        height: 132px;
         position: absolute;
         bottom: 0px;
         right: 0;
@@ -256,10 +259,12 @@ a { color: #0080ff; }
         color: #fff; 
         font-size: 100%;
     }
+    .title .snd { display: inline; }
     .action {
         border: 1px solid #fff;
         color: #fff;
         margin-top: 10px;
+        margin-bottom: 0;
         width: 100%;
     }
 }
@@ -319,6 +324,7 @@ a { color: #0080ff; }
         color: #fff; 
         font-size: 18px;
     }
+    .title .snd { display: block; }
     .action {
         border: 1px solid #fff;
         color: white;
