@@ -4,7 +4,7 @@
 		<title>Spin the Globe</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link rel="stylesheet" type="text/css" media="screen" href="index.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="css/index.css" />
     <link rel="stylesheet" href="https://use.typekit.net/upr2zfs.css">
   </head>
   
@@ -17,31 +17,31 @@
 			<div class="globe">Globe</div>
 		</div>
 		
-		<button id="rules-trigger" onclick="showRules()">Rules of the game</button>
+		<button id="rules-trigger"">Rules of the game</button>
 		
 		<div id="info">
 			<div class="title">Countries <span class="snd">visited</span></div>
 			<div id="visited-count" ></div>
-			<button class="action" id="change-visited-countries" onclick="showChangeVisited()">Change</button>
+			<button class="action" id="change-visited-countries"">Change</button>
 		</div>
 		
     	<div id="info2">
 			<div class="title">Countries <span class="snd">remaining</span></div>
 			<div id="remaining-count"></div>
-    	<button class="action" id="play" onclick="spinTheGlobe()">Spin the Globe</button>
+    	<button class="action" id="play">Spin the Globe</button>
 		</div>
 		
 		<div id="result">
-			<div id="winner" onclick="handleWinnerClick()"></div>
+			<div id="winner""></div>
 		</div>
 
 		<div id="countries-list-wrapper">
 			<div id="countries-list-header">
 				<span>Countries visited</span>
 			</div>
-			<button id="cl-mode" onclick="toggleMode()">Eliminate ineligible countries</button>
-			<div id="countries-list"></div>
-			<button id="close-cl" onclick="hideChangeVisited()">✕</button>
+			<button id="cl-mode">Eliminate ineligible countries</button>
+			<div id="countries-list""></div>
+			<button id="close-cl" onclick="hidePopup('countries-list-wrapper')">✕</button>
 		</div>
 
 		<div id="rules-wrapper"> 
@@ -51,29 +51,10 @@
 				<li>Optionally, eliminate the ineligible destinations you don't want to get selected.</li>
 				<li>Spin the globe!</li>
 			</ol>
-			<!-- <iframe width="300" height="168" 
-					src="https://www.youtube.com/embed/SdySHadrYAA" 
-					frameborder="0" 
-					></iframe> -->
-			<button id="close-cl" onclick="hideRules()">✕</button>
+			<button id="close-cl" onclick="hidePopup('rules-wrapper')">✕</button>
 		</div>
 
-		<script src="three.js"></script>
-		<script src="https://unpkg.com/topojson@3"></script>
-		<script src="https://d3js.org/d3.v5.min.js"></script>
-		<script src="https://d3js.org/d3-geo.v1.min.js"></script>
-
-		<script src="TrackballControls.js"></script>
-		<script src="Projector.js"></script>
-		<script src="SoftwareRenderer.js"></script>
-		<script src="WebGLDeferredRenderer.js"></script>
-		<script src="geolib.js"></script>
-		<script src="mapTexture.js"></script>
-		<script src="Tween.js"></script>
-		<script src="utils.js"></script>
-		<script src="cookielib.js"></script>
-
-		<script src="stats.min.js"></script>
-		<script src="main.js"></script>
+		<script src="out.js"></script>
+		<script>main()</script>
 	</body>
 </html>

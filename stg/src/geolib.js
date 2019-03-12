@@ -127,7 +127,7 @@ CountriesList.prototype.render = function() {
   var xs = Object.keys(this.store).sort();
   var h = xs.map(function(x) { 
     var cls = self.getSelectedCls(x); 
-    return "<div class='" + cls + "' onclick='toggleCountry(\""+x+"\")'>"+x+"</div>" 
+    return "<div class='" + cls + "' data-countryid='" + x + "'>"+x+"</div>" 
   });
   var v  = Object.values(this.visited).filter(function(x) { return x}).length;
   var ie = Object.values(this.ineligible).filter(function(x) { return x}).length;
@@ -197,45 +197,6 @@ function findGeomCenter(country) {
   return findCenter(r);
 }
 
-function getPoint(event) {
-  // Get the vertices
-  let a = this.geometry.vertices[event.face.a];
-  let b = this.geometry.vertices[event.face.b];
-  let c = this.geometry.vertices[event.face.c];
-
-  // Average them together
-  let point = {
-    x: (a.x + b.x + c.x) / 3,
-    y: (a.y + b.y + c.y) / 3,
-    z: (a.z + b.z + c.z) / 3
-  };
-
-  return point;
-}
-
-function getEventCenter(event, radius) {
-  radius = radius || 200;
-
-  var point = getPoint.call(this, event);
-
-  var latRads = Math.acos(point.y / radius);
-  var lngRads = Math.atan2(point.z, point.x);
-  var lat = (Math.PI / 2 - latRads) * (180 / Math.PI);
-  var lng = (Math.PI - lngRads) * (180 / Math.PI);
-
-  return [lat, lng - 180];
-}
-
-function convertToXYZ(point, radius) {
-  var lambda = point[0] * Math.PI / 180,
-      phi = point[1] * Math.PI / 180,
-      cosPhi = Math.cos(phi);
-  return new THREE.Vector3(
-    radius * cosPhi * Math.cos(lambda),
-    radius * Math.sin(phi),
-  - radius * cosPhi * Math.sin(lambda)
-  );
-}
 function rad2deg(point) {
    var latD = point[0] * 180 / Math.PI;
    var lonD = point[1] * 180 / Math.PI;
@@ -250,16 +211,6 @@ function deg2rad(point) {
   return {x: latR, y: -Math.PI/2 - lonR, z: 0};
 }
 
-function convertToXYZ_(point, radius) {
 
-  var latRads = ( 90 - point[0]) * Math.PI / 180;
-  var lngRads = (180 - point[1]) * Math.PI / 180;
-
-  var x = radius * Math.sin(latRads) * Math.cos(lngRads);
-  var y = radius * Math.cos(latRads);
-  var z = radius * Math.sin(latRads) * Math.sin(lngRads);
-
-  return {x: x, y: y, z: z};
-}
 
 
