@@ -58,7 +58,10 @@ a { color: #0080ff; }
     overflow-x: hidden;
     overflow-y: scroll;
     height: 250px;
-    padding: 0 20px;
+    padding: 0;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 10px;
 }
 
 #countries-list-header > span {
@@ -80,7 +83,7 @@ a { color: #0080ff; }
     text-transform: uppercase;
     cursor: pointer;
     margin-top: 15px;
-    padding: 5px 10px 4px 10px;
+    padding: 10px 10px 10px 10px;
     vertical-align: middle;
     width: 260px;
 }
@@ -89,7 +92,7 @@ a { color: #0080ff; }
     font-weight: lighter;
     color: #fff;
     border-bottom: 1px solid #fff;
-    font-size: 23px;
+    font-size: 18px;
     padding: 20px 0;
 }
 
@@ -161,10 +164,23 @@ a { color: #0080ff; }
     text-transform: uppercase;
     color: #fff;
 }
+#rules-trigger .label {
+    padding: 5px 10px;
+    display: inline-block;
+    border: 1px solid white;
+}
+#rules-trigger .plus {
+    border: 1px solid white;
+    height: 22px;
+    width: 22px;
+    display: inline-block;
+    line-height: 22px;
+    border-left: none;
+}
 #rules-trigger {
     /* width: 30px; */
     /* height: 30px; */
-    padding: 5px 10px;
+    padding: 0;
     font-family: Europa, Helvetica, sans-serif;
     font-weight: lighter;
     font-size: 12px;
@@ -173,7 +189,7 @@ a { color: #0080ff; }
     text-align: center;
     text-transform: uppercase;
     color: #fff;
-    border: 1px solid #fff;
+    border: none;
     background-color: transparent;
     cursor: pointer;
 }

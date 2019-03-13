@@ -85,8 +85,6 @@ CountriesList.prototype.getRandomCountry = function() {
   var i   = Math.round(Math.random() * (max - min) + min);
   var c   = this.getById(xs[i]); 
 
-  console.log("random country is ", c)
-
   return c;
 }
 CountriesList.prototype.setMode = function(m) { 

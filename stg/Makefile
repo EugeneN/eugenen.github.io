@@ -4,7 +4,7 @@ distdir   := $(buildroot)
 
 .PHONY : serve deploy bundle
 
-serve: 
+serve: bundle
 	sws --port 4443 -d -P $(distdir)
 
 bundle:

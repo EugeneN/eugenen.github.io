@@ -95,8 +95,6 @@ CountriesList.prototype.getRandomCountry = function() {
   var i   = Math.round(Math.random() * (max - min) + min);
   var c   = this.getById(xs[i]); 
 
-  console.log("random country is ", c)
-
   return c;
 }
 CountriesList.prototype.setMode = function(m) { 
@@ -319,9 +317,10 @@ function setCookie(name, value, days) {
 function deleteCookie(name) {   
     document.cookie = name+'=; Max-Age=-99999999;';  
 }function StG() {
-    this.spinStops            = 5;
+    this.spinStops            = 10;
     this.spinDur              = 1000;
     this.restDur              = 500;
+    this.rotationDeltaSpin    = 0.25;
     this.rotationDeltaDefault = 0.005;
     this.rotationDelta        = this.rotationDeltaDefault;
 
@@ -337,7 +336,6 @@ function deleteCookie(name) {
     this.overlay;
     this.renderer;
     this.controls;
-    this.stats;
 }
 
 StG.prototype.getBaseRadius = function () {
@@ -394,7 +392,8 @@ StG.prototype.init = function () {
 }
 
 StG.prototype.setBG = function () {
-    var bg = window.innerWidth >= 1100 ? 'textures/gradientbg.png' : 'textures/bgfull.png'
+    // var bg = window.innerWidth >= 1100 ? 'textures/gradientbg.png' : 'textures/bgfull.png'
+    var bg = 'textures/bgfull.png';
     this.scene.background = new THREE.TextureLoader().load(bg);
 }
 
@@ -478,16 +477,13 @@ StG.prototype.hideWinnerTitle = function(country) {
     this.winner.innerHTML = "";
 }
 StG.prototype.rotateToCountries = function (cs, done) {
-    this.rotationDelta = 0;
     this.hideWinnerTitle();
     var self = this;
 
     if (cs.length > 1) {
         var country = cs.shift();
-        this.highlightCountry(country, this.spinDur, function(){ 
-            self.showWinnerTitle(country);
-            setTimeout(function() { self.rotateToCountries(cs, done) }, self.restDur);
-        });
+        self.showWinnerTitle(country);
+        setTimeout(function() { self.rotateToCountries(cs, done) }, self.restDur);
     } else {
         done(cs[0]);
     }
@@ -498,11 +494,13 @@ StG.prototype.spinTheGlobe = function (cl) {
     var cs = [];
     var self = this;
     for (var i=0; i<this.spinStops; i++) { cs.push(cl.getRandomCountry()); }
+    this.rotationDelta = this.rotationDeltaSpin;
 
     this.rotateToCountries(cs, function(country) {
         self.winnerCountry = country;
+        self.showWinnerTitle(country)
         
-        self.highlightCountry(country, self.spinDur, function(){ self.showWinnerTitle(country) });
+        self.highlightCountry(country, self.spinDur, function(){});
 
         self.rotationDelta = 0;
         self.spinner.disabled = false;
