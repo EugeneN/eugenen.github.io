@@ -1,11 +1,12 @@
 buildroot := $(shell pwd)
-distdir   := $(buildroot)
+servedir  := $(buildroot)
+deploydir := "../eugenen.github.io/stg"
 
 
 .PHONY : serve deploy bundle
 
 serve: bundle
-	sws --port 4443 -d -P $(distdir)
+	sws --port 4443 -d -P $(servedir)
 
 bundle:
 	rm -f out.js
@@ -25,7 +26,7 @@ bundle:
 		src/main.js ; do cat $$i >> out.js ; done
 
 deploy: bundle
-	rm -rf ../eugenen.github.io/stg/*
-	cp -R * ../eugenen.github.io/stg
-	cd ../eugenen.github.io/stg && git add . && git commit -m "stg" && git push
+	rm -rf $(deploydir)/*
+	cp -R * $(deploydir)
+	cd $(deploydir) && git add . && git commit -m "stg" && git push
 
