@@ -5,9 +5,9 @@ function CountriesList(features, el, vel, rel) {
   this.store      = {};
   this.features   = features;
   this.mode       = VISITED;
-  this.el         = document.getElementById(el);
-  this.vel        = document.getElementById(vel);
-  this.rel        = document.getElementById(rel);
+  this.el         = $(el);
+  this.vel        = $(vel);
+  this.rel        = $(rel);
   this.visited    = {};
   this.ineligible = {};
 
@@ -132,9 +132,9 @@ CountriesList.prototype.render = function() {
   var r  = Object.values(xs).length - (v + ie);
 
   if (this.mode === VISITED) {
-    document.getElementById('cl-mode').classList.remove('mode-ineligible');
+    $('cl-mode').classList.remove('mode-ineligible');
   } else {
-    document.getElementById('cl-mode').classList.add('mode-ineligible');
+    $('cl-mode').classList.add('mode-ineligible');
   }
   
   this.el.innerHTML = h.join("");

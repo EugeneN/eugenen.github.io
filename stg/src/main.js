@@ -6,9 +6,9 @@ function StG() {
     this.rotationDeltaDefault = 0.005;
     this.rotationDelta        = this.rotationDeltaDefault;
 
-    this.winner               = document.getElementById("winner");
-    this.spinner              = document.getElementById("play");
-    this.container            = document.getElementById("container");
+    this.winner               = $("winner");
+    this.spinner              = $("play");
+    this.container            = $("container");
     this.winnerCountry        = null;
     
     this.textureCache;
@@ -207,23 +207,23 @@ StG.prototype.render = function () {
 var stg, cl;
 
 function hidePopup(pid) { 
-    document.getElementById(pid).style.display = "none"; 
-    document.getElementById("blur").style.display = "none"; 
+    $(pid).style.display    = "none"; 
+    $("blur").style.display = "none"; 
 }
 
 function main() {
-    document.getElementById("change-visited-countries").onclick = function () { 
-        document.getElementById("countries-list-wrapper").style.display = "block"; 
-        document.getElementById("blur").style.display = "block"; 
+    $("change-visited-countries").onclick = function () { 
+        $("countries-list-wrapper").style.display = "block"; 
+        $("blur").style.display = "block"; 
     }
-    document.getElementById("countries-list").onclick = function (e) { cl.toggle(e.target.dataset.countryid); }
-    document.getElementById("rules-trigger").onclick  = function () { 
-        document.getElementById("rules-wrapper").style.display = "block"; 
-        document.getElementById("blur").style.display = "block"; 
+    $("rules-trigger").onclick  = function () { 
+        $("rules-wrapper").style.display = "block"; 
+        $("blur").style.display = "block"; 
     }
-    document.getElementById("cl-mode").onclick        = function () { cl.toggleMode(); }
-    document.getElementById("winner").onclick         = function () { cl.toggle(stg.winnerCountry.id); }
-    document.getElementById("play").onclick           = function () { stg.spinTheGlobe(cl); }
+    $("countries-list").onclick = function (e) { cl.toggle(e.target.dataset.countryid); }
+    $("cl-mode").onclick        = function () { cl.toggleMode(); }
+    $("winner").onclick         = function () { cl.toggle(stg.winnerCountry.id); }
+    $("play").onclick           = function () { stg.spinTheGlobe(cl); }
 
     stg = new StG();
     

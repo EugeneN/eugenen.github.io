@@ -18,9 +18,9 @@ bundle:
 		src/vendor/Projector.min.js \
 		src/vendor/WebGLDeferredRenderer.min.js \
 		src/vendor/Tween.min.js \
+		src/utils.js \
 		src/geolib.js \
 		src/mapTexture.js \
-		src/utils.js \
 		src/cookielib.js \
 		src/main.js ; do cat $$i >> out.js ; done
 
