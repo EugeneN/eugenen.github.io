@@ -114,7 +114,7 @@ CountriesList.prototype.getUnvisitedCountriesList = function() {
 }
 CountriesList.prototype.getRandomCountry = function() {
   var xs  = this.getUnvisitedCountriesList();
-  var min = 0, max = xs.length;
+  var min = 0, max = xs.length-1;
   var i   = Math.round(Math.random() * (max - min) + min);
   var c   = this.getById(xs[i]); 
 
