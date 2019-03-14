@@ -524,12 +524,21 @@ StG.prototype.render = function () {
 
 var stg, cl;
 
-function hidePopup(pid) { document.getElementById(pid).style.display = "none"; }
+function hidePopup(pid) { 
+    document.getElementById(pid).style.display = "none"; 
+    document.getElementById("blur").style.display = "none"; 
+}
 
 function main() {
-    document.getElementById("change-visited-countries").onclick = function () { document.getElementById("countries-list-wrapper").style.display = "block"; }
+    document.getElementById("change-visited-countries").onclick = function () { 
+        document.getElementById("countries-list-wrapper").style.display = "block"; 
+        document.getElementById("blur").style.display = "block"; 
+    }
     document.getElementById("countries-list").onclick = function (e) { cl.toggle(e.target.dataset.countryid); }
-    document.getElementById("rules-trigger").onclick  = function () { document.getElementById("rules-wrapper").style.display = "block"; }
+    document.getElementById("rules-trigger").onclick  = function () { 
+        document.getElementById("rules-wrapper").style.display = "block"; 
+        document.getElementById("blur").style.display = "block"; 
+    }
     document.getElementById("cl-mode").onclick        = function () { cl.toggleMode(); }
     document.getElementById("winner").onclick         = function () { cl.toggle(stg.winnerCountry.id); }
     document.getElementById("play").onclick           = function () { stg.spinTheGlobe(cl); }
