@@ -96,6 +96,17 @@ a { color: #0080ff; }
     padding: 20px 0;
 }
 
+#rules-wrapper .rules-content em {
+    font-style: normal;
+    font-weight: bold;
+}
+#rules-wrapper .rules-content a:hover {
+    text-decoration: underline;
+}
+#rules-wrapper .rules-content a {
+    color: #9ff;
+    text-decoration: none;
+}
 #rules-wrapper .rules-content li {
     padding: 0 20px;
     margin-bottom: 10px;
