@@ -142,9 +142,11 @@ CountriesList.prototype.render = function() {
   if (this.mode === VISITED) {
     $('cl-mode-v').classList.add('mode-ineligible');
     $('cl-mode-i').classList.remove('mode-ineligible');
+    $("cl-reset").disabled = v === 0 ? true : false;
   } else {
     $('cl-mode-v').classList.remove('mode-ineligible');
     $('cl-mode-i').classList.add('mode-ineligible');
+    $("cl-reset").disabled = ie === 0 ? true : false;
   }
   
   this.el.innerHTML = h.join("");

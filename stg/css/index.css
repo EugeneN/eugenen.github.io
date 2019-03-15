@@ -84,14 +84,18 @@ a { color: #0080ff; }
     border: 1px solid #fff;
     border-bottom: 1px solid #69c;
 }
+#play:disabled, #play[disabled], #cl-reset:disabled, #cl-reset[disabled] {
+    border: 1px solid #ccc;
+    color: #ccc;
+    cursor: not-allowed;
+}
+
 #cl-reset {
     margin-top: 10px !important;
-    border: 1px solid #fff !important;
+    border: 1px solid #fff;
 }
 #cl-mode-v, #cl-mode-i, #cl-reset {
     background-color: transparent;
-    border: 1px solid transparent;
-    border-bottom: 1px solid #fff;
     text-align: center;
     color: #fff;
     line-height: 14px;
@@ -109,6 +113,7 @@ a { color: #0080ff; }
     width: 127px; 
     position: relative;
     top: 1px;
+    border: 1px solid transparent;
 }
 
 #countries-list-header {
