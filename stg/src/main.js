@@ -221,7 +221,9 @@ function main() {
         $("blur").style.display = "block"; 
     }
     $("countries-list").onclick = function (e) { cl.toggle(e.target.dataset.countryid); }
-    $("cl-mode").onclick        = function () { cl.toggleMode(); }
+    $("cl-mode-v").onclick      = function () { cl.setMode(VISITED); }
+    $("cl-mode-i").onclick      = function () { cl.setMode(INELIGIBLE); }
+    $("cl-reset").onclick       = function () { cl.reset(); }
     $("winner").onclick         = function () { cl.toggle(stg.winnerCountry.id); }
     $("play").onclick           = function () { stg.spinTheGlobe(cl); }
 

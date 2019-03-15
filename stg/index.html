@@ -40,8 +40,12 @@
 			<div id="countries-list-header">
 				<span>Countries visited</span>
 			</div>
-			<button id="cl-mode">Eliminate ineligible countries</button>
+			<div class="tab-header">
+				<button id="cl-mode-v">Visited</button>
+				<button id="cl-mode-i">Ineligible</button>
+			</div>
 			<div id="countries-list""></div>
+			<button id="cl-reset">Reset</button>
 			<button id="close-cl" onclick="hidePopup('countries-list-wrapper')">✕</button>
 		</div>
 
@@ -49,7 +53,7 @@
 			<h1>Rules of the game</h1>
 			<ol class="rules-content">
 				<li>Eliminate the destinations you’ve already visited by clicking the <em>Change</em> button.</li>
-				<li>Optionally, eliminate the ineligible destinations you don't want to get selected (mind <a target="_blank" href="https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/">the list</a> and <a target="_blank" href="https://travelmaps.state.gov/TSGMap/">the map</a>).</li>
+				<li>Optionally, eliminate the ineligible destinations you don't want to get selected (consider <a target="_blank" href="https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/">the list</a> and <a target="_blank" href="https://travelmaps.state.gov/TSGMap/">the map</a>).</li>
 				<li><em>Spin the globe!</em></li>
 			</ol>
 			<button id="close-cl" onclick="hidePopup('rules-wrapper')">✕</button>

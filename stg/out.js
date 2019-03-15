@@ -147,6 +147,14 @@ CountriesList.prototype.toggle = function(x) {
   setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
   this.render();
 }
+CountriesList.prototype.reset = function(x) {
+  if (this.mode === VISITED) { this.visited = {}; } 
+  else { this.ineligible = {}; }
+
+  setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
+  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
+  this.render();
+}
 CountriesList.prototype.getSelectedCls = function(x) {
   if      (this.mode === VISITED &&  this.visited[x])    { return "c-visited"; } 
   else if (this.mode === VISITED && !this.visited[x])    { return "c-not-visited"; } 
@@ -165,9 +173,11 @@ CountriesList.prototype.render = function() {
   var r  = Object.values(xs).length - (v + ie);
 
   if (this.mode === VISITED) {
-    $('cl-mode').classList.remove('mode-ineligible');
+    $('cl-mode-v').classList.add('mode-ineligible');
+    $('cl-mode-i').classList.remove('mode-ineligible');
   } else {
-    $('cl-mode').classList.add('mode-ineligible');
+    $('cl-mode-v').classList.remove('mode-ineligible');
+    $('cl-mode-i').classList.add('mode-ineligible');
   }
   
   this.el.innerHTML = h.join("");
@@ -541,7 +551,9 @@ function main() {
         $("blur").style.display = "block"; 
     }
     $("countries-list").onclick = function (e) { cl.toggle(e.target.dataset.countryid); }
-    $("cl-mode").onclick        = function () { cl.toggleMode(); }
+    $("cl-mode-v").onclick      = function () { cl.setMode(VISITED); }
+    $("cl-mode-i").onclick      = function () { cl.setMode(INELIGIBLE); }
+    $("cl-reset").onclick       = function () { cl.reset(); }
     $("winner").onclick         = function () { cl.toggle(stg.winnerCountry.id); }
     $("play").onclick           = function () { stg.spinTheGlobe(cl); }
 
