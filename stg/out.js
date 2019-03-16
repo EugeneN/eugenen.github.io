@@ -170,7 +170,7 @@ CountriesList.prototype.render = function() {
   var xs = Object.keys(this.store).sort();
   var h = xs.map(function(x) { 
     var cls = self.getSelectedCls(x); 
-    return "<div class='" + cls + "' data-countryid='" + x + "'>"+x+"</div>" 
+    return '<div class="' + cls + '" data-countryid="' + x + '">'+x+'</div>' 
   });
   var v  = Object.values(this.visited).filter(function(x) { return x}).length;
   var ie = Object.values(this.ineligible).filter(function(x) { return x}).length;
