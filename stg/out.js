@@ -560,7 +560,7 @@ function main() {
 
     stg = new StG();
     
-    d3.json('data/world255.json').then(function(data){
+    d3.json('data/world255-2.json').then(function(data){
         var countriesTopo = topojson.feature(data, data.objects.countries);
         cl = new CountriesList(countriesTopo.features, "countries-list", "visited-count", "remaining-count");
     
