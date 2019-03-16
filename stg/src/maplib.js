@@ -22,13 +22,8 @@ var projection = d3.geoEquirectangular()
   context.fillStyle = bgColor; 
 
   context.beginPath();
-
   path(geojson);
-
-  if (bgColor) {
-    context.fill();
-  }
-
+  if (bgColor) { context.fill(); }
   context.stroke();
 
   // DEBUGGING - Really expensive, disable when done.

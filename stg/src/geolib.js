@@ -18,19 +18,7 @@ CountriesList.prototype.init = function() {
   for (let i = 0; i < this.features.length; i++) {
     this.store[this.features[i].id] = this.features[i];
   }
-  var z;
-  try { z = JSON.parse(getCookie("vc")); } catch(e) { z = null; }
-  if (Array.isArray(z)) { 
-    for (var i=0; i<z.length; i++) {
-      this.visited[z[i]] = true;
-    }
-  }
-  try { z = JSON.parse(getCookie("ic")); } catch(e) { z = null; }
-  if (Array.isArray(z)) { 
-    for (var i=0; i<z.length; i++) {
-      this.ineligible[z[i]] = true;
-    }
-  }
+  this.restoreState();
 }
 CountriesList.prototype.getById = function(id) {
   return this.store[id];
@@ -99,8 +87,7 @@ CountriesList.prototype.toggleMode = function() {
 CountriesList.prototype.markAsVisited = function(country) {
   this.visited[country.id] = true;
 
-  setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
-  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
+  this.saveState();
   this.render();
 }
 CountriesList.prototype.toggle = function(x) {
@@ -110,17 +97,34 @@ CountriesList.prototype.toggle = function(x) {
   if (v[x]) { v[x] = !v[x]; } 
   else { v[x] = true; }
 
-  setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
-  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
+  this.saveState();
   this.render();
 }
 CountriesList.prototype.reset = function(x) {
   if (this.mode === VISITED) { this.visited = {}; } 
   else { this.ineligible = {}; }
 
+  this.saveState();
+  this.render();
+}
+CountriesList.prototype.saveState = function() {
   setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
   setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
-  this.render();
+}
+CountriesList.prototype.restoreState = function(id) {
+  var z;
+  try { z = JSON.parse(getCookie("vc")); } catch(e) { z = null; }
+  if (Array.isArray(z)) { 
+    for (var i=0; i<z.length; i++) {
+      this.visited[z[i]] = true;
+    }
+  }
+  try { z = JSON.parse(getCookie("ic")); } catch(e) { z = null; }
+  if (Array.isArray(z)) { 
+    for (var i=0; i<z.length; i++) {
+      this.ineligible[z[i]] = true;
+    }
+  }
 }
 CountriesList.prototype.getSelectedCls = function(x) {
   if      (this.mode === VISITED &&  this.visited[x])    { return "c-visited"; } 

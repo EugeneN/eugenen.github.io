@@ -51,19 +51,7 @@ CountriesList.prototype.init = function() {
   for (let i = 0; i < this.features.length; i++) {
     this.store[this.features[i].id] = this.features[i];
   }
-  var z;
-  try { z = JSON.parse(getCookie("vc")); } catch(e) { z = null; }
-  if (Array.isArray(z)) { 
-    for (var i=0; i<z.length; i++) {
-      this.visited[z[i]] = true;
-    }
-  }
-  try { z = JSON.parse(getCookie("ic")); } catch(e) { z = null; }
-  if (Array.isArray(z)) { 
-    for (var i=0; i<z.length; i++) {
-      this.ineligible[z[i]] = true;
-    }
-  }
+  this.restoreState();
 }
 CountriesList.prototype.getById = function(id) {
   return this.store[id];
@@ -132,8 +120,7 @@ CountriesList.prototype.toggleMode = function() {
 CountriesList.prototype.markAsVisited = function(country) {
   this.visited[country.id] = true;
 
-  setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
-  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
+  this.saveState();
   this.render();
 }
 CountriesList.prototype.toggle = function(x) {
@@ -143,17 +130,34 @@ CountriesList.prototype.toggle = function(x) {
   if (v[x]) { v[x] = !v[x]; } 
   else { v[x] = true; }
 
-  setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
-  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
+  this.saveState();
   this.render();
 }
 CountriesList.prototype.reset = function(x) {
   if (this.mode === VISITED) { this.visited = {}; } 
   else { this.ineligible = {}; }
 
+  this.saveState();
+  this.render();
+}
+CountriesList.prototype.saveState = function() {
   setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
   setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
-  this.render();
+}
+CountriesList.prototype.restoreState = function(id) {
+  var z;
+  try { z = JSON.parse(getCookie("vc")); } catch(e) { z = null; }
+  if (Array.isArray(z)) { 
+    for (var i=0; i<z.length; i++) {
+      this.visited[z[i]] = true;
+    }
+  }
+  try { z = JSON.parse(getCookie("ic")); } catch(e) { z = null; }
+  if (Array.isArray(z)) { 
+    for (var i=0; i<z.length; i++) {
+      this.ineligible[z[i]] = true;
+    }
+  }
 }
 CountriesList.prototype.getSelectedCls = function(x) {
   if      (this.mode === VISITED &&  this.visited[x])    { return "c-visited"; } 
@@ -281,13 +285,8 @@ var projection = d3.geoEquirectangular()
   context.fillStyle = bgColor; 
 
   context.beginPath();
-
   path(geojson);
-
-  if (bgColor) {
-    context.fill();
-  }
-
+  if (bgColor) { context.fill(); }
   context.stroke();
 
   // DEBUGGING - Really expensive, disable when done.
@@ -339,7 +338,9 @@ function deleteCookie(name) {
     this.rotationDelta        = this.rotationDeltaDefault;
 
     this.winner               = $("winner");
-    this.spinner              = $("play");
+    this.playButton           = $("play");
+    this.rulesButton          = $("rules-trigger");
+    this.manageButton         = $("change-visited-countries");
     this.container            = $("container");
     this.winnerCountry        = null;
     
@@ -470,15 +471,12 @@ StG.prototype.flyTo = function (country, duration) {
     tween1.start();
 }
 
-StG.prototype.reset = function(){
-    this.hideWinnerTitle();
-    this.spinner.disabled = true;
-    var self = this;
-
+StG.prototype.resetPos = function(){
     var pos = this.group.rotation;
     var target = {x:0,y:0,z:0};
-
+    
     var tween = new TWEEN.Tween(pos).to(target, 250);
+    var self = this;
     tween.onUpdate(function(){ self.group.rotation.setFromVector3(pos) });
     tween.easing(TWEEN.Easing.Cubic.Out);
     tween.start();
@@ -490,35 +488,36 @@ StG.prototype.showWinnerTitle = function(country) {
 StG.prototype.hideWinnerTitle = function(country) {
     this.winner.innerHTML = "";
 }
-StG.prototype.rotateToCountries = function (cs, done) {
+StG.prototype.chooseWinner = function (cl, n) {
     this.hideWinnerTitle();
-    var self = this;
-
-    if (cs.length > 1) {
-        var country = cs.shift();
-        self.showWinnerTitle(country);
-        setTimeout(function() { self.rotateToCountries(cs, done) }, self.restDur);
+    
+    if (n > 1) {
+        var country = cl.getRandomCountry();
+        this.showWinnerTitle(country);
+        var self = this;
+        setTimeout(function() { self.chooseWinner(cl, n-1) }, this.restDur);
     } else {
-        done(cs[0]);
+        var winnerCountry = cl.getRandomCountry();
+        this.winnerCountry = winnerCountry;
+        
+        this.showWinnerTitle(winnerCountry)
+        this.highlightCountry(winnerCountry, this.spinDur, function(){});
+
+        this.rotationDelta = 0;
+        this.disableControls(false);
     }
 }
-
+StG.prototype.disableControls = function (x) {
+    this.playButton.disabled = x;
+    this.rulesButton.disabled = x;
+    this.manageButton.disabled = x;
+}
 StG.prototype.spinTheGlobe = function (cl) {
-    this.reset();
-    var cs = [];
-    var self = this;
-    for (var i=0; i<this.spinStops; i++) { cs.push(cl.getRandomCountry()); }
+    this.hideWinnerTitle();
+    this.disableControls(true);
+    this.resetPos();
     this.rotationDelta = this.rotationDeltaSpin;
-
-    this.rotateToCountries(cs, function(country) {
-        self.winnerCountry = country;
-        self.showWinnerTitle(country)
-        
-        self.highlightCountry(country, self.spinDur, function(){});
-
-        self.rotationDelta = 0;
-        self.spinner.disabled = false;
-    });
+    this.chooseWinner(cl, 10);
 }
 
 StG.prototype.animate = function (time) {

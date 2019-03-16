@@ -21,7 +21,7 @@ bundle:
 		src/vendor/Tween.min.js \
 		src/utils.js \
 		src/geolib.js \
-		src/mapTexture.js \
+		src/maplib.js \
 		src/cookielib.js \
 		src/main.js ; do cat $$i >> out.js ; done
 

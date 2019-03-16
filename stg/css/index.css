@@ -84,10 +84,10 @@ a { color: #0080ff; }
     border: 1px solid #fff;
     border-bottom: 1px solid #69c;
 }
-#play:disabled, #play[disabled], #cl-reset:disabled, #cl-reset[disabled] {
-    border: 1px solid #ccc;
-    color: #ccc;
-    cursor: not-allowed;
+#play:disabled, #play[disabled], #cl-reset:disabled, #cl-reset[disabled], #change-visited-countries:disabled, #change-visited-countries[disabled] {
+    border: 1px solid #ccc !important;
+    color: #ccc !important;
+    cursor: not-allowed !important;
 }
 
 #cl-reset {
@@ -203,6 +203,17 @@ a { color: #0080ff; }
     text-align: left;
     text-transform: uppercase;
     color: #fff;
+}
+#rules-trigger:disabled .label, #rules-trigger[disabled] .label {
+    border: 1px solid #ccc;
+    color: #ccc;
+    cursor: not-allowed !important;
+}
+#rules-trigger:disabled .plus, #rules-trigger[disabled] .plus {
+    border: 1px solid #ccc;
+    border-left: none;
+    color: #ccc;
+    cursor: not-allowed !important;
 }
 #rules-trigger .label {
     padding: 5px 10px;
