@@ -206,8 +206,11 @@ a { color: #0080ff; }
     text-transform: uppercase;
     color: #fff;
 }
+#rules-trigger:disabled .label:hover, #rules-trigger[disabled] .label:hover {
+    border-bottom: 1px solid transparent;
+}
 #rules-trigger:disabled .label, #rules-trigger[disabled] .label {
-    border: 1px solid #ccc;
+    /* border: 1px solid #ccc; */
     color: #ccc;
     cursor: not-allowed !important;
 }
@@ -217,10 +220,13 @@ a { color: #0080ff; }
     color: #ccc;
     cursor: not-allowed !important;
 }
+#rules-trigger .label:hover {
+    border-bottom: 1px dashed #fff;
+}
 #rules-trigger .label {
-    padding: 5px 10px;
+    padding: 5px 0px;
     display: inline-block;
-    border: 1px solid white;
+    border: 1px solid transparent;
 }
 #rules-trigger .plus {
     border: 1px solid white;
