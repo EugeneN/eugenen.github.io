@@ -5,13 +5,13 @@
  * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
-THREE.TrackballControls = function ( object, dist, domElement ) {
+THREE.TrackballControls = function ( object, opts ) {
 
 	var _this = this;
 	var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
 
 	this.object = object;
-	this.domElement = ( domElement !== undefined ) ? domElement : document;
+	this.domElement = ( opts.domElement !== undefined ) ? opts.domElement : document;
 
 	// API
 
@@ -23,15 +23,15 @@ THREE.TrackballControls = function ( object, dist, domElement ) {
 	this.zoomSpeed = 1.2;
 	this.panSpeed = 0.3;
 
-	this.noRotate = false;
-	this.noZoom = false;
-	this.noPan = false;
+	this.noRotate = opts.noRotate === true ? true : false;
+	this.noZoom   = opts.noZoom   === true ? true : false;
+	this.noPan    = opts.noPan    === true ? true : false;
 
 	this.staticMoving = false;
 	this.dynamicDampingFactor = 0.2;
 
-	this.minDistance = dist[0]; // 0;
-	this.maxDistance = dist[1]; // Infinity;
+	this.minDistance = opts.minDistance; // 0;
+	this.maxDistance = opts.maxDistance; // Infinity;
 
 	this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
 

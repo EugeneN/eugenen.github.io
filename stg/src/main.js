@@ -69,7 +69,13 @@ StG.prototype.init = function () {
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    this.controls = new THREE.TrackballControls(this.camera, [250, 500], this.container);
+    this.controls = new THREE.TrackballControls(this.camera, {
+        domElement : this.container,
+        noRotate   : true,
+        noPan      : true,
+        minDistance: 250,
+        maxDistance: 500
+    });
 
     this.container.appendChild(this.renderer.domElement);
     var self = this;
