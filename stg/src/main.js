@@ -69,6 +69,8 @@ StG.prototype.init = function () {
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
+    this.controls = new THREE.TrackballControls(this.camera, [250, 500]);
+
     this.container.appendChild(this.renderer.domElement);
     var self = this;
     window.addEventListener('resize', function(ev) { self.onWindowResize() }, false);
@@ -86,6 +88,7 @@ StG.prototype.onWindowResize = function () {
     this.camera.updateProjectionMatrix();
 
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.controls.handleResize();
     this.setBG();
 }
 
@@ -197,6 +200,7 @@ StG.prototype.animate = function (time) {
 }
 
 StG.prototype.render = function () {
+    this.controls.update();
     this.camera.lookAt(this.scene.position);
     this.group.rotation.y += this.rotationDelta;
     this.renderer.render(this.scene, this.camera);
