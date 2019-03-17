@@ -73,7 +73,7 @@ StG.prototype.init = function () {
         domElement : this.container,
         noRotate   : true,
         noPan      : true,
-        minDistance: 250,
+        minDistance: 200,
         maxDistance: 500
     });
 
