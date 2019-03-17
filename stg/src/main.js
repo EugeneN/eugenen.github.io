@@ -149,6 +149,7 @@ StG.prototype.flyTo = function (country, duration) {
 }
 
 StG.prototype.resetPos = function(){
+    this.controls.reset();
     var pos = this.group.rotation;
     var target = {x:0,y:0,z:0};
     
