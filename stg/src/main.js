@@ -45,10 +45,10 @@ StG.prototype.init = function () {
     var earth = new THREE.Mesh(
         new THREE.SphereBufferGeometry(this.getBaseRadius(), 32, 32 ), 
         new THREE.MeshPhongMaterial({
-            map:         THREE.ImageUtils.loadTexture('textures/2_no_clouds_4k.jpg'),
-            bumpMap:     THREE.ImageUtils.loadTexture('textures/elev_bump_4k.jpg'),
+            map:         new THREE.TextureLoader().load('textures/2_no_clouds_4k.jpg'),
+            bumpMap:     new THREE.TextureLoader().load('textures/elev_bump_4k.jpg'),
             bumpScale:   0.005,
-            specularMap: THREE.ImageUtils.loadTexture('textures/water_4k.png'),
+            specularMap: new THREE.TextureLoader().load('textures/water_4k.png'),
             specular:    new THREE.Color('grey'),
             shininess:   7
         })
@@ -58,7 +58,7 @@ StG.prototype.init = function () {
     var clouds = new THREE.Mesh(
         new THREE.SphereGeometry(this.getBaseRadius()+1, 32, 32),
         new THREE.MeshPhongMaterial({
-            map:         THREE.ImageUtils.loadTexture('textures/fair_clouds_4k.png'),
+            map:         new THREE.TextureLoader().load('textures/fair_clouds_4k.png'),
             transparent: true
         })
     );
