@@ -1,3 +1,5 @@
+html { -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+
 body {
     color: #000;
     font-family: Europa, Helvetica, sans-serif;
