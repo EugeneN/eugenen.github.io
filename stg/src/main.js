@@ -69,12 +69,11 @@ StG.prototype.init = function () {
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    this.controls = new THREE.TrackballControls(this.camera, [250, 500]);
+    this.controls = new THREE.TrackballControls(this.camera, [250, 500], this.container);
 
     this.container.appendChild(this.renderer.domElement);
     var self = this;
     window.addEventListener('resize', function(ev) { self.onWindowResize() }, false);
-
 }
 
 StG.prototype.setBG = function () {
