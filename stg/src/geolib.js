@@ -68,10 +68,10 @@ CountriesList.prototype.getUnvisitedCountriesList = function() {
   return Object.keys(this.store).filter(function(x) { return self.visited[x] !== true && self.ineligible[x] !== true });
 }
 CountriesList.prototype.getRandomCountry = function() {
-  var xs  = this.getUnvisitedCountriesList();
-  var min = 0, max = xs.length-1;
-  var i   = Math.round(Math.random() * (max - min) + min);
-  var c   = this.getById(xs[i]); 
+  var xs   = this.getUnvisitedCountriesList();
+  var min  = 0, max = xs.length-1;
+  var rndi = getRandomInt(min, max);
+  var c    = this.getById(xs[rndi]); 
 
   return c;
 }
@@ -156,6 +156,21 @@ CountriesList.prototype.render = function() {
   this.el.innerHTML = h.join("");
   this.vel.innerHTML = v;
   this.rel.innerHTML = r;
+}
+
+//----------------
+
+getRandomInt = function(min, max) { 
+  var byteArray = new Uint8Array(1);
+  window.crypto.getRandomValues(byteArray);
+
+  var range = max - min + 1;
+  var max_range = 256;
+  if (byteArray[0] >= Math.floor(max_range / range) * range) {
+    return getRandomInt(min, max);
+  }
+
+  return min + (byteArray[0] % range);
 }
 
 // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
