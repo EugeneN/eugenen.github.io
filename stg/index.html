@@ -4,8 +4,9 @@
 		<title>Spin the Globe</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link rel="stylesheet" type="text/css" media="screen" href="css/index.css" />
-  </head>
+		<link rel="stylesheet" type="text/css" media="screen" href="css/index.css" />
+		<link rel="manifest" href="/manifest.json">
+	</head>
   
 	<body>
 		<div id="container"></div>
@@ -62,6 +63,14 @@
 		</div>
 
 		<script src="out.js"></script>
+		<script>
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', () => {
+				navigator.serviceWorker.register('/serviceworker.js');
+			});
+		}
+		</script>
+		
 		<script>main()</script>
 
 		<link rel="stylesheet" href="https://use.typekit.net/upr2zfs.css">
