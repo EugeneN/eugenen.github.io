@@ -18,16 +18,13 @@ var projection = d3.geoEquirectangular()
     .context(context);
 
   context.strokeStyle = fgColor; 
-  context.lineWidth = 1;
-  context.fillStyle = bgColor; 
+  context.lineWidth   = 1;
+  context.fillStyle   = bgColor; 
 
   context.beginPath();
   path(geojson);
   if (bgColor) { context.fill(); }
   context.stroke();
-
-  // DEBUGGING - Really expensive, disable when done.
-  // console.log(canvas.node().toDataURL());
 
   texture = new THREE.Texture(canvas.node());
   texture.needsUpdate = true;

@@ -22,7 +22,7 @@ a { color: #0080ff; }
     line-height: 18px;
     text-transform: uppercase;
 }
-#visited-count, #remaining-count {
+#total-count, #remaining-count {
     font-family: Europa-Regular, Helvetica, sans-serif;
     font-size: 36px;
     text-align: center;
@@ -86,7 +86,7 @@ a { color: #0080ff; }
     border: 1px solid #fff;
     border-bottom: 1px solid #69c;
 }
-#play:disabled, #play[disabled], #cl-reset:disabled, #cl-reset[disabled], #change-visited-countries:disabled, #change-visited-countries[disabled] {
+#play:disabled, #play[disabled], #cl-reset:disabled, #cl-reset[disabled], #change-selected-countries:disabled, #change-selected-countries[disabled] {
     border: 1px solid #ccc !important;
     color: #ccc !important;
     cursor: not-allowed !important;
@@ -165,7 +165,7 @@ a { color: #0080ff; }
     padding: 20px 0;
     text-align: center;
 }
-#close-cl {
+.close-cl {
     font-size: 23px;
     padding: 5px;
     font-weight: lighter;
@@ -350,7 +350,7 @@ a { color: #0080ff; }
         left: 50%;
         transform: translate3d(-50%, -50%, 0);
     }
-    #visited-count, #remaining-count { color: #fff; }
+    #total-count, #remaining-count { color: #fff; }
     .title { 
         color: #fff; 
         font-size: 100%;
@@ -415,7 +415,7 @@ a { color: #0080ff; }
         left: 50%;
         transform: translate3d(-50%, -50%, 0);
     }
-    #visited-count, #remaining-count { color: #fff; }
+    #total-count, #remaining-count { color: #fff; }
     .title { 
         color: #fff; 
         font-size: 18px;

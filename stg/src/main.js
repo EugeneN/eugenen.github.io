@@ -9,7 +9,7 @@ function StG() {
     this.winner               = $("winner");
     this.playButton           = $("play");
     this.rulesButton          = $("rules-trigger");
-    this.manageButton         = $("change-visited-countries");
+    this.manageButton         = $("change-selected-countries");
     this.container            = $("container");
     this.winnerCountry        = null;
     
@@ -215,35 +215,44 @@ StG.prototype.render = function () {
 //--------------
 
 var stg, cl;
+var blurElId = "blur";
 
 function hidePopup(pid) { 
-    $(pid).style.display    = "none"; 
-    $("blur").style.display = "none"; 
+    $(pid).style.display      = "none"; 
+    $(blurElId).style.display = "none"; 
 }
 
 function main() {
-    $("change-visited-countries").onclick = function () { 
+    $("change-selected-countries").onclick = function () { 
         $("countries-list-wrapper").style.display = "block"; 
-        $("blur").style.display = "block"; 
+        $(blurElId).style.display = "block"; 
     }
     $("rules-trigger").onclick  = function () { 
         $("rules-wrapper").style.display = "block"; 
-        $("blur").style.display = "block"; 
+        $(blurElId).style.display = "block"; 
     }
+    $("close-cl").onclick       = function () { hidePopup('countries-list-wrapper') }
+    $("close-rw").onclick       = function () { hidePopup('rules-wrapper') }
     $("countries-list").onclick = function (e) { cl.toggle(e.target.dataset.countryid); }
-    $("cl-mode-v").onclick      = function () { cl.setMode(VISITED); }
-    $("cl-mode-i").onclick      = function () { cl.setMode(INELIGIBLE); }
     $("cl-reset").onclick       = function () { cl.reset(); }
     $("winner").onclick         = function () { cl.toggle(stg.winnerCountry.id); }
     $("play").onclick           = function () { stg.spinTheGlobe(cl); }
 
     stg = new StG();
-    
-    d3.json('data/world255-2.json').then(function(data){
+
+
+    Promise.all([
+        d3.json('data/eligible.json'),  
+        d3.json('data/world255-2.json')  
+    ]).then(function(xs){
+        var eligible = xs[0];
+        var data     = xs[1];
+
         var countriesTopo = topojson.feature(data, data.objects.countries);
-        cl = new CountriesList(countriesTopo.features, "countries-list", "visited-count", "remaining-count");
+        cl = new CountriesList(countriesTopo.features, eligible, "countries-list",
+                                         "total-count", "remaining-count", "play");
     
-        stg.textureCache = memoize(function (cntryID, fgcolor, bgcolor) {
+        stg.textureCache = memoize("country", function (cntryID, fgcolor, bgcolor) {
             var country = cl.getById(cntryID);
             return mapTexture(country, fgcolor, bgcolor);
         });
@@ -251,6 +260,8 @@ function main() {
         stg.init();
         stg.animate();
     });
+
+    
 }
 
 // main();

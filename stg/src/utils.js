@@ -1,20 +1,23 @@
 
-// adapted from memoize.js by @philogb and @addyosmani
- function memoize(fn) {
+ function memoize(label, fn) {
   return function () {
     var args = Array.prototype.slice.call(arguments);
+    var key  = "";
+    var len  = args.length;
 
-    var key = "", len = args.length, cur = null;
+    fn._memoize = fn._memoize || {};
+    fn._memoize[label] = fn._memoize[label] || {};
 
     while (len--) {
-      cur = args[len];
-      key += (cur === Object(cur))? JSON.stringify(cur): cur;
-
-      fn.memoize || (fn.memoize = {});
+      var x = args[len];
+      key += (x === Object(x)) ? JSON.stringify(x) : x;
     }
 
-    return (key in fn.memoize)? fn.memoize[key]:
-    fn.memoize[key] = fn.apply(this, args);
+    if (key in fn._memoize[label]) {
+      return fn._memoize[label][key];
+    } else {
+      return fn._memoize[label][key] = fn.apply(this, args);
+    }
   };
 }
 

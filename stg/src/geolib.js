@@ -1,22 +1,25 @@
-const VISITED    = 1;
-const INELIGIBLE = 2;
+const selectedForSpinCookie = "sfs";
 
-function CountriesList(features, el, vel, rel) {
-  this.store      = {};
-  this.features   = features;
-  this.mode       = VISITED;
-  this.el         = $(el);
-  this.vel        = $(vel);
-  this.rel        = $(rel);
-  this.visited    = {};
-  this.ineligible = {};
+function CountriesList(features, eligibleCountries, el, totalCountEl, selectedCountEl, playEl) {
+  this.store             = {};
+  this.features          = features;
+  this.eligibleCountries = eligibleCountries;
+  this.el                = $(el);
+  this.totalCountEl      = $(totalCountEl);
+  this.selectedCountEl   = $(selectedCountEl);
+  this.playEl            = $(playEl);
+  this.selectedForSpin   = {};
 
   this.init();
   this.render();
 }
 CountriesList.prototype.init = function() {
   for (let i = 0; i < this.features.length; i++) {
-    this.store[this.features[i].id] = this.features[i];
+    if (this.eligibleCountries.includes(this.features[i].id)) {
+      this.store[this.features[i].id] = this.features[i];  
+    } else {
+      console.log("Ineligible country: ", this.features[i].id);
+    }
   }
   this.restoreState();
 }
@@ -55,44 +58,20 @@ CountriesList.prototype.search = function(lat, lng) {
 CountriesList.prototype.getCountriesList = function() {
   return Object.keys(this.store);
 }
-CountriesList.prototype.getVisitedCountriesList = function() {
+CountriesList.prototype.getSelectedForSpinCountriesList = function() {
   var self = this;
-  return Object.keys(this.visited).filter(function(x) { return self.visited[x] === true });
-}
-CountriesList.prototype.getIneligibleCountriesList = function() {
-  var self = this;
-  return Object.keys(this.ineligible).filter(function(x) { return self.ineligible[x] === true });
-}
-CountriesList.prototype.getUnvisitedCountriesList = function() {
-  var self = this;
-  return Object.keys(this.store).filter(function(x) { return self.visited[x] !== true && self.ineligible[x] !== true });
+  return Object.keys(this.store).filter(function(x) { return self.selectedForSpin[x] === true });
 }
 CountriesList.prototype.getRandomCountry = function() {
-  var xs   = this.getUnvisitedCountriesList();
+  var xs   = this.getSelectedForSpinCountriesList();
   var min  = 0, max = xs.length-1;
   var rndi = getRandomInt(min, max);
   var c    = this.getById(xs[rndi]); 
 
   return c;
 }
-CountriesList.prototype.setMode = function(m) { 
-  this.mode = m; 
-  this.render();
-}
-CountriesList.prototype.toggleMode = function() { 
-  if (this.mode === VISITED) { this.mode = INELIGIBLE; }
-  else { this.mode = VISITED; }
-  this.render();
-}
-CountriesList.prototype.markAsVisited = function(country) {
-  this.visited[country.id] = true;
-
-  this.saveState();
-  this.render();
-}
 CountriesList.prototype.toggle = function(x) {
-  if (this.mode === VISITED) { var v = this.visited; } 
-  else { var v = this.ineligible; }
+  var v = this.selectedForSpin;
 
   if (v[x]) { v[x] = !v[x]; } 
   else { v[x] = true; }
@@ -101,36 +80,30 @@ CountriesList.prototype.toggle = function(x) {
   this.render();
 }
 CountriesList.prototype.reset = function(x) {
-  if (this.mode === VISITED) { this.visited = {}; } 
-  else { this.ineligible = {}; }
+  this.selectedForSpin = {};
 
   this.saveState();
   this.render();
 }
 CountriesList.prototype.saveState = function() {
-  setCookie("vc", JSON.stringify(this.getVisitedCountriesList()));
-  setCookie("ic", JSON.stringify(this.getIneligibleCountriesList()));
+  setCookie(selectedForSpinCookie, JSON.stringify(this.getSelectedForSpinCountriesList()));
 }
 CountriesList.prototype.restoreState = function(id) {
   var z;
-  try { z = JSON.parse(getCookie("vc")); } catch(e) { z = null; }
+  try { z = JSON.parse(getCookie(selectedForSpinCookie)); } catch(e) { z = null; }
   if (Array.isArray(z)) { 
+    this.selectedForSpin = {};
     for (var i=0; i<z.length; i++) {
-      this.visited[z[i]] = true;
-    }
-  }
-  try { z = JSON.parse(getCookie("ic")); } catch(e) { z = null; }
-  if (Array.isArray(z)) { 
-    for (var i=0; i<z.length; i++) {
-      this.ineligible[z[i]] = true;
+      this.selectedForSpin[z[i]] = true;
     }
   }
 }
 CountriesList.prototype.getSelectedCls = function(x) {
-  if      (this.mode === VISITED &&  this.visited[x])    { return "c-visited"; } 
-  else if (this.mode === VISITED && !this.visited[x])    { return "c-not-visited"; } 
-  else if (this.mode !== VISITED &&  this.ineligible[x]) { return "c-ineligible"; } 
-  else                                                   { return "c-not-ineligible"; } 
+  if (this.selectedForSpin[x]) { 
+    return "c-not-ineligible"; 
+  } else { 
+    return "c-ineligible"; 
+  } 
 }
 CountriesList.prototype.render = function() {
   var self = this;
@@ -139,23 +112,13 @@ CountriesList.prototype.render = function() {
     var cls = self.getSelectedCls(x); 
     return '<div class="' + cls + '" data-countryid="' + x + '">'+x+'</div>' 
   });
-  var v  = Object.values(this.visited).filter(function(x) { return x}).length;
-  var ie = Object.values(this.ineligible).filter(function(x) { return x}).length;
-  var r  = Object.values(xs).length - (v + ie);
+  var sfs = Object.values(this.selectedForSpin).filter(function(x) { return x }).length;
+  var total = xs.length;
 
-  if (this.mode === VISITED) {
-    $('cl-mode-v').classList.add('mode-ineligible');
-    $('cl-mode-i').classList.remove('mode-ineligible');
-    $("cl-reset").disabled = v === 0 ? true : false;
-  } else {
-    $('cl-mode-v').classList.remove('mode-ineligible');
-    $('cl-mode-i').classList.add('mode-ineligible');
-    $("cl-reset").disabled = ie === 0 ? true : false;
-  }
-  
   this.el.innerHTML = h.join("");
-  this.vel.innerHTML = v;
-  this.rel.innerHTML = r;
+  this.selectedCountEl.innerHTML = sfs;
+  this.totalCountEl.innerHTML    = total;
+  this.playEl.disabled = sfs == 0;
 }
 
 //----------------

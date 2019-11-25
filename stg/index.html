@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Spin the Globe</title>
+		<title>Spin the World</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="stylesheet" type="text/css" media="screen" href="css/index.css" />
@@ -14,23 +14,22 @@
 		<div id="logo">
 			<div class="spin">Spin</div>
 			<div class="the">the</div>
-			<div class="globe">Globe</div>
+			<div class="globe">World</div>
 		</div>
 		
 		<button id="rules-trigger"><span class="label">Rules of the game</span>
-			<!-- <span class="plus">+</span> -->
 		</button>
 		
 		<div id="info">
-			<div class="title">Countries <span class="snd">visited</span></div>
-			<div id="visited-count" ></div>
-			<button class="action" id="change-visited-countries">Change</button>
+			<div class="title">Countries <span class="snd">available</span></div>
+			<div id="total-count" ></div>
+			<button class="action" id="change-selected-countries">Select</button>
 		</div>
 		
     	<div id="info2">
-			<div class="title">Countries <span class="snd">remaining</span></div>
+			<div class="title">Countries <span class="snd">selected</span></div>
 			<div id="remaining-count"></div>
-    	<button class="action" id="play">Spin the Globe</button>
+    	<button class="action" id="play">Spin the World</button>
 		</div>
 		
 		<div id="result">
@@ -41,25 +40,21 @@
 
 		<div id="countries-list-wrapper">
 			<div id="countries-list-header">
-				<span>Manage countries</span>
-			</div>
-			<div class="tab-header">
-				<button id="cl-mode-v">Visited</button>
-				<button id="cl-mode-i">Ineligible</button>
+				<span>Select countries</span>
 			</div>
 			<div id="countries-list""></div>
 			<button id="cl-reset">Reset</button>
-			<button id="close-cl" onclick="hidePopup('countries-list-wrapper')">✕</button>
+			<button class="close-cl" id="close-cl">✕</button>
 		</div>
 
 		<div id="rules-wrapper"> 
 			<h1>Rules of the game</h1>
 			<ol class="rules-content">
-				<li>Eliminate the destinations you’ve already visited by clicking the <em>Change</em> button.</li>
-				<li>Optionally, eliminate the ineligible destinations you don't want to get selected (mind <a target="_blank" href="https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/">the list</a> and <a target="_blank" href="https://travelmaps.state.gov/TSGMap/">the map</a>).</li>
-				<li><em>Spin the globe!</em></li>
+				<li>Select countries to include in the dice roll by clicking the <em>Select</em> button.</li>
+				<li>(mind <a target="_blank" href="https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/">the list</a> and <a target="_blank" href="https://travelmaps.state.gov/TSGMap/">the map</a>).</li>
+				<li>Then, <em>Spin the World!</em></li>
 			</ol>
-			<button id="close-cl" onclick="hidePopup('rules-wrapper')">✕</button>
+			<button class="close-cl" id="close-rw">✕</button>
 		</div>
 
 		<script src="out.js"></script>
