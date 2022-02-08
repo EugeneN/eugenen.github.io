@@ -1,0 +1,22 @@
+{
+    "default": {
+        "core": [
+            {
+                "name": "lib",
+                "deps": [],
+                "adaptor": {
+                    "type": "recipe"
+                }
+            },
+            {
+                "name": "Todo",
+                "deps": [
+                    null
+                ],
+                "adaptor": {
+                    "type": "csmodule"
+                }
+            }
+        ]
+    }
+}

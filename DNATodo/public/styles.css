@@ -1,0 +1,41 @@
+.todo_block_wrapper {
+    width: 300px;
+    margin: auto;
+    background: #f8f8f8;
+}
+
+.todo_block {
+    padding: 10px;
+    border: 1px solid gray;
+}
+
+.todo_item {
+    border: 1px solid black;
+    background: #FFF;
+    height:15px;
+    padding:5px;
+    margin:5px;
+}
+
+.inp {
+    width: 300px;
+    margin-top: 20px;
+}
+
+.inp_b {
+    width: 300px;
+}
+
+.done-true {
+    text-decoration: line-through;
+}
+
+button.remove-item {
+    background-color: transparent;
+    border: none;
+    color: blue;
+    border-bottom: 1px dashed blue;
+    cursor: pointer;
+    position: relative;
+    top: -3px;
+}

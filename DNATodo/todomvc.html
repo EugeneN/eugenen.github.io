@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <title>DNA.js • TodoMVC</title>
+    <link rel="stylesheet" href="public/todomvc.css">
+</head>
+
+<body>
+<section id="todoapp">
+    <header id="header">
+        <h1>DNA todos</h1>
+
+        <input id="new-todo" placeholder="What needs to be done?" autofocus
+                data-extend="IKeyFilter"
+                data-subscribe=' keyDown : get_key | check_key [13 27 32]
+                               ; onKeyPass 13 : getValue | add_item@todo_list, "" | setValue
+                               ; onKeyPass 27 : "" | setValue
+                               ' />
+    </header>
+
+    <section id="main">
+        <input id="toggle-all" type="checkbox">
+        <label for="toggle-all">Mark all as complete</label>
+        <ul id="todo_list"
+            data-subscribe='onModelChanged : get_items_view | setContent '
+            data-extend="ITodoList">
+        </ul>
+    </section>
+
+    <footer id="footer">
+        <span id="todo-count">
+            <strong 
+                data-subscribe='onModelChanged@todo_list: get_undone_items@todo_list | len | setText'>
+                0</strong> items left</span>
+        <button 
+            data-subscribe='click: clear_completed@todo_list'
+            id="clear-completed">Clear completed</button>
+    </footer>
+</section>
+
+<section id="vector_test">
+    <input id="val_a" type="text" placeholder="Value a" />
+    +
+    <input id="val_b" type="text" placeholder="Value b" />
+    =
+    <span data-subscribe='
+        on_change@val_a,
+        on_change@val_b : "calculating..." | setText,
+                          [ getValueAsync@val_a getValue@val_b] | add | swap [NaN "?"] | setText
+    '>
+        ?
+    </span>
+
+</section>
+
+<footer id="info">
+    <p>Double-click to edit a todo</p>
+</footer>
+
+<script src="public/build/default/core.js"></script>
+<script>
+    (function(root){
+        var bootstrapper = root.bootstrapper;
+
+        bootstrapper.ENV = {
+            LOG_INFO: true,
+            LOG_WARN: true,
+            LOG_ERROR: true,
+            LOG_DEBUG: true
+        };
+
+        bootstrapper.init_queue = [
+            function () { console.log("**Starting init queue"); },
+            function () { console.log("**init queue done"); }
+        ];
+
+        bootstrapper.document_ready_queue = [
+            function () { console.log("**Starting doc rdy queue"); },
+            function () {
+                var dna = require('dna');
+                dna.start_synthesis();
+            },
+            function () { console.log("**doc rdy queue done"); }
+        ];
+
+        bootstrapper.run_init_queue();
+    }(window));
+</script>
+</body>
+</html>
