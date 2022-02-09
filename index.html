@@ -21,4 +21,26 @@
   <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bb539b84e52f4fbbad0713c644cd6a99"}'></script>
     <!-- End Cloudflare Web Analytics -->
+  
+  <script>
+document.addEventListener('keyup', function (event) {
+    if (event.ctrlKey && event.key === 's') {
+        saveAsHtml();
+    }
+});
+
+function saveAsHtml() {
+    var h = document.getElementsByTagName('html')[0];
+    var t = document.title;
+
+    var bl = new Blob(h, {type: "text/html"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(bl);
+    a.download = t + ".html";
+    a.hidden = true;
+    document.body.appendChild(a);
+    a.innerHTML = "";
+    a.click();
+}
+  </script>
 </html>
