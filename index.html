@@ -32,7 +32,7 @@ document.addEventListener('keyup', function (event) {
 
 function saveAsHtml() {
     var h = document.getElementsByTagName('html')[0].innerHTML;
-    var t = document.title;
+    var t = document.location.hash;
 
     var b = new Blob(['<html>' + h + '</html>'], {type: "text/html;charset=utf-8"});
     var a = document.createElement("a");
